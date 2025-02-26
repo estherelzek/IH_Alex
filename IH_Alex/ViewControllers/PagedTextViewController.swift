@@ -16,9 +16,9 @@ struct PageContent {
 
 class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSource {
     let pageControl = UIPageControl()
-      var pages: [PageContent] = []
-      var currentIndex = 0
-      var currentBookID: Int?
+    var pages: [PageContent] = []
+    var currentIndex = 0
+    var currentBookID: Int?
     var metadataa: MetaDataResponse?
     var bookContent: BookContent?
     var bookResponse: BookResponse?
@@ -31,7 +31,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                    print("✅ Metadata loaded: \(metadataa)")
                }
                
-               if let bookContent: BookContent = loadJSON(from: "bookContentpart3", as: BookContent.self) {
+               if let bookContent: BookContent = loadJSON(from: "Token1", as: BookContent.self) {
                    self.bookContent = bookContent
                    print("✅ Book content loaded: \(bookContent)")
                }
@@ -48,7 +48,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
            }
         }
         
-   
     func loadJSON<T: Decodable>(from filename: String, as type: T.Type) -> T? {
         guard let url = Bundle.main.url(forResource: filename, withExtension: "txt") else {
             print("❌ File \(filename).json not found in bundle.")
@@ -70,15 +69,15 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0].path
     }
+    
     func processBookContent(_ bookContent: BookContent, book: Book, metadata: MetaDataResponse) -> [PageContent] {
         let decryptor = Decryptor()
-        let decryptedText = decryptor.decryption(txt: bookContent.content, id: book.id) // Use book.id instead of bookID
+        let decryptedText = decryptor.decryption(txt: bookContent.content, id: book.id)
         print("decryptedText Text: \(decryptedText)")
-        let parsedText = ParsePage().invoke(pageEncodedString: decryptedText, metadata: metadata, book: book)
-        print("Parsed Text: \(parsedText.string)")
-        let textPages = splitAttributedTextIntoPages(parsedText)
+        let parsedPages = ParsePage().invoke(pageEncodedString: decryptedText, metadata: metadata, book: book)
+        print("parsedPages:\(parsedPages)")
         var processedPages: [PageContent] = []
-        for attributedText in textPages {
+        for attributedText in parsedPages {
             processedPages.append(PageContent(attributedText: attributedText, image: nil))
         }
         return processedPages
@@ -133,59 +132,58 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         }
         return nil
     }
-    
 }
 
-func processTextWithMentions(_ attributedText: NSAttributedString) -> NSAttributedString {
-    let mutableAttributedString = NSMutableAttributedString(attributedString: attributedText)
-    let text = attributedText.string // Extract the plain text to find mentions
-    let pattern = "@(\\w+)" // Matches words starting with '@'
-    let regex = try! NSRegularExpression(pattern: pattern, options: [])
-    let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count))
-    for match in matches.reversed() { // Process in reverse to avoid index shift issues
-        let nsText = text as NSString
-        let matchText = nsText.substring(with: match.range)
+//func processTextWithMentions(_ attributedText: NSAttributedString) -> NSAttributedString {
+//    let mutableAttributedString = NSMutableAttributedString(attributedString: attributedText)
+//    let text = attributedText.string // Extract the plain text to find mentions
+//    let pattern = "@(\\w+)" // Matches words starting with '@'
+//    let regex = try! NSRegularExpression(pattern: pattern, options: [])
+//    let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count))
+//    for match in matches.reversed() { // Process in reverse to avoid index shift issues
+//        let nsText = text as NSString
+//        let matchText = nsText.substring(with: match.range)
+//
+//        // 🔹 Add link attribute to @word
+//        let linkAttributes: [NSAttributedString.Key: Any] = [
+//            .foregroundColor: UIColor.blue,
+//            .underlineStyle: NSUnderlineStyle.single.rawValue,
+//            .link: "navigateTo:\(matchText)" // Custom scheme for navigation
+//        ]
+//        let mentionString = NSAttributedString(string: matchText, attributes: linkAttributes)
+//        mutableAttributedString.replaceCharacters(in: match.range, with: mentionString)
+//    }
+//    return mutableAttributedString
+//}
 
-        // 🔹 Add link attribute to @word
-        let linkAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor.blue,
-            .underlineStyle: NSUnderlineStyle.single.rawValue,
-            .link: "navigateTo:\(matchText)" // Custom scheme for navigation
-        ]
-        let mentionString = NSAttributedString(string: matchText, attributes: linkAttributes)
-        mutableAttributedString.replaceCharacters(in: match.range, with: mentionString)
-    }
-    return mutableAttributedString
-}
-
-// MARK: - Text Processing Function
-func processTextWithImages(_ text: String) -> NSAttributedString {
-    let attributedString = NSMutableAttributedString(string: text)
-    let pattern = "##(.*?)##" // Regex pattern to find ##image_name##
-    
-    let regex = try! NSRegularExpression(pattern: pattern, options: [])
-    let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count))
-    var offset = 0 // Adjust offset since replacing text changes positions
-    for match in matches {
-        let range = match.range(at: 1) // Get the image name
-        let nsText = text as NSString
-        let imageName = nsText.substring(with: range)
-        
-        if let image = UIImage(named: imageName) {
-            let attachment = NSTextAttachment()
-            attachment.image = image
-            attachment.bounds = CGRect(x: 0, y: -5, width: 50, height: 50) // Adjust size
-            
-            let imageString = NSAttributedString(attachment: attachment)
-            let fullMatchRange = match.range(at: 0)
-            let adjustedRange = NSRange(location: fullMatchRange.location - offset, length: fullMatchRange.length)
-            
-            attributedString.replaceCharacters(in: adjustedRange, with: imageString)
-            offset += fullMatchRange.length - imageString.length
-        }
-    }
-    return attributedString
-}
+//// MARK: - Text Processing Function
+//func processTextWithImages(_ text: String) -> NSAttributedString {
+//    let attributedString = NSMutableAttributedString(string: text)
+//    let pattern = "##(.*?)##" // Regex pattern to find ##image_name##
+//
+//    let regex = try! NSRegularExpression(pattern: pattern, options: [])
+//    let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: text.count))
+//    var offset = 0 // Adjust offset since replacing text changes positions
+//    for match in matches {
+//        let range = match.range(at: 1) // Get the image name
+//        let nsText = text as NSString
+//        let imageName = nsText.substring(with: range)
+//
+//        if let image = UIImage(named: imageName) {
+//            let attachment = NSTextAttachment()
+//            attachment.image = image
+//            attachment.bounds = CGRect(x: 0, y: -5, width: 50, height: 50) // Adjust size
+//
+//            let imageString = NSAttributedString(attachment: attachment)
+//            let fullMatchRange = match.range(at: 0)
+//            let adjustedRange = NSRange(location: fullMatchRange.location - offset, length: fullMatchRange.length)
+//
+//            attributedString.replaceCharacters(in: adjustedRange, with: imageString)
+//            offset += fullMatchRange.length - imageString.length
+//        }
+//    }
+//    return attributedString
+//}
 
 
 extension PagedTextViewController {
@@ -243,12 +241,10 @@ extension PagedTextViewController {
                 case .success(let metadata):
                 //    print("✅ Metadata: \(metadata)")
 
-                    // Decode encoding JSON string into struct
                     if let encodingData = metadata.decodedEncoding() {
                     //    print("✅ Decoded Encoding: \(encodingData)")
                     }
 
-                    // Decode index JSON string into array
                     if let indexData = metadata.decodedIndex() {
                   //      print("✅ Decoded Index: \(indexData)")
                     }

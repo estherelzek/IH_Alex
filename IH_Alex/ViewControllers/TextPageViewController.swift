@@ -28,34 +28,75 @@ class TextPageViewController: UIViewController, UITextViewDelegate {
         }
         return super.canPerformAction(action, withSender: sender)
     }
-
-
+//
+//    func setupTextView() {
+//           textView.isEditable = false
+//           textView.isSelectable = true
+//           textView.isUserInteractionEnabled = true
+//           textView.textAlignment = .right
+//           textView.attributedText = pageContent?.attributedText
+//
+//       //  print("textView.attributedText: \(textView.attributedText)")
+//           textView.dataDetectorTypes = [] // Disable automatic detection
+//           textView.delegate = self // ✅ Enable link handling
+//           textView.translatesAutoresizingMaskIntoConstraints = false
+//       // textView.textAlignment = .center
+//           textView.backgroundColor = .white
+//           view.addSubview(textView)
+//           NSLayoutConstraint.activate([
+//               textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+//               textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+//               textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+//               textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+//           ])
+//       }
+//
     func setupTextView() {
-           textView.isEditable = false
-           textView.isSelectable = true
-           textView.isUserInteractionEnabled = true
-           textView.attributedText = pageContent?.attributedText
-           textView.dataDetectorTypes = [] // Disable automatic detection
-           textView.delegate = self // ✅ Enable link handling
-           textView.translatesAutoresizingMaskIntoConstraints = false
-           textView.font = UIFont.systemFont(ofSize: 18)
-           textView.backgroundColor = .white
-           view.addSubview(textView)
-           NSLayoutConstraint.activate([
-               textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-               textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-               textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-               textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
-           ])
-       }
+            textView.isEditable = true
+            //textView.textAlignment = .center
+            textView.isSelectable = true
+            textView.isUserInteractionEnabled = true
+            textView.dataDetectorTypes = []
+            textView.delegate = self
+            textView.translatesAutoresizingMaskIntoConstraints = false
+             textView.textAlignment = .right
+            if let attributedContent = pageContent?.attributedText {
+                textView.attributedText = applyLanguageBasedAlignment(to: attributedContent)
+
+            }
+
+            view.addSubview(textView)
+            NSLayoutConstraint.activate([
+                textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+                textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+                textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+                textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+            ])
+        }
+    func applyLanguageBasedAlignment(to attributedText: NSAttributedString) -> NSAttributedString {
+        let mutableAttributedText = NSMutableAttributedString(attributedString: attributedText)
+       
+        mutableAttributedText.enumerateAttributes(in: NSRange(location: 0, length: mutableAttributedText.length), options: []) { attributes, range, _ in
+            if attributes[.paragraphStyle] == nil {
+                let textSegment = (mutableAttributedText.string as NSString).substring(with: range)
+                let paragraphStyle = NSMutableParagraphStyle()
+                paragraphStyle.alignment = isArabic(text: textSegment) ? .right : .left
+                mutableAttributedText.addAttribute(.paragraphStyle, value: paragraphStyle, range: range)
+            }
+        }
+        return mutableAttributedText
+    }
     
+    func isArabic(text: String) -> Bool {
+       let arabicRange = text.range(of: "\\p{Arabic}", options: .regularExpression)
+       return arabicRange != nil
+   }
     func getNSRange(from textRange: UITextRange) -> NSRange? {
         guard let start = textView.position(from: textView.beginningOfDocument, offset: 0),
               let end = textView.position(from: start, offset: textView.offset(from: textView.beginningOfDocument, to: textRange.end))
         else { return nil }
         let location = textView.offset(from: textView.beginningOfDocument, to: textRange.start)
         let length = textView.offset(from: textRange.start, to: textRange.end)
-
         return NSRange(location: location, length: length)
     }
 
@@ -88,7 +129,6 @@ class TextPageViewController: UIViewController, UITextViewDelegate {
     
     func saveHighlightedRange(_ range: NSRange) {
         var highlightedRanges = UserDefaults.standard.array(forKey: "highlightedRanges") as? [[Int]] ?? []
-
         let rangeArray = [range.location, range.length]
         print("Saving highlight:", rangeArray) // ✅ Debugging line
 
@@ -114,6 +154,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate {
         }
         textView.attributedText = mutableAttributedText
     }
+    
     /// ✅ Remove highlighted range from UserDefaults
     func removeHighlightedRange(_ range: NSRange) {
         var highlightedRanges = UserDefaults.standard.array(forKey: "highlightedRanges") as? [[Int]] ?? []

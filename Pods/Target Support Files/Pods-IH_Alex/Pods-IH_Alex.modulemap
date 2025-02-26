@@ -1,0 +1,6 @@
+framework module Pods_IH_Alex {
+  umbrella header "Pods-IH_Alex-umbrella.h"
+
+  export *
+  module * { export * }
+}

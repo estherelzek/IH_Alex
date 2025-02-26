@@ -18,8 +18,7 @@ class NetworkService {
 //       if APICase.request.url?.absoluteString.contains("add_pm_visit") || APICase.request.url?.absoluteString.contains("add_am_visit") ||  APICase.request.url?.absoluteString.contains("report_pm_visiting_day") ||   APICase.request.url?.absoluteString.contains("report_am_visiting_day") {
 //
 //   }
-       var request: URLRequest = APICase.request ?? URLRequest(url: URL(string: "https://example.com")!)
-
+       var request: URLRequest = APICase.request
         request.httpMethod = APICase.method.rawValue
        reachability.whenUnreachable = { _ in
            print("Not reachable")
@@ -51,37 +50,33 @@ class NetworkService {
                 print("❌ Error: ",error)
                 completed((.failure(.InvalidData)))
             }
+            
             guard let data = data else {
-                print("❌ Error in data: ",data)
+                print("❌ Error in data: ",data ?? "")
                 completed((.failure(.InvalidData)))
                 return
             }
             
             guard let response =  response  as? HTTPURLResponse ,response.statusCode == 200 else {
-                print("❌ Error in response: ",response)
+                print("❌ Error in response: ",response ?? "")
                 completed((.failure(.InvalidResponse)))
                 return
             }
 //            let decoder = JSONDecoder()
             do
             {
-                
                 guard let str = String(data: data, encoding: .utf8) else { return }
 //                let results = try decoder.decode(M.self, from: data)
                 print("✅ Results: ",str)
-                
                 completed((.success(str)))
                 
             } catch {
                 print(error)
                 completed((.failure(.InvalidData)))
             }
-            
         }
         task.resume()
     }
-    
-    
     
     enum APIError: Error {
         case invalidRequest
@@ -89,10 +84,9 @@ class NetworkService {
         case invalidResponse
     }
     func getResults<M: Codable>(APICase: API, decodingModel: M.Type, completed: @escaping (Result<M, APIError>) -> Void) {
-        var request: URLRequest = APICase.request ?? URLRequest(url: URL(string: "https://example.com")!)
+        var request: URLRequest = APICase.request
         request.httpMethod = APICase.method.rawValue
 
-        // Print the URL before making the request
         print("Request URL: \(request.url?.absoluteString ?? "Invalid URL")")
 
         reachability.whenUnreachable = { _ in

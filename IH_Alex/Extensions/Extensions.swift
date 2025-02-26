@@ -7,6 +7,7 @@
 
 import Foundation
 import Foundation
+import UIKit
 
 class Decryptor {
     
@@ -25,7 +26,7 @@ class Decryptor {
                 decryptionTxt += String(contents[i + 1]) // image
             }
         }
-        print("decryptionTxt: \(decryptionTxt)")
+       // print("decryptionTxt: \(decryptionTxt)")
         return decryptionTxt
     }
     
@@ -40,7 +41,26 @@ class Decryptor {
 
         return decryptedText
     }
-
+    static func isArabic(text: String) -> Bool {
+       let arabicRange = text.range(of: "\\p{Arabic}", options: .regularExpression)
+       return arabicRange != nil
+   }
 }
 
+
+extension UIColor {
+    convenience init(hex: String) {
+        let hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        let scanner = Scanner(string: hexSanitized)
+        var rgb: UInt64 = 0
+        scanner.scanHexInt64(&rgb)
+        
+        self.init(
+            red: CGFloat((rgb & 0xFF0000) >> 16) / 255.0,
+            green: CGFloat((rgb & 0x00FF00) >> 8) / 255.0,
+            blue: CGFloat(rgb & 0x0000FF) / 255.0,
+            alpha: 1.0
+        )
+    }
+}
 

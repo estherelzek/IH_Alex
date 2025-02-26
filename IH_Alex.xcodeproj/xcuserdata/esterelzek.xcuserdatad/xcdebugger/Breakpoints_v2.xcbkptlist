@@ -14,8 +14,8 @@
             filePath = "IH_Alex/NetworkLayer/NetworkServer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "96"
-            endingLineNumber = "96"
+            startingLineNumber = "90"
+            endingLineNumber = "90"
             landmarkName = "getResults(APICase:decodingModel:completed:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -87,70 +87,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "9B242B02-9921-4F33-8A79-D14A88535293"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "IH_Alex/PagedTextViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "78"
-            endingLineNumber = "78"
-            landmarkName = "processBookContent(_:book:metadata:)"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "9B242B02-9921-4F33-8A79-D14A88535293 - 2fc38053e6e35c51"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "IH_Alex.PagedTextViewController.processBookContent(_: IH_Alex.BookContent, book: IH_Alex.Book, metadata: IH_Alex.MetaDataResponse) -&gt; Swift.Array&lt;IH_Alex.PageContent&gt;"
-                  moduleName = "IH_Alex"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/esterelzek/Documents/GitHub/IOS_PROJECT/IH_Alex/IH_Alex/PagedTextViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "72"
-                  endingLineNumber = "72"
-                  offsetFromSymbolStart = "788">
-               </Location>
-               <Location
-                  uuid = "9B242B02-9921-4F33-8A79-D14A88535293 - 2fc38053e6e35c51"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "IH_Alex.PagedTextViewController.processBookContent(_: IH_Alex.BookContent, book: IH_Alex.Book, metadata: IH_Alex.MetaDataResponse) -&gt; Swift.Array&lt;IH_Alex.PageContent&gt;"
-                  moduleName = "IH_Alex"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/esterelzek/Documents/GitHub/IOS_PROJECT/IH_Alex/IH_Alex/PagedTextViewController.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "72"
-                  endingLineNumber = "72"
-                  offsetFromSymbolStart = "748">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "91026159-3750-40E7-BA8E-B70164150EB5"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "IH_Alex/PagedTextViewController.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "76"
-            endingLineNumber = "76"
-            landmarkName = "processBookContent(_:book:metadata:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "E0AD6A09-FFC2-41DA-8893-4BB2E15D585E"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -208,102 +144,6 @@
                   startingLineNumber = "45"
                   endingLineNumber = "45"
                   offsetFromSymbolStart = "5332">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "C485CBFD-3865-4BAB-80DD-D482CE9CF20E"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "IH_Alex/ParsePage.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "144"
-            endingLineNumber = "144"
-            landmarkName = "parseTag(_:encoding:)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "5C6D2865-7F1A-4E86-9453-AE41B1AC3083"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "IH_Alex/ParsePage.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "139"
-            endingLineNumber = "139"
-            landmarkName = "parseTag(_:encoding:)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "FA2F6329-E3D9-4A91-94EF-531F8E98ADD5"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "IH_Alex/ParsePage.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "135"
-            endingLineNumber = "135"
-            landmarkName = "parseTag(_:encoding:)"
-            landmarkType = "9">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            uuid = "0D3AA402-F8E5-40A6-94AD-3125B673ABEA"
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "IH_Alex/ParsePage.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "134"
-            endingLineNumber = "134"
-            landmarkName = "parseTag(_:encoding:)"
-            landmarkType = "9">
-            <Locations>
-               <Location
-                  uuid = "0D3AA402-F8E5-40A6-94AD-3125B673ABEA - 5ffe2a0000af5218"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "IH_Alex.parseTag(_: Swift.String, encoding: IH_Alex.Encoding) -&gt; Swift.Optional&lt;IH_Alex.ParsedElement&gt;"
-                  moduleName = "IH_Alex"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/esterelzek/Documents/GitHub/IOS_PROJECT/IH_Alex/IH_Alex/ParsePage.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "135"
-                  endingLineNumber = "135"
-                  offsetFromSymbolStart = "248">
-               </Location>
-               <Location
-                  uuid = "0D3AA402-F8E5-40A6-94AD-3125B673ABEA - 5ffe2a0000af5279"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "IH_Alex.parseTag(_: Swift.String, encoding: IH_Alex.Encoding) -&gt; Swift.Optional&lt;IH_Alex.ParsedElement&gt;"
-                  moduleName = "IH_Alex"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/esterelzek/Documents/GitHub/IOS_PROJECT/IH_Alex/IH_Alex/ParsePage.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "134"
-                  endingLineNumber = "134"
-                  offsetFromSymbolStart = "5692">
                </Location>
             </Locations>
          </BreakpointContent>

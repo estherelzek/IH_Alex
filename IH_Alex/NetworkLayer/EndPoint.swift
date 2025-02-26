@@ -27,9 +27,7 @@ extension EndPoint {
         var components = URLComponents(string: baseURL)!
         components.path = urlSubFolder + "/" + path
         components.queryItems = queryItems
-        
-        print("Urlllllllll", components.url)
-        
+        print("Urlllllllll", components.url ?? "")
         return components
     }
     
@@ -38,7 +36,7 @@ extension EndPoint {
         var request =  URLRequest(url: url,timeoutInterval: requestTimeOut)
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         if body != nil {
-            request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+            request.httpBody = try? JSONSerialization.data(withJSONObject: body ?? "")
         }
         return request
     }
