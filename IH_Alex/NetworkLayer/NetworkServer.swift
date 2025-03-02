@@ -83,6 +83,7 @@ class NetworkService {
         case invalidData
         case invalidResponse
     }
+    
     func getResults<M: Codable>(APICase: API, decodingModel: M.Type, completed: @escaping (Result<M, APIError>) -> Void) {
         var request: URLRequest = APICase.request
         request.httpMethod = APICase.method.rawValue
@@ -137,7 +138,6 @@ class NetworkService {
                 completed(.failure(.invalidData))
             }
         }
-        
         task.resume()
     }
 

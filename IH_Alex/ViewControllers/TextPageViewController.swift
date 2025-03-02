@@ -51,31 +51,15 @@ class TextPageViewController: UIViewController, UITextViewDelegate {
 //           ])
 //       }
 //
-    func setupTextView() {
-            textView.isEditable = true
-            //textView.textAlignment = .center
-            textView.isSelectable = true
-            textView.isUserInteractionEnabled = true
-            textView.dataDetectorTypes = []
-            textView.delegate = self
-            textView.translatesAutoresizingMaskIntoConstraints = false
-             textView.textAlignment = .right
-            if let attributedContent = pageContent?.attributedText {
-                textView.attributedText = applyLanguageBasedAlignment(to: attributedContent)
-
-            }
-
-            view.addSubview(textView)
-            NSLayoutConstraint.activate([
-                textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-                textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-                textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-                textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
-            ])
+   /// func textView(_ tabletextView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+  //  }
+    
+    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+            UIApplication.shared.open(URL)
+            return false // Prevent the default behavior (which is opening in Safari)
         }
     func applyLanguageBasedAlignment(to attributedText: NSAttributedString) -> NSAttributedString {
         let mutableAttributedText = NSMutableAttributedString(attributedString: attributedText)
-       
         mutableAttributedText.enumerateAttributes(in: NSRange(location: 0, length: mutableAttributedText.length), options: []) { attributes, range, _ in
             if attributes[.paragraphStyle] == nil {
                 let textSegment = (mutableAttributedText.string as NSString).substring(with: range)
@@ -91,6 +75,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate {
        let arabicRange = text.range(of: "\\p{Arabic}", options: .regularExpression)
        return arabicRange != nil
    }
+    
     func getNSRange(from textRange: UITextRange) -> NSRange? {
         guard let start = textView.position(from: textView.beginningOfDocument, offset: 0),
               let end = textView.position(from: start, offset: textView.offset(from: textView.beginningOfDocument, to: textRange.end))
@@ -99,7 +84,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate {
         let length = textView.offset(from: textRange.start, to: textRange.end)
         return NSRange(location: location, length: length)
     }
-
+    
     /// ✅ Called when user selects "Highlight"
     @objc func highlightSelectedText() {
         guard let selectedRange = textView.selectedTextRange else { return }
@@ -131,7 +116,6 @@ class TextPageViewController: UIViewController, UITextViewDelegate {
         var highlightedRanges = UserDefaults.standard.array(forKey: "highlightedRanges") as? [[Int]] ?? []
         let rangeArray = [range.location, range.length]
         print("Saving highlight:", rangeArray) // ✅ Debugging line
-
         if !highlightedRanges.contains(where: { $0[0] == range.location && $0[1] == range.length }) {
             highlightedRanges.append(rangeArray)
             UserDefaults.standard.set(highlightedRanges, forKey: "highlightedRanges")
@@ -165,19 +149,38 @@ class TextPageViewController: UIViewController, UITextViewDelegate {
         }
     }
    
-    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
-        let urlString = URL.absoluteString
-
-        if urlString.hasPrefix("navigateTo:") {
-            let mention = urlString.replacingOccurrences(of: "navigateTo:", with: "")
-
-            if mention == "@Swift" {
-                let targetIndex = 2
-                pageController?.navigateToPage(targetIndex) // ✅ Reuse existing instance
+//    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+//        let urlString = URL.absoluteString
+//        if urlString.hasPrefix("navigateTo:") {
+//            let mention = urlString.replacingOccurrences(of: "navigateTo:", with: "")
+//            if mention == "@Swift" {
+//                let targetIndex = 2
+//                pageController?.navigateToPage(targetIndex) // ✅ Reuse existing instance
+//            }
+//            return false
+//        }
+//        return true
+//    }
+}
+extension  TextPageViewController {
+    func setupTextView() {
+            textView.isEditable = false
+            textView.isSelectable = true
+            textView.isUserInteractionEnabled = true
+            textView.dataDetectorTypes = .link // Auto-detect links
+            textView.dataDetectorTypes = []
+            textView.delegate = self
+            textView.translatesAutoresizingMaskIntoConstraints = false
+             textView.textAlignment = .right
+            if let attributedContent = pageContent?.attributedText {
+                textView.attributedText = applyLanguageBasedAlignment(to: attributedContent)
             }
-            return false
+            view.addSubview(textView)
+            NSLayoutConstraint.activate([
+                textView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+                textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+                textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+                textView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20)
+            ])
         }
-        return true
-    }
-    
 }

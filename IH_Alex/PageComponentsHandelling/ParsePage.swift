@@ -21,14 +21,13 @@ class ParsePage {
         var start = 0
         var isInsideTag = false
         var currentTag: String? = nil
-        var tagStart = "##"
-        var tagEnd = "@@"
+        let tagStart = "##"
+        let tagEnd = "@@"
         var i = 0
         let chars = Array(pageEncodedString)
 
         while i < chars.count {
             let char = chars[i]
-            
             // ✅ Handle Start Tag ##
             if char == "#" && i + 1 < chars.count && chars[i + 1] == "#" {
                 appendCurrentText(to: currentPage, text: &currentText)
@@ -39,7 +38,7 @@ class ParsePage {
                 if i < chars.count {
                     let tagChar = chars[i]
                     i += 1
-
+                    print("tagChar: \(tagChar)")
                     switch tagChar {
                     case "P": // ✅ Page Split Tag
                         appendCurrentText(to: currentPage, text: &currentText)
@@ -48,7 +47,6 @@ class ParsePage {
                         }
                         currentPage = NSMutableAttributedString() // Start new page
                         isInsideTag = false
-
                     case "I": // ✅ Image Handling
                         var base64String = ""
                         while i < chars.count, !(chars[i] == "@" && i + 1 < chars.count && chars[i + 1] == "@") {
@@ -72,13 +70,49 @@ class ParsePage {
                             currentPage.append(NSAttributedString(string: "[Invalid Image]", attributes: [.foregroundColor: UIColor.red]))
                         }
                         isInsideTag = false
+//                    case "L":
+//                        currentPage.append(NSAttributedString(string: "[Link]", attributes: [.foregroundColor: UIColor.systemBlue]))
+//                        isInsideTag = false
+                    case "W": // ✅ Web Link Handling using ParseWebLink
+                        var linkText = ""
+                        while i < chars.count, !(chars[i] == "@" && i + 1 < chars.count && chars[i + 1] == "@") {
+                            linkText.append(chars[i])
+                            i += 1
+                        }
+                        let webLinkElement = ParsedElement.webLink(content: linkText)
+                        currentPage = ParseWebLink().invoke(spannedText: currentPage, parsedTag: webLinkElement)
+                        isInsideTag = false
+                    case "L": // ✅ Internal Link Handling
+                        var linkText = ""
+                        var targetID = ""
+                        var isReadingTarget = true
+                        while i < chars.count, !(chars[i] == "@" && i + 1 < chars.count && chars[i + 1] == "@") {
+                            if chars[i] == ":" {
+                                isReadingTarget = false
+                            } else {
+                                if isReadingTarget {
+                                    targetID.append(chars[i]) // Store the target page ID
+                                } else {
+                                    linkText.append(chars[i]) // Store the displayed text
+                                }
+                            }
+                            i += 1
+                        }
 
-                    case "L":
-                        currentPage.append(NSAttributedString(string: "[Link]", attributes: [.foregroundColor: UIColor.systemBlue]))
+                        if linkText.isEmpty { linkText = "[Reference]" } // Default placeholder if missing text
+                        let internalLinkElement = ParsedElement.internalLinkSource(content: linkText, key: targetID)
+                        currentPage = ParseInternalLink().invoke(spannedText: currentPage, parsedTag: internalLinkElement, metadata: metadata, book: book)
                         isInsideTag = false
 
-                    case "l":
-                        currentPage.append(NSAttributedString(string: "[Internal Target]", attributes: [.foregroundColor: UIColor.purple]))
+                    case "l": // ✅ internalLinkTarget Handling
+                        var referenceID = ""
+                        while i < chars.count, !(chars[i] == "@" && i + 1 < chars.count && chars[i + 1] == "@") {
+                            referenceID.append(chars[i])
+                            i += 1
+                        }
+
+                        let referenceElement = ParseReference().invoke(parsedTag: referenceID, id: referenceID, spannedText: currentPage)
+                        currentPage = referenceElement
                         isInsideTag = false
 
                     default:
@@ -87,7 +121,7 @@ class ParsePage {
                 }
                 continue
             }
-
+            
             // ✅ Handle End Tag @@
             if char == "@" && i + 1 < chars.count && chars[i + 1] == "@" {
                 i += 2
@@ -102,7 +136,6 @@ class ParsePage {
                 currentTag = nil
                 continue
             }
-
             // ✅ Handle Normal Text
             currentText.append(char)
             i += 1

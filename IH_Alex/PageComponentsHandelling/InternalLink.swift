@@ -4,25 +4,24 @@
 //
 //  Created by esterelzek on 26/02/2025.
 //
-
 import Foundation
+import UIKit
 
 class ParseInternalLink {
     func invoke(spannedText: NSMutableAttributedString, parsedTag: ParsedElement, metadata: MetaDataResponse, book: Book) -> NSMutableAttributedString {
- let start = spannedText.length
+        let start = spannedText.length
         switch parsedTag {
         case let .internalLinkSource(content, key):
             spannedText.append(NSAttributedString(string: content))
             let end = spannedText.length
-            let internalLinkID = key // Assuming `key` is a unique identifier for internal links
-            let internalLink = InternalLinkClickableSpan(id: internalLinkID)
-            spannedText.addAttribute(.link, value: internalLink, range: NSRange(location: start, length: end - start))
+            spannedText.addAttribute(.link, value: "internal:\(key)", range: NSRange(location: start, length: end - start)) // Add internal link format
         default:
             break
         }
         return spannedText
     }
 }
+
 
 class InternalLinkClickableSpan: NSObject {
     let id: String

@@ -14,8 +14,8 @@
             filePath = "IH_Alex/NetworkLayer/NetworkServer.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "90"
-            endingLineNumber = "90"
+            startingLineNumber = "91"
+            endingLineNumber = "91"
             landmarkName = "getResults(APICase:decodingModel:completed:)"
             landmarkType = "7">
          </BreakpointContent>

@@ -24,9 +24,6 @@ class FontStyler {
         var attributes: [NSAttributedString.Key: Any] = [:]
         let fontSize = CGFloat(Double(fontStyle.size) ?? 14.0) // Default to 14 if parsing fails
         var font: UIFont?
-
-      //  print("Applying font style: \(fontStyle)")
-
         // ✅ Font Selection Logic
         if fontStyle.bold == "1" && fontStyle.italic == "1" {
             font = UIFont(name: "Cairo-BoldItalic", size: fontSize) ?? UIFont.boldSystemFont(ofSize: fontSize)
@@ -41,14 +38,10 @@ class FontStyler {
         if let finalFont = font {
             attributes[.font] = finalFont
         }
-      //  print("✅ Final font applied: \(String(describing: attributes[.font]))")
-        // ✅ Handle underline
         if fontStyle.underline == "1" {
             attributes[.underlineStyle] = NSUnderlineStyle.single.rawValue
         }
-        // ✅ Handle text alignment (Automatic Language Detection)
         let paragraphStyle = NSMutableParagraphStyle()
-
         if let alignment = fontStyle.align {
             print("alignment: \(alignment)")
             switch alignment {
@@ -74,7 +67,6 @@ class FontStyler {
         if fontStyle.fontColor != "0" {
             attributes[.foregroundColor] = UIColor(hex: fontStyle.fontColor)
         }
-
         // ✅ Handle Background Color
         if fontStyle.backgroundColor != "0" {
             attributes[.backgroundColor] = UIColor(hex: fontStyle.backgroundColor)
@@ -88,17 +80,11 @@ class FontStyler {
                 return
             }
 
-            // Debugging: Print affected text
-            var affectedText = (spannable.string as NSString).substring(with: range)
-         // print("🎨 Applying attributes to: '\(affectedText)' at range: \(range)")
-
-            // ✅ Apply the attributes
+            let affectedText = (spannable.string as NSString).substring(with: range)
+             print("🎨 Applying attributes to: '\(affectedText)' at range: \(range)")
             spannable.addAttributes(attributes, range: range)
-           // print("✅ Final attributes applied: \(attributes) for range: \(range)")
         }
     }
-
-    /// ✅ Function to detect Arabic text
      static func isArabic(text: String) -> Bool {
         let arabicRange = text.range(of: "\\p{Arabic}", options: .regularExpression)
         return arabicRange != nil
@@ -106,7 +92,6 @@ class FontStyler {
 }
 
 class ParseRegularText {
-
     func invoke(spannedText: NSMutableAttributedString, parsedTag: String) -> NSMutableAttributedString {
         spannedText.append(NSAttributedString(string: parsedTag))
         return spannedText

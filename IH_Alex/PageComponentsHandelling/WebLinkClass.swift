@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 class ParseWebLink {
 
@@ -15,18 +16,16 @@ class ParseWebLink {
         case let .webLink(content):
             spannedText.append(NSAttributedString(string: content))
             let end = spannedText.length
-            let url = URL(string: content)  // Assuming `content` is the web link URL
-             if let url = url {
+            if let url = URL(string: content), UIApplication.shared.canOpenURL(url) {
                 spannedText.addAttribute(.link, value: url, range: NSRange(location: start, length: end - start))
             }
         default:
             break
         }
-        
         return spannedText
     }
-    
 }
+
 
 class ReferenceClickableSpan: NSObject {
     

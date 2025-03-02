@@ -83,42 +83,41 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         return processedPages
     }
 
-
-       func splitAttributedTextIntoPages(_ attributedText: NSMutableAttributedString, maxLength: Int = 500) -> [NSMutableAttributedString] {
-           var pages: [NSMutableAttributedString] = []
-           var currentPage = NSMutableAttributedString()
-
-           attributedText.enumerateAttributes(in: NSRange(location: 0, length: attributedText.length), options: []) { attributes, range, _ in
-               let substring = attributedText.attributedSubstring(from: range)
-               
-               if currentPage.length + substring.length <= maxLength {
-                   currentPage.append(substring)
-               } else {
-                   pages.append(currentPage)
-                   currentPage = NSMutableAttributedString(attributedString: substring)
-               }
-           }
-
-           if currentPage.length > 0 { pages.append(currentPage) }
-           return pages
-       }
+//    func splitAttributedTextIntoPages(_ attributedText: NSMutableAttributedString, maxLength: Int = 500) -> [NSMutableAttributedString] {
+//           var pages: [NSMutableAttributedString] = []
+//           var currentPage = NSMutableAttributedString()
+//
+//           attributedText.enumerateAttributes(in: NSRange(location: 0, length: attributedText.length), options: []) { attributes, range, _ in
+//               let substring = attributedText.attributedSubstring(from: range)
+//
+//               if currentPage.length + substring.length <= maxLength {
+//                   currentPage.append(substring)
+//               } else {
+//                   pages.append(currentPage)
+//                   currentPage = NSMutableAttributedString(attributedString: substring)
+//               }
+//           }
+//
+//           if currentPage.length > 0 { pages.append(currentPage) }
+//           return pages
+//       }
        
-        func splitTextIntoPages(_ text: String, maxLength: Int = 500) -> [String] {
-           var pages: [String] = []
-           var words = text.components(separatedBy: " ")
-           var currentPage = ""
-
-           for word in words {
-               if (currentPage.count + word.count + 1) <= maxLength {
-                   currentPage += (currentPage.isEmpty ? "" : " ") + word
-               } else {
-                   pages.append(currentPage)
-                   currentPage = word
-               }
-           }
-           if !currentPage.isEmpty { pages.append(currentPage) }
-           return pages
-       }
+//    func splitTextIntoPages(_ text: String, maxLength: Int = 500) -> [String] {
+//           var pages: [String] = []
+//           let words = text.components(separatedBy: " ")
+//           var currentPage = ""
+//
+//           for word in words {
+//               if (currentPage.count + word.count + 1) <= maxLength {
+//                   currentPage += (currentPage.isEmpty ? "" : " ") + word
+//               } else {
+//                   pages.append(currentPage)
+//                   currentPage = word
+//               }
+//           }
+//           if !currentPage.isEmpty { pages.append(currentPage) }
+//           return pages
+//       }
     
     func getViewController(at index: Int) -> TextPageViewController? {
         guard index >= 0 && index < pages.count else { return nil }
@@ -185,7 +184,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
 //    return attributedString
 //}
 
-
 extension PagedTextViewController {
     func navigateToPage(_ index: Int) {
         guard let targetVC = getViewController(at: index) else { return }
@@ -195,7 +193,6 @@ extension PagedTextViewController {
         print("index : \(index)")
         pageControl.currentPage = index // ✅ Update page dots
     }
-
 
     // MARK: - PageViewController DataSource Methods
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
@@ -239,16 +236,16 @@ extension PagedTextViewController {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let metadata):
-                //    print("✅ Metadata: \(metadata)")
+                    print("✅ Metadata: \(metadata)")
 
                     if let encodingData = metadata.decodedEncoding() {
-                    //    print("✅ Decoded Encoding: \(encodingData)")
+                        print("✅ Decoded Encoding: \(encodingData)")
                     }
 
                     if let indexData = metadata.decodedIndex() {
-                  //      print("✅ Decoded Index: \(indexData)")
+                        print("✅ Decoded Index: \(indexData)")
                     }
-
+                    
                     completion(.success(metadata))
                 case .failure(let error):
                     print("❌ Error fetching metadata: \(error)")
@@ -266,7 +263,7 @@ extension PagedTextViewController {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let bookContent):
-                  //  print("✅ Book Content: \(bookContent)")
+                    print("✅ Book Content: \(bookContent)")
                     completion(.success(bookContent))
                 case .failure(let error):
                     print("❌ Error fetching book content: \(error)")

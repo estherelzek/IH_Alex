@@ -8,13 +8,14 @@
 import Foundation
 import UIKit
 
+//internalLinkTarget
 class ParseReference {
 
     func invoke(parsedTag: String, id: String, spannedText: NSMutableAttributedString) -> NSMutableAttributedString {
-        var refColor = UIColor(hex: "FBB04C")
-        var start = spannedText.length
+        let refColor = UIColor(hex: "FBB04C")
+        let start = spannedText.length
         spannedText.append(NSAttributedString(string: "[\(id)]"))
-        var end = spannedText.length
+        let end = spannedText.length
 
         let refSpan = ReferenceClickableSpan(parsedTag: parsedTag)
         spannedText.addAttribute(.link, value: refSpan, range: NSRange(location: start, length: end - start))
