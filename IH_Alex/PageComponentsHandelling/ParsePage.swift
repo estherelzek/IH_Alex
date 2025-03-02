@@ -8,6 +8,7 @@
 import Foundation
 import UIKit
 
+// esther elzek upload
 class ParsePage {
     func invoke(pageEncodedString: String, metadata: MetaDataResponse, book: Book) -> [NSMutableAttributedString] {
         guard let encoding = metadata.decodedEncoding() else {
