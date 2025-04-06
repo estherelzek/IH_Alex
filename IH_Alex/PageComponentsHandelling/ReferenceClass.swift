@@ -16,10 +16,8 @@ class ParseReference {
         let start = spannedText.length
         spannedText.append(NSAttributedString(string: "[\(id)]"))
         let end = spannedText.length
-
         let refSpan = ReferenceClickableSpan(parsedTag: parsedTag)
         spannedText.addAttribute(.link, value: refSpan, range: NSRange(location: start, length: end - start))
-        
         return spannedText
     }
 }

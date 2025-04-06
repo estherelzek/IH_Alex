@@ -8,6 +8,7 @@ import Foundation
 import UIKit
 
 class ParseInternalLink {
+    
     func invoke(spannedText: NSMutableAttributedString, parsedTag: ParsedElement, metadata: MetaDataResponse, book: Book) -> NSMutableAttributedString {
         let start = spannedText.length
         switch parsedTag {
@@ -22,11 +23,9 @@ class ParseInternalLink {
     }
 }
 
-
 class InternalLinkClickableSpan: NSObject {
     let id: String
 //let uiStateViewModel: UiStateViewModel
-    
     init(id: String) {
         self.id = id
         //self.uiStateViewModel = uiStateViewModel

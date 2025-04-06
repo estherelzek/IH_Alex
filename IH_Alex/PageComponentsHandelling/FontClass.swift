@@ -24,7 +24,6 @@ class FontStyler {
         var attributes: [NSAttributedString.Key: Any] = [:]
         let fontSize = CGFloat(Double(fontStyle.size) ?? 14.0) // Default to 14 if parsing fails
         var font: UIFont?
-        // ✅ Font Selection Logic
         if fontStyle.bold == "1" && fontStyle.italic == "1" {
             font = UIFont(name: "Cairo-BoldItalic", size: fontSize) ?? UIFont.boldSystemFont(ofSize: fontSize)
         } else if fontStyle.bold == "1" {
@@ -55,31 +54,23 @@ class FontStyler {
                 break
             }
         } else {
-            // ✅ Auto-detect language and set alignment
             let textSegment = (spannable.string as NSString).substring(with: NSRange(location: start, length: end - start))
             paragraphStyle.alignment = isArabic(text: textSegment) ? .right : .left
             print("Auto-detected alignment: \(paragraphStyle.alignment)")
         }
-
-        // ✅ Ensure the paragraph style is always applied
         attributes[.paragraphStyle] = paragraphStyle
-        // ✅ Handle Font Color
         if fontStyle.fontColor != "0" {
             attributes[.foregroundColor] = UIColor(hex: fontStyle.fontColor)
         }
-        // ✅ Handle Background Color
         if fontStyle.backgroundColor != "0" {
             attributes[.backgroundColor] = UIColor(hex: fontStyle.backgroundColor)
         }
-
-        // ✅ Apply attributes if range is valid
         if end > start {
             let range = NSRange(location: start, length: end - start)
             guard range.location + range.length <= spannable.length else {
                 print("Invalid range: \(range) for text length: \(spannable.length)")
                 return
             }
-
             let affectedText = (spannable.string as NSString).substring(with: range)
              print("🎨 Applying attributes to: '\(affectedText)' at range: \(range)")
             spannable.addAttributes(attributes, range: range)

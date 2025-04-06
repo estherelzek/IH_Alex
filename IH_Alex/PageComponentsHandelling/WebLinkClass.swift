@@ -26,7 +26,6 @@ class ParseWebLink {
     }
 }
 
-
 class ReferenceClickableSpan: NSObject {
     
     let parsedTag: String
