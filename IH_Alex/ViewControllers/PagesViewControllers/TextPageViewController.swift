@@ -42,6 +42,36 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         self.loadNoteIcons()
         self.addBookmarkView()
     }
+    func setupTextView() {
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.isUserInteractionEnabled = true
+        textView.dataDetectorTypes = .link
+        textView.delegate = self
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.textAlignment = .right
+        textView.backgroundColor = .clear
+
+        if let attributedContent = pageContent?.attributedText {
+            textView.attributedText = applyLanguageBasedAlignment(to: attributedContent)
+        }
+
+        view.addSubview(textView)
+
+        let isHorizontalPaging = pageController?.scrollMode == .horizontalPaging
+        let topPadding: CGFloat = isHorizontalPaging ? 60 : 60
+
+        let bottomConstraint = textView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10)
+        bottomConstraint.priority = UILayoutPriority(750) // Lower priority to avoid conflicts
+
+        NSLayoutConstraint.activate([
+            textView.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
+            textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            bottomConstraint
+        ])
+    }
+
     func applySavedAppearance() {
         let savedFontSize = UserDefaults.standard.value(forKey: "globalFontSize") as? CGFloat ?? 16
         let savedBackground = UserDefaults.standard.color(forKey: "globalBackgroundColor") ?? .white
@@ -219,7 +249,7 @@ extension TextPageViewController: MenuViewDelegate {
 
     func applyAppearanceAttributes(fontColor: UIColor, backgroundColor: UIColor, fontSize: CGFloat? = nil, lineSpacing: CGFloat? = nil) {
         let mutableAttributedText = NSMutableAttributedString(attributedString: textView.attributedText)
-        print("🔹 Applying Appearance | FontSize: \(fontSize ?? 0), LineSpacing: \(lineSpacing ?? 0)")
+       // print("🔹 Applying Appearance | FontSize: \(fontSize ?? 0), LineSpacing: \(lineSpacing ?? 0)")
         mutableAttributedText.enumerateAttributes(in: NSRange(location: 0, length: mutableAttributedText.length), options: []) { attributes, range, _ in
             let existingFont = attributes[.font] as? UIFont ?? UIFont.systemFont(ofSize: 16)
             let newFontSize = fontSize ?? existingFont.pointSize
@@ -537,53 +567,6 @@ extension TextPageViewController {
         bookmarkView?.updateUI(isBookmarked: isBookmarked, isHalfFilled: isHalfFilled)
     }
 }
-
-extension TextPageViewController {
-//    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-//           return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
-//               let highlightMenu = UIMenu(title: "Highlight", children: [
-//                   UIAction(title: "Yellow", image: self.createColorImage(color: .yellow)) { _ in
-//                       self.applyHighlight(color: .yellow)
-//                   },
-//                   UIAction(title: "Blue", image: self.createColorImage(color: .blue)) { _ in
-//                       self.applyHighlight(color: .blue)
-//                   },
-//                   UIAction(title: "Green", image: self.createColorImage(color: .green)) { _ in
-//                       self.applyHighlight(color: .green)
-//                   },
-//                   UIAction(title: "Pink", image: self.createColorImage(color: .systemPink)) { _ in
-//                       self.applyHighlight(color: .systemPink)
-//                   },
-//                   UIAction(title: "Clear Highlight", image: UIImage(systemName: "xmark.circle")) { _ in
-//                       self.clearHighlight()
-//                   }
-//               ])
-//               return UIMenu(title: "Options", children: [
-//                   UIAction(title: "Copy", image: UIImage(systemName: "doc.on.doc")) { _ in
-//                       self.copySelectedText()
-//                   },
-//                   UIAction(title: "Share", image: UIImage(systemName: "square.and.arrow.up")) { _ in
-//                       self.shareSelectedText()
-//                   },
-//                   UIAction(title: "Add Note", image: UIImage(systemName: "note.text")) { _ in
-//                       self.addNote()
-//                   },
-//                   highlightMenu
-//               ])
-//           }
-//       }
-//    func setupCustomMenu() {
-//        let interaction = UIContextMenuInteraction(delegate: self)
-//        textView.addInteraction(interaction)
-//        
-//        // Prevent default selection behavior
-//        textView.isUserInteractionEnabled = true
-//        textView.isEditable = false
-//        textView.isSelectable = true
-//    }
-
-}
-
 extension  TextPageViewController {
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {

@@ -32,26 +32,7 @@ class MenuViewController: UIViewController {
     @IBOutlet weak var darkBackgroundButton: UIButton!
     @IBOutlet weak var verticalScrollButton: UIButton!
     @IBOutlet weak var horizontialScrollButton: UIButton!
-//    override func viewDidLoad() {
-//        super.viewDidLoad()
-//        view.backgroundColor = UIColor.black.withAlphaComponent(0.1)
-//        menuContentView.layer.cornerRadius = 10
-//        menuContentView.layer.masksToBounds = true
-//        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleOutsideTap(_:)))
-//        tapGesture.cancelsTouchesInView = false
-//        view.addGestureRecognizer(tapGesture)
-//        setUpBriteness()
-//        if UserDefaults.standard.object(forKey: "rotationLocked") == nil {
-//            UserDefaults.standard.set(false, forKey: "rotationLocked") // Default: Unlocked
-//        }
-//        let savedRotationLock = UserDefaults.standard.bool(forKey: "rotationLocked")
-//        rotateScreenButton.isOn = !savedRotationLock
-//        if UserDefaults.standard.object(forKey: "keepDisplayOn") == nil {
-//            UserDefaults.standard.set(true, forKey: "keepDisplayOn")
-//        }
-//        let isScreenAlwaysOn = UserDefaults.standard.bool(forKey: "keepDisplayOn")
-//        keepScreenOnSwitch.isOn = isScreenAlwaysOn
-//    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = UIColor.black.withAlphaComponent(0.1)
@@ -60,7 +41,8 @@ class MenuViewController: UIViewController {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleOutsideTap(_:)))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
-        
+        lightBackgroundButton.backgroundColor = UIColor(hex: "#F5F4F4")
+
         setUpBriteness()
         setupSavedAppearanceButtons() // 👈 Highlight correct buttons based on saved appearance
 
@@ -125,29 +107,45 @@ class MenuViewController: UIViewController {
     }
 
     @IBAction func wightBackgroundBlackFontTapped(_ sender: Any) {
-        delegate?.changeBackgroundAndFontColor(background: .white, font: .black)
-        setActiveBorder(for: sender as! UIButton, among: [wideSpacingButton, tightSpacingButton])
-        setActiveBorder(for: darkBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
-        setupSavedAppearanceButtons()
+        let bgColor = UIColor.white
+        delegate?.changeBackgroundAndFontColor(background: bgColor, font: .black)
+        UserDefaults.standard.setColor(bgColor, forKey: "globalBackgroundColor")
+
+        setActiveBorder(for: whiteBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
     }
 
     @IBAction func lightbackgroundBlackFont(_ sender: Any) {
-        delegate?.changeBackgroundAndFontColor(background: UIColor(hex: "#F5F4F4"), font: .black)
-        setActiveBorder(for: darkBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
-        setupSavedAppearanceButtons()
+        let bgColor = UIColor(hex: "#F5F4F4")
+        delegate?.changeBackgroundAndFontColor(background: bgColor, font: .black)
+        
+        // Save color to UserDefaults
+        UserDefaults.standard.setColor(bgColor, forKey: "globalBackgroundColor")
+        
+        // Print values for debugging
+        print("Button color: \(bgColor)")
+        print("Saved background color: \(UserDefaults.standard.color(forKey: "globalBackgroundColor") ?? .clear)")
+        
+        setActiveBorder(for: lightBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
     }
 
+
     @IBAction func graybackgroundWhiteFontTapped(_ sender: Any) {
-        delegate?.changeBackgroundAndFontColor(background: .lightGray, font: .white)
-        setActiveBorder(for: darkBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
-        setupSavedAppearanceButtons()
+        let bgColor = UIColor.lightGray
+        delegate?.changeBackgroundAndFontColor(background: bgColor, font: .white)
+        UserDefaults.standard.setColor(bgColor, forKey: "globalBackgroundColor")
+
+        setActiveBorder(for: grayBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
     }
 
     @IBAction func darkBackgroundWhiteFont(_ sender: Any) {
-        delegate?.changeBackgroundAndFontColor(background: .black, font: .white)
+        let bgColor = UIColor.black
+        delegate?.changeBackgroundAndFontColor(background: bgColor, font: .white)
+        UserDefaults.standard.setColor(bgColor, forKey: "globalBackgroundColor")
+
         setActiveBorder(for: darkBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
-        setupSavedAppearanceButtons()
+        
     }
+
 
     @IBAction func brightnessSliderTapped(_ sender: UISlider) {
         let newBrightness = sender.value
@@ -177,23 +175,49 @@ class MenuViewController: UIViewController {
         }
     }
 
+   
     func setupSavedAppearanceButtons() {
+        // Handle line spacing
         let spacing = UserDefaults.standard.value(forKey: "globalLineSpacing") as? CGFloat ?? 1
         if spacing > 1 {
             setActiveBorder(for: wideSpacingButton, among: [wideSpacingButton, tightSpacingButton])
         } else {
             setActiveBorder(for: tightSpacingButton, among: [wideSpacingButton, tightSpacingButton])
         }
+
+        // Handle saved background color and button selection
         let savedBackground = UserDefaults.standard.color(forKey: "globalBackgroundColor") ?? .white
         let backgroundButtons: [UIButton] = [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton]
         
+        // Debug: Print saved color to see if it's correct
+        print("Saved background color: \(savedBackground)")
         for button in backgroundButtons {
-            if let bgColor = button.backgroundColor,
-               bgColor.isSimilar(to: savedBackground) {
-                setActiveBorder(for: button, among: backgroundButtons)
-                break
+                if let bgColor = button.backgroundColor {
+                    print("Button color: \(bgColor)")
+                    print("Saved background color: \(savedBackground)")
+
+                    // Compare saved color directly for specific cases
+                    if savedBackground.isEqual(UIColor.white) {
+                        setActiveBorder(for: whiteBackgroundButton, among: backgroundButtons)
+                        break
+                    } else if savedBackground.isEqual(UIColor(hex: "#F5F4F4")) {  // Light background color check
+                        setActiveBorder(for: lightBackgroundButton, among: backgroundButtons)
+                        break
+                    } else if savedBackground.isEqual(UIColor.lightGray) {
+                        setActiveBorder(for: grayBackgroundButton, among: backgroundButtons)
+                        break
+                    } else if savedBackground.isEqual(UIColor.black) {
+                        setActiveBorder(for: darkBackgroundButton, among: backgroundButtons)
+                        break
+                    } else {
+                        // For other cases, apply default or handle separately
+                        setActiveBorder(for: lightBackgroundButton, among: backgroundButtons)
+                        break
+                    }
+                }
             }
-        }
+        
+        // Handle saved scroll mode
         let savedScrollModeRaw = UserDefaults.standard.string(forKey: "savedScrollMode") ?? ScrollMode.verticalScrolling.rawValue
         if let savedScrollMode = ScrollMode(rawValue: savedScrollModeRaw) {
             switch savedScrollMode {
@@ -204,5 +228,6 @@ class MenuViewController: UIViewController {
             }
         }
     }
+
 }
 

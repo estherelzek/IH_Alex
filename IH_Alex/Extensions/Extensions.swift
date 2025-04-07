@@ -57,50 +57,130 @@ extension UIColor {
         return String(format: "#%06x", rgb)
     }
     
+//    convenience init(hex: String) {
+//        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+//        if hexSanitized.hasPrefix("#") {
+//            hexSanitized.remove(at: hexSanitized.startIndex)
+//        }
+//        
+//        var rgb: UInt64 = 0
+//        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+//        self.init(
+//            red: CGFloat((rgb >> 16) & 0xFF) / 255.0,
+//            green: CGFloat((rgb >> 8) & 0xFF) / 255.0,
+//            blue: CGFloat(rgb & 0xFF) / 255.0,
+//            alpha: 1.0
+//        )
+//    }
+}
+
+//extension UIColor {
+//    convenience init(hex: String) {
+//        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+//        if hexSanitized.hasPrefix("#") {
+//            hexSanitized = String(hexSanitized.dropFirst())
+//        }
+//        
+//        var rgb: UInt64 = 0
+//        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+//        
+//        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+//        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+//        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+//        
+//        self.init(red: red, green: green, blue: blue, alpha: 1.0)
+//    }
+//}
+extension UIColor {
     convenience init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         if hexSanitized.hasPrefix("#") {
-            hexSanitized.remove(at: hexSanitized.startIndex)
+            hexSanitized = String(hexSanitized.dropFirst())
         }
         
         var rgb: UInt64 = 0
         Scanner(string: hexSanitized).scanHexInt64(&rgb)
-        self.init(
-            red: CGFloat((rgb >> 16) & 0xFF) / 255.0,
-            green: CGFloat((rgb >> 8) & 0xFF) / 255.0,
-            blue: CGFloat(rgb & 0xFF) / 255.0,
-            alpha: 1.0
-        )
+        
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+        
+        self.init(red: red, green: green, blue: blue, alpha: 1.0)
     }
 }
+
 extension UserDefaults {
     
+//    func setColor(_ color: UIColor, forKey key: String) {
+//        let data = try? NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
+//        set(data, forKey: key)
+//    }
+//
+//    func color(forKey key: String) -> UIColor? {
+//        guard let data = data(forKey: key),
+//              let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data)
+//        else { return nil }
+//        return color
+//    }
+}
+
+extension UIColor {
+    func components() -> (r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)? {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        if self.getRed(&r, green: &g, blue: &b, alpha: &a) {
+            return (r, g, b, a)
+        }
+        return nil
+    }
+
+//    func isSimilar(to color: UIColor, tolerance: CGFloat) -> Bool {
+//        guard let components1 = self.components(), let components2 = color.components() else { return false }
+//        
+//        let rDiff = abs(components1.r - components2.r)
+//        let gDiff = abs(components1.g - components2.g)
+//        let bDiff = abs(components1.b - components2.b)
+//        
+//        // If the RGB differences are within the tolerance, consider the colors similar
+//        return rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance
+//    }
+}
+extension UserDefaults {
     func setColor(_ color: UIColor, forKey key: String) {
-        let data = try? NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
-        set(data, forKey: key)
+        let colorData = try? NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
+        set(colorData, forKey: key)
     }
 
     func color(forKey key: String) -> UIColor? {
-        guard let data = data(forKey: key),
-              let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data)
-        else { return nil }
+        guard let colorData = data(forKey: key),
+              let color = try? NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(colorData) as? UIColor else {
+            return nil
+        }
         return color
     }
 }
 extension UIColor {
-    func isSimilar(to color: UIColor, tolerance: CGFloat = 0.05) -> Bool {
-        var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
-        var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
+    func toRGB() -> (r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)? {
+        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
+        if self.getRed(&r, green: &g, blue: &b, alpha: &a) {
+            return (r, g, b, a)
+        }
+        return nil
+    }
 
-        self.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
-        color.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
+    func isSimilar(to color: UIColor, tolerance: CGFloat = 0.1) -> Bool {
+        guard let color1 = self.toRGB(), let color2 = color.toRGB() else {
+            return false
+        }
 
-        return abs(r1 - r2) < tolerance &&
-               abs(g1 - g2) < tolerance &&
-               abs(b1 - b2) < tolerance &&
-               abs(a1 - a2) < tolerance
+        // Compare the RGB components with tolerance
+        let redDiff = abs(color1.r - color2.r)
+        let greenDiff = abs(color1.g - color2.g)
+        let blueDiff = abs(color1.b - color2.b)
+
+        return redDiff < tolerance && greenDiff < tolerance && blueDiff < tolerance
     }
 }
+
 extension TextPageViewController {
     func setupCustomMenu() {
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(showTextOptionsAlert(_:)))
@@ -190,36 +270,8 @@ extension TextPageViewController {
         UIGraphicsEndImageContext()
         return image
     }
-    func setupTextView() {
-        textView.isEditable = false
-        textView.isSelectable = true
-        textView.isUserInteractionEnabled = true
-        textView.dataDetectorTypes = .link
-        textView.delegate = self
-        textView.translatesAutoresizingMaskIntoConstraints = false
-        textView.textAlignment = .right
-        textView.backgroundColor = .clear
-
-        if let attributedContent = pageContent?.attributedText {
-            textView.attributedText = applyLanguageBasedAlignment(to: attributedContent)
-        }
-
-        view.addSubview(textView)
-
-        let isHorizontalPaging = pageController?.scrollMode == .horizontalPaging
-        let topPadding: CGFloat = isHorizontalPaging ? 60 : 60
-
-        let bottomConstraint = textView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10)
-        bottomConstraint.priority = UILayoutPriority(750) // Lower priority to avoid conflicts
-
-        NSLayoutConstraint.activate([
-            textView.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
-            textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-            bottomConstraint
-        ])
-    }
-
+    
+    
     
      func setupMenuButton() {
         menuButton = UIButton(type: .system)

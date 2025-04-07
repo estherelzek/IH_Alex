@@ -160,7 +160,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                vc.pageController = self // ✅ Ensure reference to update all pages
                let savedFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
                if savedFontSize > 0 {
-                   print("savedFontSize: \(savedFontSize)")
+                //   print("savedFontSize: \(savedFontSize)")
                    vc.applyFontSize(CGFloat(savedFontSize))
                }
                 vc.isRotationLocked = isRotationLocked
