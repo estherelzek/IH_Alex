@@ -15,10 +15,11 @@ protocol MenuViewDelegate: AnyObject {
     func changeBackgroundAndFontColor(background: UIColor, font: UIColor)
     func adjustBrightness(value: Float)
     func changeScrollMode(to mode: ScrollMode)
+    func menuDidClose() // 👈 add this
 }
 
 class MenuViewController: UIViewController {
-
+    var pageController: PagedTextViewController?
     weak var delegate: MenuViewDelegate?
     @IBOutlet weak var menuContentView: UIView!
     @IBOutlet weak var brightnessSlider: UISlider!
@@ -42,7 +43,6 @@ class MenuViewController: UIViewController {
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
         lightBackgroundButton.backgroundColor = UIColor(hex: "#F5F4F4")
-
         setUpBriteness()
         setupSavedAppearanceButtons() // 👈 Highlight correct buttons based on saved appearance
 
@@ -72,9 +72,10 @@ class MenuViewController: UIViewController {
     }
 
     private func closeMenu() {
-        self.view.removeFromSuperview()
-        self.removeFromParent()
-    }
+        delegate?.menuDidClose()
+       dismiss(animated: true, completion: nil)
+      }
+  
 
     @IBAction func keepDisplayOn(_ sender: Any) {
         delegate?.keepDisplayOn()
@@ -117,14 +118,7 @@ class MenuViewController: UIViewController {
     @IBAction func lightbackgroundBlackFont(_ sender: Any) {
         let bgColor = UIColor(hex: "#F5F4F4")
         delegate?.changeBackgroundAndFontColor(background: bgColor, font: .black)
-        
-        // Save color to UserDefaults
         UserDefaults.standard.setColor(bgColor, forKey: "globalBackgroundColor")
-        
-        // Print values for debugging
-        print("Button color: \(bgColor)")
-        print("Saved background color: \(UserDefaults.standard.color(forKey: "globalBackgroundColor") ?? .clear)")
-        
         setActiveBorder(for: lightBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
     }
 
@@ -133,7 +127,6 @@ class MenuViewController: UIViewController {
         let bgColor = UIColor.lightGray
         delegate?.changeBackgroundAndFontColor(background: bgColor, font: .white)
         UserDefaults.standard.setColor(bgColor, forKey: "globalBackgroundColor")
-
         setActiveBorder(for: grayBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
     }
 
@@ -141,7 +134,6 @@ class MenuViewController: UIViewController {
         let bgColor = UIColor.black
         delegate?.changeBackgroundAndFontColor(background: bgColor, font: .white)
         UserDefaults.standard.setColor(bgColor, forKey: "globalBackgroundColor")
-
         setActiveBorder(for: darkBackgroundButton, among: [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton])
         
     }

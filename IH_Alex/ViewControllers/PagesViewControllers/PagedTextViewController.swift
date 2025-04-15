@@ -12,7 +12,16 @@ import CloudKit
 struct PageContent {
     let attributedText: NSAttributedString
     let image: UIImage?
+    let originalPageIndex: Int
+    let rangeInOriginal: NSRange // ✅ New
 }
+
+struct OriginalPage {
+    let index: Int
+    let fullAttributedText: NSAttributedString
+    var chunks: [PageContent]
+}
+
 
 enum ScrollMode: String {
     case horizontalPaging = "horizontal"
@@ -30,7 +39,11 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
     var bookContents: [BookContent] = []
     var bookInfo: Book?
     var bookState: BookState?
-    
+    var originalPages: [OriginalPage] = []
+    var viewControllerCache: [Int: TextPageViewController] = [:]
+    var isMenu: Bool = false
+    var isRotationLocked = false
+    var lockedOrientation: UIInterfaceOrientation?
     var scrollMode: ScrollMode = .horizontalPaging {
         didSet {
             UserDefaults.standard.set(scrollMode == .horizontalPaging ? "horizontal" : "vertical", forKey: "scrollMode")
@@ -38,9 +51,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         }
     }
 
-       var isRotationLocked = false
-       var lockedOrientation: UIInterfaceOrientation?
-   
+ 
     override func viewDidLoad() {
         super.viewDidLoad()
         if let savedModeString = UserDefaults.standard.string(forKey: "savedScrollMode"),
@@ -52,18 +63,16 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         dataSource = self
         reedFiles()
         switchScrollMode()
-        
-        if let firstVC = getViewController(at: currentIndex) {
-            setViewControllers([firstVC], direction: .forward, animated: false, completion: nil)
-            print("✅ First page set")
-        } else {
-            print("❌ Failed to create first page")
+        if(true)
+        {
+            return
         }
         detectInitialOrientation()
         restoreRotationLock()
         let isScreenAlwaysOn = UserDefaults.standard.bool(forKey: "keepDisplayOn")
         UIApplication.shared.isIdleTimerDisabled = isScreenAlwaysOn
     }
+
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -77,52 +86,256 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             backgroundView.frame = view.bounds // Ensure it covers the full screen properly
         }
     }
-    
-    func processMultipleBookContents(_ contents: [BookContent], book: Book, metadata: MetaDataResponse) -> [PageContent] {
-        var allPages: [PageContent] = []
-
-        for content in contents {
-            let processedPages = processBookContent(content, book: book, metadata: metadata)
-            allPages.append(contentsOf: processedPages)
+    func refreshAllPages() {
+        print("🔄 Refreshing all pages")
+        for (index, viewController) in viewControllerCache {
+            print("🔄 Refreshing page at index: \(index)")
+            viewController.applySavedAppearance()  // or viewController.refreshContent() if you create that
+            viewController.reloadPageContent()
         }
-
-        return allPages
     }
 
-    func loadJSON<T: Decodable>(from filename: String, as type: T.Type) -> T? {
-        guard let url = Bundle.main.url(forResource: filename, withExtension: "txt") else {
-            print("❌ File \(filename).json not found in bundle.")
+    func paginate(attributedText: NSAttributedString, fontSize: CGFloat, maxSize: CGSize) -> [(text: NSAttributedString, range: NSRange)] {
+           let layoutManager = NSLayoutManager()
+           let textStorage = NSTextStorage(attributedString: attributedText)
+           textStorage.addLayoutManager(layoutManager)
+
+           var results: [(NSAttributedString, NSRange)] = []
+           var currentLocation = 0
+
+           while currentLocation < layoutManager.numberOfGlyphs {
+               let textContainer = NSTextContainer(size: maxSize)
+               textContainer.lineFragmentPadding = 0
+               layoutManager.addTextContainer(textContainer)
+
+               let glyphRange = layoutManager.glyphRange(for: textContainer)
+               if glyphRange.length == 0 { break }
+
+               let charRange = layoutManager.characterRange(forGlyphRange: glyphRange, actualGlyphRange: nil)
+               let pageText = attributedText.attributedSubstring(from: charRange)
+               results.append((pageText, charRange))
+
+               currentLocation = charRange.location + charRange.length
+           }
+
+           return results
+       }
+    
+    func rebuildPages(fontSize: CGFloat, screenSize: CGSize) {
+        pages.removeAll()
+        viewControllerCache.removeAll()  // ✅ Clear cache
+        
+        for original in originalPages {
+            let updatedAttributed = NSMutableAttributedString(attributedString: original.fullAttributedText)
+            updatedAttributed.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: updatedAttributed.length))
+
+            let chunksWithRanges = paginate(attributedText: updatedAttributed, fontSize: fontSize, maxSize: screenSize)
+
+            for chunk in chunksWithRanges {
+                let pageContent = PageContent(
+                    attributedText: chunk.text,
+                    image: nil,
+                    originalPageIndex: original.index,
+                    rangeInOriginal: chunk.range
+                )
+                pages.append(pageContent)
+            }
+        }
+
+        currentIndex = 0
+        clearAdjacentViewControllerCache()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if let refreshedVC = self.recreateViewController(at: self.currentIndex) {
+                self.setViewControllers([refreshedVC], direction: .forward, animated: false, completion: nil)
+            }
+            self.updatePageControl()
+        }
+    }
+    func clearAdjacentViewControllerCache() {
+        viewControllerCache[currentIndex - 1] = nil
+        viewControllerCache[currentIndex] = nil
+        viewControllerCache[currentIndex + 1] = nil
+        
+    }
+
+    func recreateViewController(at index: Int) -> TextPageViewController? {
+        guard index >= 0 && index < pages.count else { return nil }
+        
+        let vc = TextPageViewController()
+        vc.originalPages = self.originalPages
+        vc.pages = self.pages
+        vc.pageContent = pages[index]
+        vc.pageIndex = index
+        
+        vc.reloadPageContent()
+        vc.applySavedAppearance()
+        vc.refreshContent()
+
+        viewControllerCache[index] = vc  // ✅ cache it
+
+        return vc
+    }
+
+    func updatePageControl() {
+        pageControl.numberOfPages = self.pages.count
+           pageControl.currentPage = currentIndex
+       }
+    func clearViewControllerCache(for indexes: [Int]) {
+        for index in indexes {
+            viewControllerCache[index] = nil
+        }
+    }
+
+    
+    func processMultipleBookContents(
+        _ contents: [BookContent],
+        book: Book,
+        metadata: MetaDataResponse,
+        fontSize: CGFloat,
+        screenSize: CGSize
+    ) -> [OriginalPage] {
+        var allOriginalPages: [OriginalPage] = []
+
+        for content in contents {
+            let processed = processBookContent(
+                content,
+                book: book,
+                metadata: metadata,
+                fontSize: fontSize,
+                screenSize: screenSize
+            )
+            allOriginalPages.append(contentsOf: processed)
+        }
+
+        print("📘 Total original pages: \(allOriginalPages.count)")
+        for (i, original) in allOriginalPages.enumerated() {
+            print("🧩 Original Page \(i): \(original.chunks.count) chunks")
+        }
+
+        return allOriginalPages
+    }
+
+    func processBookContent(_ bookContent: BookContent, book: Book, metadata: MetaDataResponse, fontSize: CGFloat, screenSize: CGSize) -> [OriginalPage] {
+        let decryptor = Decryptor()
+        let decryptedText = decryptor.decryption(txt: bookContent.content, id: book.id)
+        let parsedPages = ParsePage().invoke(pageEncodedString: decryptedText, metadata: metadata, book: book)
+
+        var originalPages: [OriginalPage] = []
+
+        for (originalIndex, attributedText) in parsedPages.enumerated() {
+            let mutable = NSMutableAttributedString(attributedString: attributedText)
+            mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
+            let chunksWithRanges = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
+           
+            if chunksWithRanges.count == 1 {
+                print("🔄 Page \(originalIndex) fits into 1 chunk at new font size.")
+            }
+            
+            let pageChunks = chunksWithRanges.map {
+                PageContent(attributedText: $0.text, image: nil, originalPageIndex: originalIndex, rangeInOriginal: $0.range)
+            }
+
+            originalPages.append(
+                OriginalPage(index: originalIndex, fullAttributedText: mutable, chunks: pageChunks)
+            )
+        }
+
+        return originalPages
+    }
+
+    func getViewController(at index: Int) -> TextPageViewController? {
+        guard index >= 0 && index < pages.count else { return nil }
+
+        viewControllerCache[index] = nil  // ✅ force clear old one
+
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let vc = storyboard.instantiateViewController(withIdentifier: "TextPageViewController") as? TextPageViewController else {
             return nil
         }
         
-        do {
-            let data = try Data(contentsOf: url)
-            let decoder = JSONDecoder()
-            return try decoder.decode(T.self, from: data)
-        } catch {
-            print("❌ Error decoding \(filename).json: \(error)")
-            return nil
+        vc.originalPages = self.originalPages
+        vc.pages = self.pages
+        vc.pageContent = pages[index]
+        vc.pageIndex = index
+        vc.pageController = self
+  
+
+        let savedFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
+        if savedFontSize > 0 {
+            vc.applyFontSize(CGFloat(savedFontSize))
+        }
+
+        vc.isRotationLocked = isRotationLocked
+        vc.lockedOrientation = lockedOrientation
+
+        viewControllerCache[index] = vc  // ✅ cache the fresh one
+        return vc
+    }
+
+  
+}
+
+extension PagedTextViewController {
+    func navigateToPage(_ index: Int) {
+        guard let targetVC = getViewController(at: index) else { return }
+        let direction: UIPageViewController.NavigationDirection = index > currentIndex ? .forward : .reverse
+        setViewControllers([targetVC], direction: direction, animated: true, completion: nil)
+        currentIndex = index
+        pageControl.currentPage = index // ✅ Update page dots
+    }
+
+    // MARK: - PageViewController DataSource Methods
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
+        guard let vc = viewController as? TextPageViewController else { return nil }
+        return getViewController(at: vc.pageIndex - 1)
+    }
+
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
+        guard let vc = viewController as? TextPageViewController else { return nil }
+        return getViewController(at: vc.pageIndex + 1)
+    }
+
+    func presentationCount(for pageViewController: UIPageViewController) -> Int {
+        return 0
+    }
+
+    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
+        return currentIndex
+    }
+    func getCurrentPageIndex() -> Int {
+        return currentIndex
+    }
+    
+    func pageViewController(_ pageViewController: UIPageViewController,
+                            willTransitionTo pendingViewControllers: [UIViewController]) {
+        for vc in pendingViewControllers {
+            if let textVC = vc as? TextPageViewController {
+                textVC.refreshContent()
+                textVC.closeMenu()
+                textVC.closeNote()// Prepare content before it appears
+            }
         }
     }
 
-    
-    func getDocumentsDirectoryPath() -> String {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        return paths[0].path
-    }
-    
-    func processBookContent(_ bookContent: BookContent, book: Book, metadata: MetaDataResponse) -> [PageContent] {
-        let decryptor = Decryptor()
-        let decryptedText = decryptor.decryption(txt: bookContent.content, id: book.id)
-     //   print("decryptedText Text: \(decryptedText)")
-        let parsedPages = ParsePage().invoke(pageEncodedString: decryptedText, metadata: metadata, book: book)
-      //  print("parsedPages:\(parsedPages)")
-        var processedPages: [PageContent] = []
-        for attributedText in parsedPages {
-            processedPages.append(PageContent(attributedText: attributedText, image: nil))
+
+    func pageViewController(_ pageViewController: UIPageViewController,
+                            didFinishAnimating finished: Bool,
+                            previousViewControllers: [UIViewController],
+                            transitionCompleted completed: Bool) {
+        guard completed,
+              let visibleVC = pageViewController.viewControllers?.first as? TextPageViewController
+        else { return }
+
+        DispatchQueue.main.async {
+            self.currentIndex = visibleVC.pageIndex
+            print("📄 Current Page Index: \(self.currentIndex)")
+            self.pageControl.currentPage = self.currentIndex
         }
-        return processedPages
     }
+
+}
+extension PagedTextViewController {
     private func switchScrollMode() {
         self.view.subviews.forEach { $0.removeFromSuperview() }
         self.view.backgroundColor = .white
@@ -151,27 +364,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         newPageViewController.didMove(toParent: self)
     }
 
-    func getViewController(at index: Int) -> TextPageViewController? {
-           guard index >= 0 && index < pages.count else { return nil }
-           let storyboard = UIStoryboard(name: "Main", bundle: nil)
-           if let vc = storyboard.instantiateViewController(withIdentifier: "TextPageViewController") as? TextPageViewController {
-               vc.pageContent = pages[index]
-               vc.pageIndex = index
-               vc.pageController = self // ✅ Ensure reference to update all pages
-               let savedFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
-               if savedFontSize > 0 {
-                //   print("savedFontSize: \(savedFontSize)")
-                   vc.applyFontSize(CGFloat(savedFontSize))
-               }
-                vc.isRotationLocked = isRotationLocked
-                vc.lockedOrientation = lockedOrientation
-               return vc
-           }
-           return nil
-       }
-
-}
-extension PagedTextViewController {
        func detectInitialOrientation() {
            guard let windowScene = view.window?.windowScene else { return }
            let currentOrientation = windowScene.interfaceOrientation
@@ -189,13 +381,11 @@ extension PagedTextViewController {
         print("📌 Current Orientation: \(currentOrientation.rawValue)")
 
         if isRotationLocked {
-            // 🔓 Unlock rotation
             isRotationLocked = false
             lockedOrientation = nil
             print("🔄 Rotation Unlocked: Now follows device movement")
             UserDefaults.standard.set(false, forKey: "rotationLocked")
             UserDefaults.standard.removeObject(forKey: "lockedOrientation")
-            // ✅ Allow all orientations
             let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .all)
             do {
                 try windowScene.requestGeometryUpdate(geometryPreferences)
@@ -273,6 +463,28 @@ extension PagedTextViewController {
                print("🔄 Rotation is UNLOCKED: Device can rotate freely.")
            }
        }
+    func loadJSON<T: Decodable>(from filename: String, as type: T.Type) -> T? {
+        guard let url = Bundle.main.url(forResource: filename, withExtension: "txt") else {
+            print("❌ File \(filename).json not found in bundle.")
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            print("❌ Error decoding \(filename).json: \(error)")
+            return nil
+        }
+    }
+
+    
+    func getDocumentsDirectoryPath() -> String {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        return paths[0].path
+    }
+    
 }
 extension PagedTextViewController {
     func applyFontSizeToAllPages(_ fontSize: CGFloat) {
@@ -308,63 +520,6 @@ extension PagedTextViewController {
         func rotateScreen() {
             toggleRotationLock()
         }
-}
-
-extension PagedTextViewController {
-    func navigateToPage(_ index: Int) {
-        guard let targetVC = getViewController(at: index) else { return }
-        let direction: UIPageViewController.NavigationDirection = index > currentIndex ? .forward : .reverse
-        setViewControllers([targetVC], direction: direction, animated: true, completion: nil)
-        currentIndex = index
-        pageControl.currentPage = index // ✅ Update page dots
-    }
-
-    // MARK: - PageViewController DataSource Methods
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
-        guard let vc = viewController as? TextPageViewController else { return nil }
-        return getViewController(at: vc.pageIndex - 1)
-    }
-
-    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
-        guard let vc = viewController as? TextPageViewController else { return nil }
-        return getViewController(at: vc.pageIndex + 1)
-    }
-
-    func presentationCount(for pageViewController: UIPageViewController) -> Int {
-        return 0
-    }
-
-    func presentationIndex(for pageViewController: UIPageViewController) -> Int {
-        return currentIndex
-    }
-
-    func pageViewController(_ pageViewController: UIPageViewController,
-                            willTransitionTo pendingViewControllers: [UIViewController]) {
-        if let nextVC = pendingViewControllers.first as? TextPageViewController {
-            nextVC.applySavedAppearance() // ✅ Apply font size before next page appears
-            nextVC.reloadPageContent()
-        }
-
-        if let currentVC = pageViewController.viewControllers?.first as? TextPageViewController {
-            currentVC.closeMenu() // ✅ Instantly close menu before scrolling starts
-            currentVC.closeNote()
-            currentVC.reloadPageContent()
-            
-        }
-    }
-
-    func pageViewController(_ pageViewController: UIPageViewController,
-                            didFinishAnimating finished: Bool,
-                            previousViewControllers: [UIViewController],
-                            transitionCompleted completed: Bool) {
-        guard completed,
-              let visibleVC = pageViewController.viewControllers?.first as? TextPageViewController
-        else { return }
-        currentIndex = visibleVC.pageIndex
-        print("📄 Current Page Index: \(currentIndex)")
-        pageControl.currentPage = currentIndex
-    }
-
 }
 
 extension PagedTextViewController {
@@ -468,39 +623,83 @@ extension PagedTextViewController {
                )
            ]
        }
-    func reedFiles(){
+    func reedFiles() {
+        // ✅ Load Book Info
         if let bookInfo: BookResponse = loadJSON(from: "Bookinfo", as: BookResponse.self) {
             self.bookResponse = bookInfo
-        //    print("✅ bookInfo loaded: \(bookResponse)")
         }
+
+        // ✅ Load Metadata
         if let metadataa: MetaDataResponse = loadJSON(from: "metadataResponse", as: MetaDataResponse.self) {
             self.metadataa = metadataa
-      //      print("✅ Metadata loaded: \(metadataa)")
         }
-        
+
+        // ✅ Load Book Contents
+        bookContents.removeAll()
         let tokens = ["Token1", "Token2", "Token3", "Token4"]
         for token in tokens {
             if let bookContent: BookContent = loadJSON(from: token, as: BookContent.self) {
                 bookContents.append(bookContent)
-       //         print("✅ Loaded: \(token)")
             } else {
                 print("❌ Failed to load \(token)")
             }
         }
+
         guard !bookContents.isEmpty else {
             print("❌ No book content loaded.")
             return
         }
-        self.pages = self.processMultipleBookContents(
+
+        // ✅ Get screen and font size
+        let fontSize = CGFloat(UserDefaults.standard.float(forKey: "globalFontSize"))
+        let screenSize = UIScreen.main.bounds.inset(by: UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)).size
+
+        // ✅ Save the current page index before reload
+        let currentIndex = (viewControllers?.first as? TextPageViewController)?.pageIndex ?? 0
+
+        // ✅ Clear cached view controllers if using a cache
+        viewControllerCache.removeAll()
+
+        // ✅ Re-process content and regenerate pages
+        let originalPages = self.processMultipleBookContents(
             bookContents,
             book: bookResponse?.book ?? Book.default,
-            metadata: metadataa ?? MetaDataResponse.default
+            metadata: metadataa ?? MetaDataResponse.default,
+            fontSize: fontSize,
+            screenSize: screenSize
         )
-              let mergedContent = bookContents.reduce(BookContent.default) { $0.merge(with: $1) }
-              if let bookInfo = bookResponse {
-                  self.bookState = mapToBookState(bookResponse: bookInfo, metadata: metadataa ?? MetaDataResponse.default, bookContent: mergedContent)
-            //      print("✅ BookState created: \(self.bookState!)")
-              }
+
+        self.originalPages = originalPages
+        print("")
+        self.pages = originalPages.flatMap { $0.chunks }
+
+        // ✅ Merge content and update book state
+        let mergedContent = bookContents.reduce(BookContent.default) { $0.merge(with: $1) }
+
+        if let bookInfo = bookResponse {
+            self.bookState = mapToBookState(
+                bookResponse: bookInfo,
+                metadata: metadataa ?? MetaDataResponse.default,
+                bookContent: mergedContent
+            )
+        }
+
+        // ✅ Forcefully reload the current page with new instance
+        DispatchQueue.main.async {
+            guard self.pages.indices.contains(currentIndex) else { return }
+
+            if let current = self.getViewController(at: currentIndex),
+               let tempNext = self.getViewController(at: currentIndex + 1),
+               let tempprev = self.getViewController(at: currentIndex - 1)
+            {
+                // Briefly flip forward and then back to force UIPageViewController to refresh neighbors
+                self.setViewControllers([tempNext], direction: .forward, animated: false) { _ in
+                    self.setViewControllers([current], direction: .reverse, animated: false, completion: nil)
+                }
+            } else if let current = self.getViewController(at: currentIndex) {
+                self.setViewControllers([current], direction: .forward, animated: false, completion: nil)
+            }
+        }
     }
 
 }

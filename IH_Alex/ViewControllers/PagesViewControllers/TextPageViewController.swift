@@ -20,7 +20,9 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     var isRotationLocked = false
     var lockedOrientation: UIInterfaceOrientation?
     var noteVC: NoteViewController?
-
+    weak var delegate: MenuViewDelegate?
+    var pages: [PageContent] = []
+    var originalPages: [OriginalPage] = []
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTextView()
@@ -51,7 +53,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         textView.translatesAutoresizingMaskIntoConstraints = false
         textView.textAlignment = .right
         textView.backgroundColor = .clear
-
+        textView.isScrollEnabled = false
         if let attributedContent = pageContent?.attributedText {
             textView.attributedText = applyLanguageBasedAlignment(to: attributedContent)
         }
@@ -88,7 +90,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         closeMenu()
         reloadPageContent()
     }
-
+  
     private func setupPageViewController() {
             pageController = PagedTextViewController()
             if let pageController = pageController {
@@ -107,9 +109,9 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
    
     private func restoreBrightness() {
         DispatchQueue.main.async {
-            print("🌞 Before setting brightness: \(UIScreen.main.brightness)")
+          //  print("🌞 Before setting brightness: \(UIScreen.main.brightness)")
             UIScreen.main.brightness = 1.0 // Set brightness
-            print("🌞 After setting brightness: \(UIScreen.main.brightness)") // Debugging
+         //   print("🌞 After setting brightness: \(UIScreen.main.brightness)") // Debugging
         }
     }
         @objc  func toggleMenu() {
@@ -120,25 +122,58 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
             }
         }
 
-        private func showMenu() {
-            let menuVC = MenuViewController()
-            menuVC.delegate = self
-            menuVC.view.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: view.frame.height)
-            menuVC.view.backgroundColor = UIColor.black.withAlphaComponent(0.0) // Semi-transparent
-            addChild(menuVC)
-            view.addSubview(menuVC.view)
-            menuVC.didMove(toParent: self)
-            self.menuVC = menuVC
-        }
-    
-    func closeMenu() {
-        if let menuVC = menuVC {
-            menuVC.willMove(toParent: nil)
-            menuVC.view.removeFromSuperview()
-            menuVC.removeFromParent()
-            self.menuVC = nil
-        }
+    private func showMenu() {
+        let menuVC = MenuViewController()
+        menuVC.delegate = self
+        menuVC.modalPresentationStyle = .overFullScreen // So the parent stays underneath
+        menuVC.view.backgroundColor = UIColor.black.withAlphaComponent(0.0) // Semi-transparent
+        menuVC.modalTransitionStyle = .crossDissolve   // Optional: for a smooth fade
+        self.present(menuVC, animated: true, completion: nil)
     }
+    func closeMenu() {
+        let preservedAbsoluteLocation: Int
+        print("📍 pageIndex: \(pageIndex)")
+        print("📍 pages count: \(pages.count)")
+
+        guard pages.indices.contains(pageIndex) else {
+            print("📍 Invalid pageIndex: \(pageIndex), out of bounds.")
+            preservedAbsoluteLocation = 0
+            return
+        }
+
+        let currentPage = pages[pageIndex]
+        print("📍 currentPage: \(currentPage)")
+        let previousOriginalPagesLength = originalPages
+            .prefix(while: { $0.index < currentPage.originalPageIndex })
+            .map { $0.fullAttributedText.length }
+            .reduce(0, +)
+
+        preservedAbsoluteLocation = previousOriginalPagesLength + currentPage.rangeInOriginal.location
+        print("📍 Preserved absolute location: \(preservedAbsoluteLocation) for current visible page \(pageIndex)")
+
+        // Now rebuild pages as usual
+        let finalFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
+        let screenSize = view.bounds.inset(by: UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)).size
+        let spacingEnabled = UserDefaults.standard.bool(forKey: "globalLineSpacing")
+        let lineSpacing: CGFloat = spacingEnabled ? 8.0 : 0.0
+
+        self.pageController?.rebuildPages(
+            fontSize: CGFloat(finalFontSize),
+            screenSize: screenSize
+           // preservedLocation: preservedAbsoluteLocation
+        )
+
+       refreshContent()
+        reloadPageContent()
+        
+        menuVC?.willMove(toParent: nil)
+        menuVC?.view.removeFromSuperview()
+        menuVC?.removeFromParent()
+        self.menuVC = nil
+        self.pageController?.refreshAllPages()
+    }
+
+
     func closeNote() {
         if let menuVC = noteVC {
             menuVC.willMove(toParent: nil)
@@ -151,7 +186,13 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
 }
 
 extension TextPageViewController: MenuViewDelegate {
+    func menuDidClose() {
+        DispatchQueue.main.async {
+            self.closeMenu()
+        }
+    }
 
+    
     func keepDisplayOn() {
             let isScreenAlwaysOn = !UserDefaults.standard.bool(forKey: "keepDisplayOn")
             UserDefaults.standard.set(isScreenAlwaysOn, forKey: "keepDisplayOn")
@@ -178,29 +219,39 @@ extension TextPageViewController: MenuViewDelegate {
             self.pageController?.applyLineSpacingToAllPages(CGFloat(lineSpacing))
         }
     }
-
-
+    
     func zoom(increase: Bool) {
-        let step: CGFloat = 2.0
-        guard let currentFont = textView.attributedText.attribute(.font, at: 0, effectiveRange: nil) as? UIFont else {
-            print("⚠️ No font found in attributed text!")
-            return
-        }
-        let currentSize = currentFont.pointSize
-        let newFontSize = increase ? currentSize + step : currentSize - step
-        let finalFontSize = max(min(newFontSize, 50), 12)
-        print("🔹 Before Zoom | Current Size: \(currentSize), New Size: \(newFontSize), Final Size: \(finalFontSize)")
-        if finalFontSize == currentSize {
-            print("🔹 Font size unchanged. Skipping update.")
-            return
-        }
-        UserDefaults.standard.set(finalFontSize, forKey: "globalFontSize")
-        UserDefaults.standard.synchronize()
-        print("✅ Saved finalFontSize: \(finalFontSize)")
-        applyFontSize(finalFontSize)
-        pageController?.applyFontSizeToAllPages(finalFontSize)
-        loadNoteIcons()
+           let step: CGFloat = 2.0
+           guard let currentFont = textView.attributedText.attribute(.font, at: 0, effectiveRange: nil) as? UIFont else {
+               print("⚠️ No font found in attributed text!")
+               return
+           }
+           let currentSize = currentFont.pointSize
+           let newFontSize = increase ? currentSize + step : currentSize - step
+           let finalFontSize = max(min(newFontSize, 50), 12)
+           print("🔹 Before Zoom | Current Size: \(currentSize), New Size: \(newFontSize), Final Size: \(finalFontSize)")
+           if finalFontSize == currentSize {
+               print("🔹 Font size unchanged. Skipping update.")
+               return
+           }
+           UserDefaults.standard.set(finalFontSize, forKey: "globalFontSize")
+           UserDefaults.standard.synchronize()
+           print("✅ Saved finalFontSize: \(finalFontSize)")
+           applyFontSize(finalFontSize)
+           pageController?.applyFontSizeToAllPages(finalFontSize)
+           loadNoteIcons()
+       }
+    
+    func refreshContent() {
+        guard let pageController = self.pageController else { return }
+        let latestContent = pageController.pages[pageIndex]
+        pageContent = latestContent
+        textView.attributedText = applyLanguageBasedAlignment(to: latestContent.attributedText) 
+        textView.setContentOffset(.zero, animated: false)
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
     }
+
 
     func applyFontSize(_ fontSize: CGFloat) {
         let mutableAttributedText = NSMutableAttributedString(attributedString: textView.attributedText)
