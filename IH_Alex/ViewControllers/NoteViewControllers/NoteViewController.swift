@@ -29,6 +29,9 @@ class NoteViewController: UIViewController {
     var pageIndex: Int?
     weak var delegate: NoteViewControllerDelegate?
     var isEdit: Bool = false
+    var globalNoteRange: NSRange?
+    var currentChapterNumber: Int?
+    var currentPageNumberInBook: Int?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -67,14 +70,23 @@ class NoteViewController: UIViewController {
     }
 
     @IBAction func saveNoteTapped(_ sender: Any) {
-        guard let page = pageIndex, let range = noteRange else { return }
+        guard let globalRange = noteRange else { return } // Now using noteRange as globalRange
         var notes = NoteManager.shared.loadNotes()
-        if let existingIndex = notes.firstIndex(where: { $0.page == page && $0.range == range }) {
+
+        if let existingIndex = notes.firstIndex(where: { $0.globalRange == globalRange }) {
             notes[existingIndex].content = noteText.text
+            notes[existingIndex].title = noteTitle.text ?? ""
         } else {
-            let note = Note(page: page, range: range, title: noteTitle.text ?? "", content: noteText.text)
-            notes.append(note)
+            let newNote = Note(
+                page: 0, range: globalRange, // Deprecated or unused, you can drop this or keep for legacy support
+                globalRange: globalRange,
+                title: noteTitle.text ?? "",
+                content: noteText.text ?? "",
+                position: nil
+            )
+            notes.append(newNote)
         }
+
         NoteManager.shared.saveAllNotes(notes)
         delegate?.didSaveNote()
         dismissSelf()

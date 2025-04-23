@@ -86,43 +86,7 @@ struct BookState {
     }
 }
 
-struct Note: Codable {
-    var page: Int
-    var range: NSRange
-    var title: String  // New property for title
-    var content: String
-    var position: CGPoint?
 
-    func toDictionary() -> [String: Any] {
-        return [
-            "page": page,
-            "range": ["location": range.location, "length": range.length],
-            "title": title,  // Include title in dictionary
-            "content": content,
-            "position": position != nil ? ["x": position!.x, "y": position!.y] : nil
-        ].compactMapValues { $0 }
-    }
-
-    static func fromDictionary(_ dict: [String: Any]) -> Note? {
-        guard let page = dict["page"] as? Int,
-              let rangeDict = dict["range"] as? [String: Int],
-              let location = rangeDict["location"],
-              let length = rangeDict["length"],
-              let title = dict["title"] as? String,  // Retrieve title
-              let content = dict["content"] as? String else { return nil }
-
-        let range = NSRange(location: location, length: length)
-
-        var position: CGPoint? = nil
-        if let positionDict = dict["position"] as? [String: CGFloat],
-           let x = positionDict["x"],
-           let y = positionDict["y"] {
-            position = CGPoint(x: x, y: y)
-        }
-
-        return Note(page: page, range: range, title: title, content: content, position: position)
-    }
-}
 
 
 

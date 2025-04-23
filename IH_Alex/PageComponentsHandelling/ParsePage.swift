@@ -26,7 +26,7 @@ class ParsePage {
         let tagEnd = "@@"
         var i = 0
         let chars = Array(pageEncodedString)
-
+        var countpages = 0
         while i < chars.count {
             let char = chars[i]
             // ✅ Handle Start Tag ##
@@ -41,6 +41,7 @@ class ParsePage {
                     i += 1
                     switch tagChar {
                     case "P": // ✅ Page Split Tag
+                        countpages += 1
                         appendCurrentText(to: currentPage, text: &currentText)
                         if currentPage.length > 0 {
                             pages.append(currentPage)
@@ -140,6 +141,8 @@ class ParsePage {
         if currentPage.length > 0 {
             pages.append(currentPage)
         }
+        print("count: \(pages.count)")
+        print("countpages: \(countpages)")
         return pages
     }
 

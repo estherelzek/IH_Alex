@@ -56,7 +56,7 @@ class FontStyler {
         } else {
             let textSegment = (spannable.string as NSString).substring(with: NSRange(location: start, length: end - start))
             paragraphStyle.alignment = isArabic(text: textSegment) ? .right : .left
-            print("Auto-detected alignment: \(paragraphStyle.alignment)")
+         //   print("Auto-detected alignment: \(paragraphStyle.alignment)")
         }
         attributes[.paragraphStyle] = paragraphStyle
         if fontStyle.fontColor != "0" {
@@ -72,7 +72,7 @@ class FontStyler {
                 return
             }
             let affectedText = (spannable.string as NSString).substring(with: range)
-             print("🎨 Applying attributes to: '\(affectedText)' at range: \(range)")
+            // print("🎨 Applying attributes to: '\(affectedText)' at range: \(range)")
             spannable.addAttributes(attributes, range: range)
         }
     }

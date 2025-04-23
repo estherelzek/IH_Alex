@@ -8,12 +8,11 @@
 
 import Foundation
 
-import Foundation
-
 struct Bookmark: Codable {
-    let page: Int
+    let originalPageIndex: Int
     var isHalfFilled: Bool
 }
+
 
 class BookmarkManager {
     static let shared = BookmarkManager()
@@ -21,30 +20,30 @@ class BookmarkManager {
 
     func saveBookmark(_ bookmark: Bookmark) {
         var bookmarks = loadBookmarks()
-        if !bookmarks.contains(where: { $0.page == bookmark.page }) {
+        if !bookmarks.contains(where: { $0.originalPageIndex == bookmark.originalPageIndex }) {
             bookmarks.append(bookmark)
             saveAllBookmarks(bookmarks)
-            print("✅ Bookmark added for page: \(bookmark.page)")
+            print("✅ Bookmark added for original page: \(bookmark.originalPageIndex)")
         }
         printAllBookmarks()
     }
 
-    func removeBookmark(forPage page: Int) {
+    func removeBookmark(forOriginalPage originalPageIndex: Int) {
         var bookmarks = loadBookmarks()
-        if bookmarks.contains(where: { $0.page == page }) {
-            bookmarks.removeAll { $0.page == page }
+        if bookmarks.contains(where: { $0.originalPageIndex == originalPageIndex }) {
+            bookmarks.removeAll { $0.originalPageIndex == originalPageIndex }
             saveAllBookmarks(bookmarks)
-            print("❌ Bookmark removed for page: \(page)")
+            print("❌ Bookmark removed for original page: \(originalPageIndex)")
         }
         printAllBookmarks()
     }
 
-    func updateBookmark(forPage page: Int, isHalfFilled: Bool) {
+    func updateBookmark(forOriginalPage originalPageIndex: Int, isHalfFilled: Bool) {
         var bookmarks = loadBookmarks()
-        if let index = bookmarks.firstIndex(where: { $0.page == page }) {
+        if let index = bookmarks.firstIndex(where: { $0.originalPageIndex == originalPageIndex }) {
             bookmarks[index].isHalfFilled = isHalfFilled
             saveAllBookmarks(bookmarks)
-            print("🔄 Bookmark updated for page: \(page), Half-filled: \(isHalfFilled)")
+            print("🔄 Bookmark updated for original page: \(originalPageIndex), Half-filled: \(isHalfFilled)")
         }
         printAllBookmarks()
     }
@@ -57,26 +56,27 @@ class BookmarkManager {
         return bookmarks
     }
 
+    func isBookmarked(originalPageIndex: Int) -> Bool {
+        return loadBookmarks().contains { $0.originalPageIndex == originalPageIndex }
+    }
+
+    func isHalfFilled(originalPageIndex: Int) -> Bool {
+        return loadBookmarks().first(where: { $0.originalPageIndex == originalPageIndex })?.isHalfFilled ?? false
+    }
+
     private func saveAllBookmarks(_ bookmarks: [Bookmark]) {
         if let data = try? JSONEncoder().encode(bookmarks) {
             UserDefaults.standard.set(data, forKey: bookmarksKey)
         }
     }
 
-    func isBookmarked(page: Int) -> Bool {
-        return loadBookmarks().contains { $0.page == page }
-    }
-
-    func isHalfFilled(page: Int) -> Bool {
-        return loadBookmarks().first(where: { $0.page == page })?.isHalfFilled ?? false
-    }
-
     private func printAllBookmarks() {
-        let bookmarkedPages = loadBookmarks().map { $0.page }
-        if bookmarkedPages.isEmpty {
+        let pages = loadBookmarks().map { $0.originalPageIndex }
+        if pages.isEmpty {
             print("📜 No bookmarks set.")
         } else {
-            print("📌 Currently bookmarked pages: \(bookmarkedPages.sorted())")
+            print("📌 Currently bookmarked original pages: \(pages.sorted())")
         }
     }
 }
+

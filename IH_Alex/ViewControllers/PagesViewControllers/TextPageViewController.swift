@@ -27,11 +27,16 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         super.viewDidLoad()
         setupTextView()
        setupCustomMenu()
-        loadHighlights()
+        if let pageContent = pageContent {
+            loadHighlights(for: pageContent)
+        } else {
+            print("❌ No page content available — cannot load highlights.")
+        }
+        print("pageContent?.originalPageIndex : \(String(describing: pageContent?.originalPageIndex))")
         applySavedAppearance()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.loadNoteIcons()
-            self.addBookmarkView()
+          //  self.addBookmarkView()
         }
         setupMenuButton()
         setUpBritness()
@@ -90,7 +95,11 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         closeMenu()
         reloadPageContent()
     }
-  
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        addBookmarkView()
+    }
+
     private func setupPageViewController() {
             pageController = PagedTextViewController()
             if let pageController = pageController {
@@ -165,6 +174,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
 
        refreshContent()
         reloadPageContent()
+        //loadNoteIcons()
         
         menuVC?.willMove(toParent: nil)
         menuVC?.view.removeFromSuperview()
@@ -221,14 +231,14 @@ extension TextPageViewController: MenuViewDelegate {
     }
     
     func zoom(increase: Bool) {
-           let step: CGFloat = 2.0
+           let step: CGFloat = 1.0
            guard let currentFont = textView.attributedText.attribute(.font, at: 0, effectiveRange: nil) as? UIFont else {
                print("⚠️ No font found in attributed text!")
                return
            }
            let currentSize = currentFont.pointSize
            let newFontSize = increase ? currentSize + step : currentSize - step
-           let finalFontSize = max(min(newFontSize, 50), 12)
+           let finalFontSize = max(min(newFontSize, 30), 12)
            print("🔹 Before Zoom | Current Size: \(currentSize), New Size: \(newFontSize), Final Size: \(finalFontSize)")
            if finalFontSize == currentSize {
                print("🔹 Font size unchanged. Skipping update.")
@@ -251,6 +261,34 @@ extension TextPageViewController: MenuViewDelegate {
         view.setNeedsLayout()
         view.layoutIfNeeded()
     }
+//    func reloadPageContent() {
+//        print("🔄 Reloading content for page \(pageIndex)")
+//
+//        // 1️⃣ Fetch latest content from controller
+//        guard let pageController = self.pageController else { return }
+//        let latestContent = pageController.pages[pageIndex]
+//        pageContent = latestContent
+//
+//        // 2️⃣ Apply attributed text with alignment based on language
+//        textView.attributedText = applyLanguageBasedAlignment(to: latestContent.attributedText)
+//
+//        // 3️⃣ Reset text offset to top
+//        textView.setContentOffset(.zero, animated: false)
+//
+//        // 4️⃣ Apply highlights, appearance, icons, and bookmarks
+//        loadHighlights()
+//        applySavedAppearance()
+//
+//        // 5️⃣ Load note icons and bookmarks after layout update
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+//            self.loadNoteIcons()
+//            self.addBookmarkView()
+//        }
+//
+//        // 6️⃣ Update layout immediately if needed
+//        view.setNeedsLayout()
+//        view.layoutIfNeeded()
+//    }
 
 
     func applyFontSize(_ fontSize: CGFloat) {
@@ -354,7 +392,12 @@ extension TextPageViewController: NoteViewControllerDelegate {
     
     func reloadPageContent() {
             print("🔄 Reloading content for page \(pageIndex)")
-            loadHighlights()
+        if let pageContent = pageContent {
+            loadHighlights(for: pageContent)
+        } else {
+            print("❌ No page content available — cannot load highlights.")
+        }
+
             applySavedAppearance()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.loadNoteIcons() // ✅ Ensure icons appear
@@ -379,22 +422,27 @@ extension TextPageViewController: NoteViewControllerDelegate {
 extension TextPageViewController {
     func addNote() {
         guard let selectedRange = textView.selectedTextRange,
-              let selectedText = textView.text(in: selectedRange) else { return }
-        
+              let selectedText = textView.text(in: selectedRange),
+              let pageContent = pageContent else { return }
+
         let nsRange = getNSRange(from: selectedRange) ?? NSRange(location: 0, length: 0)
+
+        let globalRange = NSRange(
+            location: pageContent.globalStartIndex + nsRange.location,
+            length: nsRange.length
+        )
+
         let noteVC = NoteViewController(nibName: "NoteViewController", bundle: nil)
-        noteVC.noteTitleContent = ""  // New property for title
-        noteVC.noteTextContent = ""   // Empty note initially
-        noteVC.noteRange = nsRange
-        noteVC.pageIndex = pageIndex
-        noteVC.delegate = self
-        noteVC.noteTitleContent = selectedText // Pass selected text
-        noteVC.view.frame = CGRect(x: -10 , y: -10, width: view.frame.width - 80, height: view.frame.height - 80)
+        noteVC.noteTitleContent = selectedText
+        noteVC.noteTextContent = ""
+        noteVC.noteRange = globalRange
+        noteVC.delegate = self // Page index no longer needed here
+        noteVC.view.frame = CGRect(x: -10, y: -10, width: view.frame.width - 80, height: view.frame.height - 80)
         noteVC.view.center = view.center
         addChild(noteVC)
         view.addSubview(noteVC.view)
         noteVC.didMove(toParent: self)
-        self.noteVC = noteVC // Store reference if needed
+        self.noteVC = noteVC
     }
 
     @objc func dismissNoteView() {
@@ -409,32 +457,46 @@ extension TextPageViewController {
             }
         }
     }
-    
+
     func loadNoteIcons() {
         textView.subviews.forEach { subview in
             if subview is UIImageView { subview.removeFromSuperview() }
         }
 
-        let notes = NoteManager.shared.loadNotes().filter { $0.page == pageIndex }
+        guard let pageContent = pageContent else { return }
+
+        let notes = NoteManager.shared.loadNotes().filter { note in
+            let noteRange = note.range.location..<(note.range.location + note.range.length)
+            let pageRange = pageContent.globalStartIndex..<pageContent.globalEndIndex
+            return noteRange.overlaps(pageRange)
+        }
+
         for note in notes {
-            let noteRange = NSRange(location: note.range.location, length: note.range.length)
-            if let start = textView.position(from: textView.beginningOfDocument, offset: note.range.location),
-               let end = textView.position(from: textView.beginningOfDocument, offset: note.range.location + note.range.length),
+            let localLocation = note.range.location - pageContent.globalStartIndex
+            guard localLocation >= 0 else { continue }
+
+            let startOffset = localLocation
+            let endOffset = startOffset + note.range.length
+
+            if let start = textView.position(from: textView.beginningOfDocument, offset: startOffset),
+               let end = textView.position(from: textView.beginningOfDocument, offset: endOffset),
                let textRange = textView.textRange(from: start, to: end) {
                 let textRect = textView.firstRect(for: textRange)
-                let textViewFrame = textView.convert(textView.bounds, to: view) // Convert to main view
-                let leftMargin = textViewFrame.minX + 0 // Adjust to stay near textView left edge
+                let textViewFrame = textView.convert(textView.bounds, to: view)
+                let leftMargin = textViewFrame.minX
+
                 let noteIcon = UIImageView(image: UIImage(systemName: "square.and.pencil"))
                 noteIcon.tintColor = .systemBlue
-                noteIcon.frame = CGRect(x: leftMargin, y: textRect.minY, width: 20, height: 20) // Left-aligned
+                noteIcon.frame = CGRect(x: leftMargin, y: textRect.minY, width: 20, height: 20)
                 noteIcon.isUserInteractionEnabled = true
                 let tapGesture = UITapGestureRecognizer(target: self, action: #selector(noteIconTapped(_:)))
                 noteIcon.addGestureRecognizer(tapGesture)
-                noteIcon.tag = note.range.location // Store note range location
+                noteIcon.tag = note.range.location
                 textView.addSubview(noteIcon)
             }
         }
     }
+
 
     @objc func noteIconTapped(_ sender: UITapGestureRecognizer) {
         if let tappedIcon = sender.view as? UIImageView {
@@ -444,13 +506,20 @@ extension TextPageViewController {
     }
 
     func showNoteForLocation(_ location: Int) {
-        let savedNotes = NoteManager.shared.loadNotes().filter { $0.page == pageIndex }
-        if let matchingNote = savedNotes.first(where: { $0.range.location == location }) {
+        let allNotes = NoteManager.shared.loadNotes()
+        guard let pageContent = pageContent else { return }
+
+        let pageRange = pageContent.globalStartIndex..<pageContent.globalEndIndex
+        let matchingNote = allNotes.first {
+            $0.range.location == location &&
+            pageRange.contains($0.range.location)
+        }
+
+        if let note = matchingNote {
             let noteVC = NoteViewController(nibName: "NoteViewController", bundle: nil)
-            noteVC.noteTitleContent = matchingNote.title
-            noteVC.noteTextContent = matchingNote.content
-            noteVC.noteRange = matchingNote.range
-            noteVC.pageIndex = pageIndex
+            noteVC.noteTitleContent = note.title
+            noteVC.noteTextContent = note.content
+            noteVC.noteRange = note.range
             noteVC.delegate = self
             noteVC.isEdit = true
             noteVC.view.frame = CGRect(x: -10 , y: -10, width: view.frame.width - 60, height: view.frame.height - 80)
@@ -476,15 +545,56 @@ extension TextPageViewController {
     func textViewDidChange(_ textView: UITextView) {
         loadNoteIcons()
     }
-
     func applyHighlight(color: UIColor) {
-        guard let selectedRange = textView.selectedTextRange, let text = textView.text(in: selectedRange) else { return }
+        // 1. Ensure there is a valid selected range and the text exists in that range.
+        guard let selectedRange = textView.selectedTextRange, let text = textView.text(in: selectedRange) else {
+            print("No text selected")
+            return
+        }
+        
+        // 2. Convert the selected range to NSRange
         let nsRange = getNSRange(from: selectedRange) ?? NSRange(location: 0, length: 0)
-        let highlight = Highlight(text: text, range: nsRange, color: color.toHexString(), page: pageIndex)
+
+        // 3. Convert the color to a hex string (assuming you have a method for this)
+        let hexColor = color.toHexString()
+
+        // 4. Get the current page content (you'll need this to calculate the global range)
+        guard let currentPageContent = getCurrentPageContent() else {
+            print("Current page content not found")
+            return
+        }
+        
+        // 5. Calculate the global range based on the current page content and the selected range
+        let globalRange = calculateGlobalRange(from: nsRange, pageContent: currentPageContent)
+        
+        // 6. Create a Highlight object with the local range and global range
+        let highlight = Highlight(range: nsRange, page: pageIndex, globalRange: globalRange, color: hexColor)
+        
+        // 7. Save the highlight in the highlight manager (or your database system)
         HighlightManager.shared.saveHighlight(highlight)
+        print("highlight saved: \(highlight)")
+
+        // 8. Update the text view by applying the highlight to the selected range
         updateTextViewHighlight(range: nsRange, color: color)
     }
-    
+
+    func calculateGlobalRange(from nsRange: NSRange, pageContent: PageContent) -> NSRange {
+        let globalStart = nsRange.location + pageContent.globalStartIndex
+        let globalEnd = globalStart + nsRange.length
+        
+        return NSRange(location: globalStart, length: globalEnd - globalStart)
+    }
+
+    // Function to update the text view highlight with the given range and color
+    func updateTextViewHighlight(range: NSRange, color: UIColor) {
+        textView.textStorage.beginEditing()
+        textView.textStorage.addAttribute(.backgroundColor, value: color, range: range)
+        textView.textStorage.endEditing()
+    }
+    func getCurrentPageContent() -> PageContent? {
+        return pages.first { $0.pageIndexInBook == pageIndex }
+    }
+
     func clearHighlight() {
         guard let selectedRange = textView.selectedTextRange else { return }
         let nsRange = getNSRange(from: selectedRange) ?? NSRange(location: 0, length: 0)
@@ -495,57 +605,74 @@ extension TextPageViewController {
         HighlightManager.shared.saveAllHighlights(highlights)
         refreshTextViewHighlights()
     }
-    
+
     func refreshTextViewHighlights() {
         let attributedString = NSMutableAttributedString(attributedString: textView.attributedText)
         let fullRange = NSRange(location: 0, length: attributedString.length)
         attributedString.removeAttribute(.backgroundColor, range: fullRange)
         let highlights = HighlightManager.shared.loadHighlights().filter { $0.page == pageIndex }
+
         for highlight in highlights {
             if highlight.range.location + highlight.range.length <= attributedString.length {
                 attributedString.addAttribute(.backgroundColor, value: UIColor(hex: highlight.color), range: highlight.range)
             }
         }
+        
         DispatchQueue.main.async {
             self.textView.attributedText = attributedString
         }
     }
 
-    func updateTextViewHighlight(range: NSRange, color: UIColor) {
-        let mutableAttributedText = NSMutableAttributedString(attributedString: textView.attributedText)
-        if color == .clear {
-            mutableAttributedText.removeAttribute(.backgroundColor, range: range)
-        } else {
-            mutableAttributedText.addAttribute(.backgroundColor, value: color, range: range)
+    func loadHighlights(for pageContent: PageContent) {
+        let highlights = HighlightManager.shared.loadHighlights()
+        let pageGlobalRange = NSRange(location: pageContent.globalStartIndex, length: pageContent.globalEndIndex - pageContent.globalStartIndex)
+        let filteredHighlights = highlights.filter { highlight in
+            let highlightRange = highlight.globalRange.location..<(highlight.globalRange.location + highlight.globalRange.length)
+            let pageRange = pageContent.globalStartIndex..<pageContent.globalEndIndex
+            return highlightRange.overlaps(pageRange)
         }
-        textView.attributedText = mutableAttributedText
-    }
-    
-    func loadHighlights() {
-        let highlights = HighlightManager.shared.loadHighlights().filter { $0.page == pageIndex }
-        let attributedString = NSMutableAttributedString(attributedString: textView.attributedText)
-        for highlight in highlights {
-            if highlight.range.location + highlight.range.length <= attributedString.length {
-                attributedString.addAttribute(.backgroundColor, value: UIColor(hex: highlight.color), range: highlight.range)
+
+        print("📌 Highlights for this page: \(filteredHighlights)")
+        textView.textStorage.beginEditing()
+        let fullRange = NSRange(location: 0, length: textView.textStorage.length)
+        textView.textStorage.removeAttribute(.backgroundColor, range: fullRange)
+        for highlight in filteredHighlights {
+            let localLocation = highlight.globalRange.location - pageContent.globalStartIndex
+            let localRange = NSRange(location: localLocation, length: highlight.globalRange.length)
+            if localRange.location >= 0 && localRange.location + localRange.length <= textView.textStorage.length {
+                textView.textStorage.addAttribute(.backgroundColor, value: UIColor(hex: highlight.color), range: localRange)
+            } else {
+                print("⚠️ Skipping out-of-bounds highlight: \(highlight)")
             }
         }
-        textView.attributedText = attributedString
+        textView.textStorage.endEditing()
     }
 
+
     func deleteNoteForLocation(_ location: Int) {
-        var notes = NoteManager.shared.loadNotes()
-        notes.removeAll { $0.page == pageIndex && $0.range.location == location }
-        NoteManager.shared.saveAllNotes(notes)
+        var notes = NoteManager.shared.loadNotes().filter { $0.page == pageIndex }
+        notes.removeAll { $0.range.location == location }
+        
+        var allNotes = NoteManager.shared.loadNotes()
+        allNotes.removeAll { $0.page == pageIndex && $0.range.location == location }
+        
+        NoteManager.shared.saveAllNotes(allNotes)
+        
         DispatchQueue.main.async {
             self.refreshTextViewNotes()
+            self.loadNoteIcons() // Important: remove the icons too
         }
     }
+
 
     func refreshTextViewNotes() {
         let attributedString = NSMutableAttributedString(attributedString: textView.attributedText)
+        
+        // Remove old note icons (they’re .link attributes starting with "note:")
         attributedString.enumerateAttribute(.link, in: NSRange(location: 0, length: attributedString.length)) { value, range, _ in
             if let link = value as? String, link.starts(with: "note:") {
-                attributedString.deleteCharacters(in: range)
+                attributedString.removeAttribute(.link, range: range)
+                attributedString.replaceCharacters(in: range, with: "") // Remove old attachment too
             }
         }
         
@@ -554,28 +681,33 @@ extension TextPageViewController {
             let noteAttachment = NSTextAttachment()
             noteAttachment.image = UIImage(systemName: "note.text")
             let noteString = NSAttributedString(attachment: noteAttachment)
+            
             let noteIconAttributedString = NSMutableAttributedString(attributedString: noteString)
             noteIconAttributedString.addAttribute(.link, value: "note:\(note.range.location)", range: NSRange(location: 0, length: noteIconAttributedString.length))
-
+            
             if note.range.location + note.range.length <= attributedString.length {
                 attributedString.insert(noteIconAttributedString, at: note.range.location + note.range.length)
             } else {
                 attributedString.append(noteIconAttributedString)
             }
         }
+        
         DispatchQueue.main.async {
             self.textView.attributedText = attributedString
         }
     }
 
+
 }
 
 extension TextPageViewController {
     private func addBookmarkView() {
+        guard let originalPageIndex = pageContent?.originalPageIndex else { return }
+        print("self.pageindex for Bookmark \(self.pageIndex)")
         removeBookmarkView()
         let bookmarkSize: CGFloat = 70
-        let isBookmarked = BookmarkManager.shared.isBookmarked(page: pageIndex)
-        let isHalfFilled = BookmarkManager.shared.isHalfFilled(page: pageIndex)
+        let isBookmarked = BookmarkManager.shared.isBookmarked(originalPageIndex: originalPageIndex)
+        let isHalfFilled = BookmarkManager.shared.isHalfFilled(originalPageIndex: originalPageIndex)
         let bookmarkView = BookmarkView(
             frame: CGRect(x: 0, y: 0, width: bookmarkSize, height: bookmarkSize),
             isBookmarked: isBookmarked,
@@ -592,7 +724,8 @@ extension TextPageViewController {
     }
 
     @objc private func bookmarkUpdated(_ notification: Notification) {
-        guard let updatedPage = notification.object as? Int, updatedPage == pageIndex else { return }
+        guard let updatedOriginalPage = notification.object as? Int,
+              updatedOriginalPage == pageContent?.originalPageIndex else { return }
         refreshBookmarkUI()
     }
 
@@ -601,22 +734,27 @@ extension TextPageViewController {
     }
 
     @objc private func toggleBookmark() {
-        let isBookmarked = BookmarkManager.shared.isBookmarked(page: pageIndex)
+        guard let originalPageIndex = pageContent?.originalPageIndex else { return }
+        let isBookmarked = BookmarkManager.shared.isBookmarked(originalPageIndex: originalPageIndex)
         if isBookmarked {
-            BookmarkManager.shared.removeBookmark(forPage: pageIndex)
+            BookmarkManager.shared.removeBookmark(forOriginalPage: originalPageIndex)
+            print("❌ Bookmark removed for original page: \(originalPageIndex)")
         } else {
-            let bookmark = Bookmark(page: pageIndex, isHalfFilled: true)
+            let bookmark = Bookmark(originalPageIndex: originalPageIndex, isHalfFilled: true)
             BookmarkManager.shared.saveBookmark(bookmark)
+            print("✅ Bookmark added for original page: \(originalPageIndex)")
         }
-        NotificationCenter.default.post(name: Notification.Name("BookmarkUpdated"), object: pageIndex)
+
+        NotificationCenter.default.post(name: Notification.Name("BookmarkUpdated"), object: originalPageIndex)
         refreshBookmarkUI()
     }
-
     @objc private func refreshBookmarkUI() {
-        let isBookmarked = BookmarkManager.shared.isBookmarked(page: pageIndex)
-        let isHalfFilled = BookmarkManager.shared.isHalfFilled(page: pageIndex)
+        guard let originalPageIndex = pageContent?.originalPageIndex else { return }
+        let isBookmarked = BookmarkManager.shared.isBookmarked(originalPageIndex: originalPageIndex)
+        let isHalfFilled = BookmarkManager.shared.isHalfFilled(originalPageIndex: originalPageIndex)
         bookmarkView?.updateUI(isBookmarked: isBookmarked, isHalfFilled: isHalfFilled)
     }
+    
 }
 extension  TextPageViewController {
     
