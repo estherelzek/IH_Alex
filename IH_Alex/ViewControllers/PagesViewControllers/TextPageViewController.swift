@@ -5,7 +5,14 @@
 //  Created by esterelzek on 16/02/2025.
 //
 import UIKit
-
+protocol PageNavigationDelegate: AnyObject {
+    func navigateToPage(index: Int)
+}
+extension TextPageViewController {
+    func navigateToPage(at index: Int) {
+        pageController?.goToPage(index: index)
+    }
+}
 
 class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewDelegate,CustomMenuDelegate {
     var menuButton: UIButton!
@@ -23,10 +30,12 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     weak var delegate: MenuViewDelegate?
     var pages: [PageContent] = []
     var originalPages: [OriginalPage] = []
+    weak var pageNavigationDelegate: PageNavigationDelegate?
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTextView()
-       setupCustomMenu()
+        setupCustomMenu()
         if let pageContent = pageContent {
             loadHighlights(for: pageContent)
         } else {
@@ -36,7 +45,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         applySavedAppearance()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.loadNoteIcons()
-          //  self.addBookmarkView()
+            self.addBookmarkView()
         }
         setupMenuButton()
         setUpBritness()
@@ -49,6 +58,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         self.loadNoteIcons()
         self.addBookmarkView()
     }
+    
     func setupTextView() {
         textView.isEditable = false
         textView.isSelectable = true
@@ -64,10 +74,8 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         }
 
         view.addSubview(textView)
-
         let isHorizontalPaging = pageController?.scrollMode == .horizontalPaging
         let topPadding: CGFloat = isHorizontalPaging ? 60 : 60
-
         let bottomConstraint = textView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10)
         bottomConstraint.priority = UILayoutPriority(750) // Lower priority to avoid conflicts
 
@@ -95,6 +103,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         closeMenu()
         reloadPageContent()
     }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         addBookmarkView()
@@ -139,6 +148,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         menuVC.modalTransitionStyle = .crossDissolve   // Optional: for a smooth fade
         self.present(menuVC, animated: true, completion: nil)
     }
+    
     func closeMenu() {
         let preservedAbsoluteLocation: Int
         print("📍 pageIndex: \(pageIndex)")
@@ -151,7 +161,6 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         }
 
         let currentPage = pages[pageIndex]
-        print("📍 currentPage: \(currentPage)")
         let previousOriginalPagesLength = originalPages
             .prefix(while: { $0.index < currentPage.originalPageIndex })
             .map { $0.fullAttributedText.length }
@@ -159,8 +168,6 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
 
         preservedAbsoluteLocation = previousOriginalPagesLength + currentPage.rangeInOriginal.location
         print("📍 Preserved absolute location: \(preservedAbsoluteLocation) for current visible page \(pageIndex)")
-
-        // Now rebuild pages as usual
         let finalFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
         let screenSize = view.bounds.inset(by: UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)).size
         let spacingEnabled = UserDefaults.standard.bool(forKey: "globalLineSpacing")
@@ -169,13 +176,11 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         self.pageController?.rebuildPages(
             fontSize: CGFloat(finalFontSize),
             screenSize: screenSize
-           // preservedLocation: preservedAbsoluteLocation
         )
 
        refreshContent()
-        reloadPageContent()
-        //loadNoteIcons()
-        
+       reloadPageContent()
+       
         menuVC?.willMove(toParent: nil)
         menuVC?.view.removeFromSuperview()
         menuVC?.removeFromParent()
@@ -261,35 +266,6 @@ extension TextPageViewController: MenuViewDelegate {
         view.setNeedsLayout()
         view.layoutIfNeeded()
     }
-//    func reloadPageContent() {
-//        print("🔄 Reloading content for page \(pageIndex)")
-//
-//        // 1️⃣ Fetch latest content from controller
-//        guard let pageController = self.pageController else { return }
-//        let latestContent = pageController.pages[pageIndex]
-//        pageContent = latestContent
-//
-//        // 2️⃣ Apply attributed text with alignment based on language
-//        textView.attributedText = applyLanguageBasedAlignment(to: latestContent.attributedText)
-//
-//        // 3️⃣ Reset text offset to top
-//        textView.setContentOffset(.zero, animated: false)
-//
-//        // 4️⃣ Apply highlights, appearance, icons, and bookmarks
-//        loadHighlights()
-//        applySavedAppearance()
-//
-//        // 5️⃣ Load note icons and bookmarks after layout update
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-//            self.loadNoteIcons()
-//            self.addBookmarkView()
-//        }
-//
-//        // 6️⃣ Update layout immediately if needed
-//        view.setNeedsLayout()
-//        view.layoutIfNeeded()
-//    }
-
 
     func applyFontSize(_ fontSize: CGFloat) {
         let mutableAttributedText = NSMutableAttributedString(attributedString: textView.attributedText)
@@ -346,7 +322,6 @@ extension TextPageViewController: MenuViewDelegate {
 
             let updatedParagraphStyle = (attributes[.paragraphStyle] as? NSParagraphStyle)?.mutableCopy() as? NSMutableParagraphStyle ?? NSMutableParagraphStyle()
             updatedParagraphStyle.lineSpacing = lineSpacing ?? updatedParagraphStyle.lineSpacing
-
             mutableAttributedText.addAttribute(.font, value: newFont, range: range)
             mutableAttributedText.addAttribute(.foregroundColor, value: fontColor, range: range)
             mutableAttributedText.addAttribute(.paragraphStyle, value: updatedParagraphStyle, range: range)
@@ -404,7 +379,24 @@ extension TextPageViewController: NoteViewControllerDelegate {
             self.addBookmarkView()
         }
     }
-    
+    func reloadContent(at index: Int) {
+        guard pages.indices.contains(index) else {
+            print("❌ Index \(index) out of bounds. Cannot reload.")
+            return
+        }
+        pageIndex = index
+        guard let pageController = self.pageController else { return }
+        let latestContent = pageController.pages[pageIndex]
+        print("pageIndex: \(pageIndex)")
+        print("pageIndex content: \(pages[pageIndex].attributedText)")
+
+        pageContent = latestContent
+        textView.attributedText = applyLanguageBasedAlignment(to: latestContent.attributedText)
+        textView.setContentOffset(.zero, animated: false)
+        view.setNeedsLayout()
+        view.layoutIfNeeded()
+    }
+
     func copySelectedText() {
             if let selectedText = textView.text(in: textView.selectedTextRange!) {
                 UIPasteboard.general.string = selectedText
@@ -531,50 +523,36 @@ extension TextPageViewController {
         }
     }
 
-    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
-        let urlString = URL.absoluteString
-        if urlString.starts(with: "note:") {
-            if let location = Int(urlString.replacingOccurrences(of: "note:", with: "")) {
-                showNoteForLocation(location)
-            }
-            return false
-        }
-        return true
-    }
+//    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+//        let urlString = URL.absoluteString
+//        if urlString.starts(with: "note:") {
+//            if let location = Int(urlString.replacingOccurrences(of: "note:", with: "")) {
+//                showNoteForLocation(location)
+//            }
+//            return false
+//        }
+//        return true
+//    }
     
     func textViewDidChange(_ textView: UITextView) {
         loadNoteIcons()
     }
     func applyHighlight(color: UIColor) {
-        // 1. Ensure there is a valid selected range and the text exists in that range.
         guard let selectedRange = textView.selectedTextRange, let text = textView.text(in: selectedRange) else {
             print("No text selected")
             return
         }
-        
-        // 2. Convert the selected range to NSRange
+
         let nsRange = getNSRange(from: selectedRange) ?? NSRange(location: 0, length: 0)
-
-        // 3. Convert the color to a hex string (assuming you have a method for this)
         let hexColor = color.toHexString()
-
-        // 4. Get the current page content (you'll need this to calculate the global range)
         guard let currentPageContent = getCurrentPageContent() else {
             print("Current page content not found")
             return
         }
-        
-        // 5. Calculate the global range based on the current page content and the selected range
         let globalRange = calculateGlobalRange(from: nsRange, pageContent: currentPageContent)
-        
-        // 6. Create a Highlight object with the local range and global range
         let highlight = Highlight(range: nsRange, page: pageIndex, globalRange: globalRange, color: hexColor)
-        
-        // 7. Save the highlight in the highlight manager (or your database system)
         HighlightManager.shared.saveHighlight(highlight)
         print("highlight saved: \(highlight)")
-
-        // 8. Update the text view by applying the highlight to the selected range
         updateTextViewHighlight(range: nsRange, color: color)
     }
 
@@ -585,7 +563,6 @@ extension TextPageViewController {
         return NSRange(location: globalStart, length: globalEnd - globalStart)
     }
 
-    // Function to update the text view highlight with the given range and color
     func updateTextViewHighlight(range: NSRange, color: UIColor) {
         textView.textStorage.beginEditing()
         textView.textStorage.addAttribute(.backgroundColor, value: color, range: range)
@@ -667,8 +644,6 @@ extension TextPageViewController {
 
     func refreshTextViewNotes() {
         let attributedString = NSMutableAttributedString(attributedString: textView.attributedText)
-        
-        // Remove old note icons (they’re .link attributes starting with "note:")
         attributedString.enumerateAttribute(.link, in: NSRange(location: 0, length: attributedString.length)) { value, range, _ in
             if let link = value as? String, link.starts(with: "note:") {
                 attributedString.removeAttribute(.link, range: range)
@@ -691,19 +666,17 @@ extension TextPageViewController {
                 attributedString.append(noteIconAttributedString)
             }
         }
-        
         DispatchQueue.main.async {
             self.textView.attributedText = attributedString
         }
     }
-
-
 }
 
 extension TextPageViewController {
     private func addBookmarkView() {
+        let bookmarkedPages = BookmarkManager.shared.getAllBookmarkedPages()
+       // print("Bookmarked pages:", bookmarkedPages)
         guard let originalPageIndex = pageContent?.originalPageIndex else { return }
-        print("self.pageindex for Bookmark \(self.pageIndex)")
         removeBookmarkView()
         let bookmarkSize: CGFloat = 70
         let isBookmarked = BookmarkManager.shared.isBookmarked(originalPageIndex: originalPageIndex)
@@ -755,6 +728,7 @@ extension TextPageViewController {
         bookmarkView?.updateUI(isBookmarked: isBookmarked, isHalfFilled: isHalfFilled)
     }
     
+    
 }
 extension  TextPageViewController {
     
@@ -773,4 +747,131 @@ extension  TextPageViewController {
                 print("🔄 Rotation is UNLOCKED: Device can rotate freely.")
             }
         }
+}
+extension TextPageViewController {
+
+    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+        let urlString = URL.absoluteString
+        
+        if urlString.starts(with: "internal:") {
+            let key = urlString.replacingOccurrences(of: "internal:", with: "")
+            print("✅ Internal link tapped: \(key)")
+            handleInternalLinkClick(id: key)
+            return false
+        } else if urlString.starts(with: "note:") {
+            if let location = Int(urlString.replacingOccurrences(of: "note:", with: "")) {
+                print("📝 Note link tapped at location: \(location)")
+                showNoteForLocation(location)
+            }
+            return false
+        }
+        
+        return true // allow normal http/https links
+    }
+
+
+       
+       func textView(_ textView: UITextView, shouldInteractWith textAttachment: NSTextAttachment, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
+           return false
+       }
+
+    func textView(_ textView: UITextView, shouldInteractWith link: URL, in characterRange: NSRange) -> Bool {
+        return false
+    }
+    
+    // 👉 Handle Tap Based on InternalLinkID
+    func textView(_ textView: UITextView, didTapIn characterRange: NSRange) {
+        guard let attributedText = textView.attributedText else { return }
+        
+        let attributes = attributedText.attributes(at: characterRange.location, effectiveRange: nil)
+        
+        if let internalLinkID = attributes[NSAttributedString.Key("InternalLinkID")] as? String {
+            print("✅ Internal Link tapped with key: \(internalLinkID)")
+            // Now you can perform navigation using the `internalLinkID`
+            self.handleInternalLinkClick(id: internalLinkID)
+        }
+    }
+    
+    @objc private func handleTapOnTextView(_ recognizer: UITapGestureRecognizer) {
+        let layoutManager = textView.layoutManager
+        var location = recognizer.location(in: textView)
+        location.x -= textView.textContainerInset.left
+        location.y -= textView.textContainerInset.top
+        
+        let characterIndex = layoutManager.characterIndex(
+            for: location,
+            in: textView.textContainer,
+            fractionOfDistanceBetweenInsertionPoints: nil
+        )
+        
+        if characterIndex < textView.textStorage.length {
+            let attributes = textView.attributedText.attributes(at: characterIndex, effectiveRange: nil)
+            if let internalLinkID = attributes[NSAttributedString.Key("InternalLinkID")] as? String {
+                print("✅ Internal Link tapped with key: \(internalLinkID)")
+                self.handleInternalLinkClick(id: internalLinkID)
+            }
+        }
+    }
+    
+//    private func handleInternalLinkClick(id: String) {
+//        if let savedData = UserDefaults.standard.data(forKey: "PageReferencesKey"),
+//           let savedPageReferences = try? JSONDecoder().decode([PageReference].self, from: savedData) {
+//
+//            if let target = savedPageReferences.first(where: { $0.key == id }) {
+//                print("🔵 Found target page: Chapter \(target.chapterNumber), Page \(target.pageNumber), Index \(target.index)")
+//
+//                // Debugging: Ensure correct page number and index
+//                print("Navigate to page number: \(target.pageNumber), with index: \(target.index)")
+//
+//                guard let pageController = self.pageController else { return }
+//                let latestContent = pageController.pages[target.pageNumber]
+//                pageController.currentIndex = target.pageNumber
+//                pageContent = latestContent
+//                textView.attributedText = applyLanguageBasedAlignment(to: latestContent.attributedText)
+//                textView.setContentOffset(.zero, animated: false)
+//                pageController.refreshAllPages()
+//                view.setNeedsLayout()
+//                view.layoutIfNeeded()
+//             //   pageNavigationDelegate?.navigateToPage(index: target.pageNumber) // 🚀 Correctly navigate!
+//
+//            } else {
+//                print("❌ Target link not found")
+//            }
+//        }
+//    }
+
+    private func handleInternalLinkClick(id: String) {
+        if let savedData = UserDefaults.standard.data(forKey: "PageReferencesKey"),
+           let savedPageReferences = try? JSONDecoder().decode([PageReference].self, from: savedData) {
+
+            if let target = savedPageReferences.first(where: { $0.key == id }) {
+                print("🔵 Found target page: Chapter \(target.chapterNumber), Page \(target.pageNumber), Index \(target.index)")
+
+                guard let pageController = self.pageController else { return }
+
+                // Update the index first
+                pageController.currentIndex = target.pageNumber
+                self.pageIndex = target.pageNumber
+
+                // Clear and re-fetch fresh page
+                if let targetVC = pageController.getViewController(at: target.pageNumber) {
+                    // 🟰 Tell UIPageViewController to show this targetVC
+                    pageController.pageViewController.setViewControllers(
+                        [targetVC],
+                        direction: .forward,   // or .reverse based on where user jumps
+                        animated: false,
+                        completion: { finished in
+                            print("✅ Navigated to internal link target page.")
+                        }
+                    )
+                }
+
+                // Update pageControl
+                pageController.pageControl.currentPage = target.pageNumber
+
+            } else {
+                print("❌ Target link not found")
+            }
+        }
+    }
 }

@@ -81,7 +81,6 @@ class BookmarkView: UIView {
 
     private func applyHalfMask() {
         clearHalfMask()
-        // First Triangle (Bottom-Right) - Light Gray
         let fillLayer1 = CAShapeLayer()
         let fillPath1 = UIBezierPath()
         fillPath1.move(to: CGPoint(x: bounds.width, y: 0))
@@ -93,7 +92,6 @@ class BookmarkView: UIView {
         layer.addSublayer(fillLayer1)
         self.fillLayer1 = fillLayer1
 
-        // Second Triangle (Top-Left) - Hex Color #085C90
         let fillLayer2 = CAShapeLayer()
         let fillPath2 = UIBezierPath()
         fillPath2.move(to: CGPoint(x: 0, y: 0))

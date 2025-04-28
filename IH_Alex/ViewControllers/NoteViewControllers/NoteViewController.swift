@@ -61,9 +61,9 @@ class NoteViewController: UIViewController {
     }
 
     @IBAction func deleteNoteTapped(_ sender: Any) {
-        guard let page = pageIndex, let range = noteRange else { return }
+        guard let globalRange = noteRange else { return }
         var notes = NoteManager.shared.loadNotes()
-        notes.removeAll { $0.page == page && $0.range == range }
+        notes.removeAll { $0.globalRange == globalRange }
         NoteManager.shared.saveAllNotes(notes)
         delegate?.didDeleteNote()
         dismissSelf()

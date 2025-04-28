@@ -8,11 +8,6 @@
 
 import Foundation
 
-struct Bookmark: Codable {
-    let originalPageIndex: Int
-    var isHalfFilled: Bool
-}
-
 
 class BookmarkManager {
     static let shared = BookmarkManager()
@@ -78,5 +73,9 @@ class BookmarkManager {
             print("📌 Currently bookmarked original pages: \(pages.sorted())")
         }
     }
+    func getAllBookmarkedPages() -> [Int] {
+        return loadBookmarks().map { $0.originalPageIndex }.sorted()
+    }
+
 }
 

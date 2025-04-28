@@ -42,10 +42,21 @@
 		5EDC43C12D61E80B007913CD /* IH_Alex.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5EDC43BF2D61E80B007913CD /* IH_Alex.xcdatamodeld */; };
 		5EDC43C32D61E80D007913CD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5EDC43C22D61E80D007913CD /* Assets.xcassets */; };
 		5EDC43C62D61E80D007913CD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EDC43C42D61E80D007913CD /* LaunchScreen.storyboard */; };
+		8303CF8C2DBE25EB00D10233 /* BookmarkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8303CF8B2DBE25EB00D10233 /* BookmarkModel.swift */; };
+		8303CF8E2DBE262300D10233 /* NoteModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8303CF8D2DBE262300D10233 /* NoteModel.swift */; };
+		8303CF962DBE345200D10233 /* Tooken6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF942DBE345200D10233 /* Tooken6.txt */; };
+		8303CF972DBE345200D10233 /* Tooken3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF912DBE345200D10233 /* Tooken3.txt */; };
+		8303CF982DBE345200D10233 /* Tooken7.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF952DBE345200D10233 /* Tooken7.txt */; };
+		8303CF992DBE345200D10233 /* Tooken5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF932DBE345200D10233 /* Tooken5.txt */; };
+		8303CF9A2DBE345200D10233 /* Tooken4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF922DBE345200D10233 /* Tooken4.txt */; };
+		8303CF9B2DBE345200D10233 /* Tooken2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF902DBE345200D10233 /* Tooken2.txt */; };
+		8303CF9C2DBE345200D10233 /* Tooken1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF8F2DBE345200D10233 /* Tooken1.txt */; };
+		8303CFA02DBE4F3F00D10233 /* PageReference.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF9F2DBE4F3F00D10233 /* PageReference.txt */; };
+		8303CFA22DBE506C00D10233 /* PageReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8303CFA12DBE506C00D10233 /* PageReference.swift */; };
 		830A7D932D75D3DA008D574D /* Token2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 830A7D922D75D3DA008D574D /* Token2.txt */; };
 		830A7D952D75D3F7008D574D /* Token4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 830A7D942D75D3F7008D574D /* Token4.txt */; };
 		83695C542D799A7D00FA0566 /* BookMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83695C532D799A7D00FA0566 /* BookMarkView.swift */; };
-		83EDE1912D76F05200425A46 /* Highlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1902D76F05200425A46 /* Highlight.swift */; };
+		83EDE1912D76F05200425A46 /* HighlightModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1902D76F05200425A46 /* HighlightModel.swift */; };
 		83EDE1932D76F0A900425A46 /* HighlightManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1922D76F0A900425A46 /* HighlightManager.swift */; };
 		83EDE1952D77092000425A46 /* Bookinfo.txt in Resources */ = {isa = PBXBuildFile; fileRef = 83EDE1942D77092000425A46 /* Bookinfo.txt */; };
 		83EDE1972D770E5900425A46 /* BookState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1962D770E5900425A46 /* BookState.swift */; };
@@ -93,10 +104,21 @@
 		5EDC43C22D61E80D007913CD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5EDC43C52D61E80D007913CD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5EDC43C72D61E80D007913CD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8303CF8B2DBE25EB00D10233 /* BookmarkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkModel.swift; sourceTree = "<group>"; };
+		8303CF8D2DBE262300D10233 /* NoteModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteModel.swift; sourceTree = "<group>"; };
+		8303CF8F2DBE345200D10233 /* Tooken1.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken1.txt; sourceTree = "<group>"; };
+		8303CF902DBE345200D10233 /* Tooken2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken2.txt; sourceTree = "<group>"; };
+		8303CF912DBE345200D10233 /* Tooken3.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken3.txt; sourceTree = "<group>"; };
+		8303CF922DBE345200D10233 /* Tooken4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken4.txt; sourceTree = "<group>"; };
+		8303CF932DBE345200D10233 /* Tooken5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken5.txt; sourceTree = "<group>"; };
+		8303CF942DBE345200D10233 /* Tooken6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken6.txt; sourceTree = "<group>"; };
+		8303CF952DBE345200D10233 /* Tooken7.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken7.txt; sourceTree = "<group>"; };
+		8303CF9F2DBE4F3F00D10233 /* PageReference.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = PageReference.txt; sourceTree = "<group>"; };
+		8303CFA12DBE506C00D10233 /* PageReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageReference.swift; sourceTree = "<group>"; };
 		830A7D922D75D3DA008D574D /* Token2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token2.txt; sourceTree = "<group>"; };
 		830A7D942D75D3F7008D574D /* Token4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token4.txt; sourceTree = "<group>"; };
 		83695C532D799A7D00FA0566 /* BookMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMarkView.swift; sourceTree = "<group>"; };
-		83EDE1902D76F05200425A46 /* Highlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Highlight.swift; sourceTree = "<group>"; };
+		83EDE1902D76F05200425A46 /* HighlightModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightModel.swift; sourceTree = "<group>"; };
 		83EDE1922D76F0A900425A46 /* HighlightManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightManager.swift; sourceTree = "<group>"; };
 		83EDE1942D77092000425A46 /* Bookinfo.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Bookinfo.txt; sourceTree = "<group>"; };
 		83EDE1962D770E5900425A46 /* BookState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookState.swift; sourceTree = "<group>"; };
@@ -152,8 +174,11 @@
 				5E63E53C2D634C1300F85DAB /* BookContentModel.swift */,
 				5E63E53E2D634C5200F85DAB /* BookMetaData.swift */,
 				5E575D2B2D63512E00ACFCEB /* ErrorModel.swift */,
-				83EDE1902D76F05200425A46 /* Highlight.swift */,
+				83EDE1902D76F05200425A46 /* HighlightModel.swift */,
+				8303CF8B2DBE25EB00D10233 /* BookmarkModel.swift */,
+				8303CF8D2DBE262300D10233 /* NoteModel.swift */,
 				83EDE1962D770E5900425A46 /* BookState.swift */,
+				8303CFA12DBE506C00D10233 /* PageReference.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -161,12 +186,21 @@
 		5E9D80AF2D6F05AD00E9A508 /* LocalFiles */ = {
 			isa = PBXGroup;
 			children = (
+				8303CF9F2DBE4F3F00D10233 /* PageReference.txt */,
 				5E0FFEE22D65EB8D0090DECF /* Token3.txt */,
 				830A7D922D75D3DA008D574D /* Token2.txt */,
 				830A7D942D75D3F7008D574D /* Token4.txt */,
+				8303CF8F2DBE345200D10233 /* Tooken1.txt */,
+				8303CF902DBE345200D10233 /* Tooken2.txt */,
+				8303CF912DBE345200D10233 /* Tooken3.txt */,
+				8303CF922DBE345200D10233 /* Tooken4.txt */,
+				8303CF932DBE345200D10233 /* Tooken5.txt */,
+				8303CF942DBE345200D10233 /* Tooken6.txt */,
+				8303CF952DBE345200D10233 /* Tooken7.txt */,
 				5E9D80AB2D6C9BA700E9A508 /* Token1.txt */,
 				83EDE1942D77092000425A46 /* Bookinfo.txt */,
 				5E0FFEDE2D65EB660090DECF /* metadataResponse.txt */,
+				5E63E5392D6345AE00F85DAB /* Models */,
 			);
 			path = LocalFiles;
 			sourceTree = "<group>";
@@ -268,7 +302,6 @@
 				5E9D80AF2D6F05AD00E9A508 /* LocalFiles */,
 				5E9D80B02D6F05D600E9A508 /* FontFiles */,
 				5E575D332D65CCE500ACFCEB /* ReadingFile */,
-				5E63E5392D6345AE00F85DAB /* Models */,
 				5E9D80BE2D6F0C7700E9A508 /* ViewControllers */,
 				5E9D80BF2D6F0C8B00E9A508 /* Delegates */,
 				5E9D80C02D6F0CC600E9A508 /* Extensions */,
@@ -376,9 +409,17 @@
 				5E0FFEDF2D65EB660090DECF /* metadataResponse.txt in Resources */,
 				5E9D80982D6C8BCD00E9A508 /* Cairo-ExtraBold.ttf in Resources */,
 				830A7D952D75D3F7008D574D /* Token4.txt in Resources */,
+				8303CFA02DBE4F3F00D10233 /* PageReference.txt in Resources */,
 				5EDC43C32D61E80D007913CD /* Assets.xcassets in Resources */,
 				5E9D80A92D6C8BED00E9A508 /* Cairo-Black.ttf in Resources */,
 				5E9D80AC2D6C9BA800E9A508 /* Token1.txt in Resources */,
+				8303CF962DBE345200D10233 /* Tooken6.txt in Resources */,
+				8303CF972DBE345200D10233 /* Tooken3.txt in Resources */,
+				8303CF982DBE345200D10233 /* Tooken7.txt in Resources */,
+				8303CF992DBE345200D10233 /* Tooken5.txt in Resources */,
+				8303CF9A2DBE345200D10233 /* Tooken4.txt in Resources */,
+				8303CF9B2DBE345200D10233 /* Tooken2.txt in Resources */,
+				8303CF9C2DBE345200D10233 /* Tooken1.txt in Resources */,
 				5E9D80912D6C879500E9A508 /* Cairo-VariableFont_slnt,wght.ttf in Resources */,
 				5E9D80A42D6C8BED00E9A508 /* Cairo-Regular.ttf in Resources */,
 				5E0FFEE62D65EB8E0090DECF /* Token3.txt in Resources */,
@@ -445,19 +486,22 @@
 				5E575D322D64972600ACFCEB /* ParsePage.swift in Sources */,
 				83EDE1932D76F0A900425A46 /* HighlightManager.swift in Sources */,
 				5EDC43BB2D61E80B007913CD /* ViewController.swift in Sources */,
+				8303CF8E2DBE262300D10233 /* NoteModel.swift in Sources */,
 				5E9D80C82D6F0E6A00E9A508 /* FontClass.swift in Sources */,
 				83EDE1972D770E5900425A46 /* BookState.swift in Sources */,
+				8303CFA22DBE506C00D10233 /* PageReference.swift in Sources */,
 				5EDC43B72D61E80B007913CD /* AppDelegate.swift in Sources */,
 				5EDC43C12D61E80B007913CD /* IH_Alex.xcdatamodeld in Sources */,
 				5E575D2C2D63512E00ACFCEB /* ErrorModel.swift in Sources */,
 				83EDE1992D7715FC00425A46 /* BookmarkManager.swift in Sources */,
-				83EDE1912D76F05200425A46 /* Highlight.swift in Sources */,
+				83EDE1912D76F05200425A46 /* HighlightModel.swift in Sources */,
 				5E9D80C22D6F0D6400E9A508 /* ReferenceClass.swift in Sources */,
 				5EDC43B92D61E80B007913CD /* SceneDelegate.swift in Sources */,
 				5E63E5332D63393300F85DAB /* EndPoint.swift in Sources */,
 				5E575D352D65CD0700ACFCEB /* Reading.swift in Sources */,
 				5E63E5352D63395700F85DAB /* API.swift in Sources */,
 				5E575D302D6377B800ACFCEB /* Extensions.swift in Sources */,
+				8303CF8C2DBE25EB00D10233 /* BookmarkModel.swift in Sources */,
 				5E9D80C62D6F0DD300E9A508 /* InternalLink.swift in Sources */,
 				83EDE19B2D7728D100425A46 /* NoteManager.swift in Sources */,
 				5E9D80C42D6F0DA800E9A508 /* WebLinkClass.swift in Sources */,

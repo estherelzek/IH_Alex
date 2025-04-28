@@ -25,7 +25,6 @@ class Decryptor {
                 decryptionTxt += String(contents[i + 1]) // image
             }
         }
-       // print("decryptionTxt: \(decryptionTxt)")
         return decryptionTxt
     }
 
@@ -56,41 +55,8 @@ extension UIColor {
         let rgb = (Int(red * 255) << 16) | (Int(green * 255) << 8) | Int(blue * 255)
         return String(format: "#%06x", rgb)
     }
-    
-//    convenience init(hex: String) {
-//        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-//        if hexSanitized.hasPrefix("#") {
-//            hexSanitized.remove(at: hexSanitized.startIndex)
-//        }
-//        
-//        var rgb: UInt64 = 0
-//        Scanner(string: hexSanitized).scanHexInt64(&rgb)
-//        self.init(
-//            red: CGFloat((rgb >> 16) & 0xFF) / 255.0,
-//            green: CGFloat((rgb >> 8) & 0xFF) / 255.0,
-//            blue: CGFloat(rgb & 0xFF) / 255.0,
-//            alpha: 1.0
-//        )
-//    }
 }
 
-//extension UIColor {
-//    convenience init(hex: String) {
-//        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
-//        if hexSanitized.hasPrefix("#") {
-//            hexSanitized = String(hexSanitized.dropFirst())
-//        }
-//        
-//        var rgb: UInt64 = 0
-//        Scanner(string: hexSanitized).scanHexInt64(&rgb)
-//        
-//        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
-//        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
-//        let blue = CGFloat(rgb & 0x0000FF) / 255.0
-//        
-//        self.init(red: red, green: green, blue: blue, alpha: 1.0)
-//    }
-//}
 extension UIColor {
     convenience init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
@@ -109,21 +75,6 @@ extension UIColor {
     }
 }
 
-extension UserDefaults {
-    
-//    func setColor(_ color: UIColor, forKey key: String) {
-//        let data = try? NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
-//        set(data, forKey: key)
-//    }
-//
-//    func color(forKey key: String) -> UIColor? {
-//        guard let data = data(forKey: key),
-//              let color = try? NSKeyedUnarchiver.unarchivedObject(ofClass: UIColor.self, from: data)
-//        else { return nil }
-//        return color
-//    }
-}
-
 extension UIColor {
     func components() -> (r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)? {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
@@ -132,18 +83,8 @@ extension UIColor {
         }
         return nil
     }
-
-//    func isSimilar(to color: UIColor, tolerance: CGFloat) -> Bool {
-//        guard let components1 = self.components(), let components2 = color.components() else { return false }
-//        
-//        let rDiff = abs(components1.r - components2.r)
-//        let gDiff = abs(components1.g - components2.g)
-//        let bDiff = abs(components1.b - components2.b)
-//        
-//        // If the RGB differences are within the tolerance, consider the colors similar
-//        return rDiff <= tolerance && gDiff <= tolerance && bDiff <= tolerance
-//    }
 }
+
 extension UserDefaults {
     func setColor(_ color: UIColor, forKey key: String) {
         let colorData = try? NSKeyedArchiver.archivedData(withRootObject: color, requiringSecureCoding: false)
@@ -206,51 +147,6 @@ extension TextPageViewController {
         present(menuVC, animated: true)
     }
 
-//    @objc func showTextOptionsAlert(_ gesture: UILongPressGestureRecognizer) {
-//        guard gesture.state == .began else { return }
-//
-//        let alertController = UIAlertController(title: "Options", message: "Choose an action", preferredStyle: .actionSheet)
-//
-//        alertController.addAction(UIAlertAction(title: "📋 Copy", style: .default) { _ in
-//            self.copySelectedText()
-//        })
-//
-//        alertController.addAction(UIAlertAction(title: "📤 Share", style: .default) { _ in
-//            self.shareSelectedText()
-//        })
-//
-//        alertController.addAction(UIAlertAction(title: "📝 Add Note", style: .default) { _ in
-//            self.addNote()
-//        })
-//
-//        let highlightAlert = UIAlertController(title: "Highlight", message: "Choose a highlight color", preferredStyle: .actionSheet)
-//        
-//        let colors: [(String, UIColor, String)] = [
-//            ("Yellow", .yellow, "🟡"),
-//            ("Blue", .blue, "🔵"),
-//            ("Green", .green, "🟢"),
-//            ("Red", .red, "🔴") // Fixed the emoji
-//        ]
-//
-//        for (title, color, icon) in colors {
-//            highlightAlert.addAction(UIAlertAction(title: "\(icon) \(title)", style: .default) { _ in
-//                self.applyHighlight(color: color)
-//            })
-//        }
-//
-//        highlightAlert.addAction(UIAlertAction(title: "❌ Clear Highlight", style: .destructive) { _ in
-//            self.clearHighlight()
-//        })
-//
-//        highlightAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-//
-//        alertController.addAction(UIAlertAction(title: "🎨 Highlight", style: .default) { _ in
-//            self.present(highlightAlert, animated: true)
-//        })
-//
-//        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-//        present(alertController, animated: true)
-//    }
 }
 extension Notification.Name {
     static let didCloseMenuAndRequestRefresh = Notification.Name("didCloseMenuAndRequestRefresh")

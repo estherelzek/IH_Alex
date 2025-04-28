@@ -31,7 +31,6 @@ struct MetaDataResponse: Codable {
         }
     }
 
-    // Decode index JSON string into an array of BookIndex
     func decodedIndex() -> [BookIndex]? {
         guard let data = index.data(using: .utf8) else { return nil }
         do {
@@ -42,6 +41,7 @@ struct MetaDataResponse: Codable {
         }
     }
 }
+
 extension MetaDataResponse {
     static let `default` = MetaDataResponse(
         bookID: 0,

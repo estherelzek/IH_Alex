@@ -36,7 +36,7 @@ enum ScrollMode: String {
     case verticalScrolling = "vertical"
 }
 
-class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate {
+class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate{
     let pageControl = UIPageControl()
     var pages: [PageContent] = []
     var currentIndex = 0
@@ -47,11 +47,14 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
     var bookContents: [BookContent] = []
     var bookInfo: Book?
     var bookState: BookState?
+    var pageReference: [PageReference]?
     var originalPages: [OriginalPage] = []
     var viewControllerCache: [Int: TextPageViewController] = [:]
     var isMenu: Bool = false
     var isRotationLocked = false
     var lockedOrientation: UIInterfaceOrientation?
+    var pageViewController: UIPageViewController!
+
     var scrollMode: ScrollMode = .horizontalPaging {
         didSet {
             UserDefaults.standard.set(scrollMode == .horizontalPaging ? "horizontal" : "vertical", forKey: "scrollMode")
@@ -75,6 +78,19 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         restoreRotationLock()
         let isScreenAlwaysOn = UserDefaults.standard.bool(forKey: "keepDisplayOn")
         UIApplication.shared.isIdleTimerDisabled = isScreenAlwaysOn
+        pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+            pageViewController.dataSource = self
+            pageViewController.delegate = self
+
+            // Add the pageViewController as a child view controller
+            addChild(pageViewController)
+            view.addSubview(pageViewController.view)
+            pageViewController.didMove(toParent: self)
+
+            // Optionally set the initial page
+            if let firstVC = viewControllerForPage(0) {
+                pageViewController.setViewControllers([firstVC], direction: .forward, animated: false, completion: nil)
+            }
     }
 
 
@@ -94,7 +110,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         print("🔄 Refreshing all pages")
         for (index, viewController) in viewControllerCache {
             print("🔄 Refreshing page at index: \(index)")
-            viewController.applySavedAppearance()  // or viewController.refreshContent() if you create that
+            viewController.applySavedAppearance()  
             viewController.reloadPageContent()
         }
     }
@@ -195,7 +211,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
 
     func recreateViewController(at index: Int) -> TextPageViewController? {
         guard index >= 0 && index < pages.count else { return nil }
-        
         let vc = TextPageViewController()
         vc.originalPages = self.originalPages
         vc.pages = self.pages
@@ -205,7 +220,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         vc.applySavedAppearance()
         vc.refreshContent()
         viewControllerCache[index] = vc  // ✅ cache it
-
         return vc
     }
 
@@ -213,6 +227,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         pageControl.numberOfPages = self.pages.count
            pageControl.currentPage = currentIndex
        }
+    
     func clearViewControllerCache(for indexes: [Int]) {
         for index in indexes {
             viewControllerCache[index] = nil
@@ -242,9 +257,9 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             allOriginalPages.append(contentsOf: processed)
             runningOriginalPageIndex += processed.count
         }
-
         return allOriginalPages
     }
+    
     func processBookContent(
         _ bookContent: BookContent,
         book: Book,
@@ -263,9 +278,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         for (localPageIndex, attributedText) in parsedPages.enumerated() {
             let mutable = NSMutableAttributedString(attributedString: attributedText)
             mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
-
             let chunksWithRanges = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
-
             var chunkNumber = 0
             let pageChunks = chunksWithRanges.map { chunk in
                 let globalEndIndex = chunk.range.location + chunk.range.length
@@ -287,7 +300,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                 globalPageIndex += 1  // Increase the global page index for the next chunk
                 return pageContent
             }
-
             originalPages.append(
                 OriginalPage(index: globalPageIndex, fullAttributedText: mutable, chunks: pageChunks)
             )
@@ -295,25 +307,48 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
 
         return originalPages
     }
+    func navigateToPage(index: Int) {
+        guard index >= 0, index < pages.count else { return }
+        guard let pageViewController = pageViewController else {
+            print("🚨 pageViewController is nil! Cannot navigate.")
+            return
+        }
+        print("navigateToPage: \(index)")
 
+        if let targetVC = getViewController(at: index){
+                let direction: UIPageViewController.NavigationDirection = (index > currentIndex) ? .forward : .reverse
+                
+                // Use `self` directly for setViewControllers
+                setViewControllers([targetVC], direction: direction, animated: true, completion: { finished in
+                    if finished {
+                        self.currentIndex = index
+                    }
+                })
+            }
+    }
+    
+}
+
+extension PagedTextViewController {
+  
 
     func getViewController(at index: Int) -> TextPageViewController? {
         guard index >= 0 && index < pages.count else { return nil }
-
         viewControllerCache[index] = nil  // ✅ force clear old one
-
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         guard let vc = storyboard.instantiateViewController(withIdentifier: "TextPageViewController") as? TextPageViewController else {
             return nil
         }
-        
+       
+        vc.pageNavigationDelegate = self
+
         vc.originalPages = self.originalPages
         vc.pages = self.pages
         vc.pageContent = pages[index]
         vc.pageIndex = index
         vc.pageController = self
+        print("current index in text vc  : \(vc.pageIndex)")
   
-
         let savedFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
         if savedFontSize > 0 {
             vc.applyFontSize(CGFloat(savedFontSize))
@@ -321,21 +356,18 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
 
         vc.isRotationLocked = isRotationLocked
         vc.lockedOrientation = lockedOrientation
-
         viewControllerCache[index] = vc  // ✅ cache the fresh one
         return vc
     }
 
-}
-
-extension PagedTextViewController {
-    func navigateToPage(_ index: Int) {
-        guard let targetVC = getViewController(at: index) else { return }
-        let direction: UIPageViewController.NavigationDirection = index > currentIndex ? .forward : .reverse
-        setViewControllers([targetVC], direction: direction, animated: true, completion: nil)
-        currentIndex = index
-        pageControl.currentPage = index // ✅ Update page dots
+    func viewControllerForPage(_ pageIndex: Int) -> TextPageViewController? {
+        guard pageIndex >= 0 && pageIndex < pages.count else { return nil }
+        let vc = TextPageViewController()
+        vc.pageContent = pages[pageIndex]
+        vc.pageIndex = pageIndex
+        return vc
     }
+
 
     // MARK: - PageViewController DataSource Methods
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
@@ -381,15 +413,6 @@ extension PagedTextViewController {
 
         DispatchQueue.main.async {
             self.currentIndex = visibleVC.pageIndex
-            if let originalPageIndex = visibleVC.pageContent?.originalPageIndex {
-                print("📄 Viewing page chunk \(visibleVC.pageIndex), which belongs to original page \(originalPageIndex)")
-                print("🔖 Is bookmarked? \(BookmarkManager.shared.isBookmarked(originalPageIndex: originalPageIndex))")
-            }
-
-            print("🧾 All page chunks and their original page mapping:")
-            for (index, page) in self.pages.enumerated() {
-                print("  📘 Page index \(index): belongs to original page \(page.originalPageIndex)")
-            }
 
             self.pageControl.currentPage = self.currentIndex
         }
@@ -693,10 +716,21 @@ extension PagedTextViewController {
         if let metadataa: MetaDataResponse = loadJSON(from: "metadataResponse", as: MetaDataResponse.self) {
             self.metadataa = metadataa
         }
+        
+        if let pageReferences: [PageReference] = loadJSON(from: "PageReference", as: [PageReference].self) {
+            self.pageReference = pageReferences
 
+            // ✅ Save to UserDefaults
+            if let encoded = try? JSONEncoder().encode(pageReferences) {
+                UserDefaults.standard.set(encoded, forKey: "PageReferencesKey")
+            }
+        }
+
+
+        print(" self.pageReference : \( self.pageReference)")
         // ✅ Load Book Contents
         bookContents.removeAll()
-        let tokens = ["Token1", "Token2", "Token3", "Token4"]
+        let tokens = ["Tooken1", "Tooken2", "Tooken3", "Tooken4", "Tooken5", "Tooken6", "Tooken7"]
         for token in tokens {
             if let bookContent: BookContent = loadJSON(from: token, as: BookContent.self) {
                 bookContents.append(bookContent)
@@ -762,4 +796,33 @@ extension PagedTextViewController {
         }
     }
 
+}
+extension PagedTextViewController: PageNavigationDelegate {
+//    func navigateToPage(index: Int) {
+//        navigateToPage(index) // 🛠 call your normal navigation function
+//    }
+}
+extension PagedTextViewController {
+    func goToPage(index: Int) {
+        guard index >= 0, index < pages.count else {
+            print("❌ Invalid page index: \(index)")
+            return
+        }
+        
+        let direction: UIPageViewController.NavigationDirection = (index >= currentIndex) ? .forward : .reverse
+        
+        let newVC = TextPageViewController()
+        newVC.pages = pages
+        newVC.originalPages = originalPages
+        newVC.pageContent = pages[index]
+        newVC.pageIndex = index
+        newVC.pageController = self
+        newVC.pageNavigationDelegate = self
+        
+        setViewControllers([newVC], direction: direction, animated: true) { completed in
+            if completed {
+                self.currentIndex = index
+            }
+        }
+    }
 }

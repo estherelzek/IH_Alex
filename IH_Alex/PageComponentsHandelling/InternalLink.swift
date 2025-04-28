@@ -9,30 +9,22 @@ import UIKit
 
 class ParseInternalLink {
     
-    func invoke(spannedText: NSMutableAttributedString, parsedTag: ParsedElement, metadata: MetaDataResponse, book: Book) -> NSMutableAttributedString {
+    func invoke(
+        spannedText: NSMutableAttributedString,
+        parsedTag: ParsedElement,
+        metadata: MetaDataResponse,
+        book: Book
+    ) -> NSMutableAttributedString {
         let start = spannedText.length
         switch parsedTag {
         case let .internalLinkSource(content, key):
             spannedText.append(NSAttributedString(string: content))
             let end = spannedText.length
-            spannedText.addAttribute(.link, value: "internal:\(key)", range: NSRange(location: start, length: end - start)) // Add internal link format
+            // Instead of normal link, attach custom attribute for internal link
+            spannedText.addAttribute(.init("InternalLinkID"), value: key, range: NSRange(location: start, length: end - start))
         default:
             break
         }
         return spannedText
     }
-}
-
-class InternalLinkClickableSpan: NSObject {
-    let id: String
-//let uiStateViewModel: UiStateViewModel
-    init(id: String) {
-        self.id = id
-        //self.uiStateViewModel = uiStateViewModel
-    }
-//    func onClick() {
-//        // Handle internal link click - this could be navigating to a section in the book or updating UI state
-//        uiStateViewModel.setInternalLinkContent(id)
-//        uiStateViewModel.setIsInternalLinkClicked(true)
-//    }
 }

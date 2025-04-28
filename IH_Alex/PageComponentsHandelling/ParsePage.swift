@@ -10,6 +10,8 @@ import UIKit
 
 // esther elzek upload
 class ParsePage {
+    var pageReference: [PageReference]? = nil
+
     func invoke(pageEncodedString: String, metadata: MetaDataResponse, book: Book) -> [NSMutableAttributedString] {
         guard let encoding = metadata.decodedEncoding() else {
             print("❌ Error decoding encoding")
@@ -29,7 +31,7 @@ class ParsePage {
         var countpages = 0
         while i < chars.count {
             let char = chars[i]
-            // ✅ Handle Start Tag ##
+          // print("pageEncodedString: \(pageEncodedString)")
             if char == "#" && i + 1 < chars.count && chars[i + 1] == "#" {
                 appendCurrentText(to: currentPage, text: &currentText)
                 i += 2 // Skip ##
@@ -83,36 +85,44 @@ class ParsePage {
                         currentPage = ParseWebLink().invoke(spannedText: currentPage, parsedTag: webLinkElement)
                         isInsideTag = false
                         
-                    case "L": // ✅ Internal Link Handling
-                        var linkText = ""
+                    case "L":
                         var targetID = ""
-                        var isReadingTarget = true
-                        while i < chars.count, !(chars[i] == "@" && i + 1 < chars.count && chars[i + 1] == "@") {
-                            if chars[i] == ":" {
-                                isReadingTarget = false
-                            } else {
-                                if isReadingTarget {
-                                    targetID.append(chars[i]) // Store the target page ID
-                                } else {
-                                    linkText.append(chars[i]) // Store the displayed text
-                                }
-                            }
+                        var referenceTitle = ""
+
+                        // Read targetID (until space)
+                        while i < chars.count, chars[i] != " " {
+                            targetID.append(chars[i])
                             i += 1
                         }
-                        if linkText.isEmpty { linkText = "[Reference]" } // Default placeholder if missing text
+
+                        // Skip space
+                        if i < chars.count, chars[i] == " " {
+                            i += 1
+                        }
+
+                        // Read referenceTitle (until "@@")
+                        while i + 1 < chars.count, !(chars[i] == "@" && chars[i+1] == "@") {
+                            referenceTitle.append(chars[i])
+                            i += 1
+                        }
+
+                        if referenceTitle.isEmpty {
+                            referenceTitle = "[Reference]"
+                        }
+
+                        let linkText = referenceTitle
+
                         let internalLinkElement = ParsedElement.internalLinkSource(content: linkText, key: targetID)
                         currentPage = ParseInternalLink().invoke(spannedText: currentPage, parsedTag: internalLinkElement, metadata: metadata, book: book)
+
+                        // Set the clickable link attribute
+                        let range = NSRange(location: start, length: currentPage.length - start)
+                        currentPage.addAttribute(.link, value: "internal:\(targetID)", range: range)
+
+                        print("✅ Inserted internal link '\(linkText)' pointing to '\(targetID)'")
+
                         isInsideTag = false
-                        
-                    case "l": // ✅ internalLinkTarget Handling
-                        var referenceID = ""
-                        while i < chars.count, !(chars[i] == "@" && i + 1 < chars.count && chars[i + 1] == "@") {
-                            referenceID.append(chars[i])
-                            i += 1
-                        }
-                        let referenceElement = ParseReference().invoke(parsedTag: referenceID, id: referenceID, spannedText: currentPage)
-                        currentPage = referenceElement
-                        isInsideTag = false
+
 
                     default:
                         currentTag = String(tagChar)
