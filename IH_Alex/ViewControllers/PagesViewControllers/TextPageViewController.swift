@@ -523,16 +523,6 @@ extension TextPageViewController {
         }
     }
 
-//    func textView(_ textView: UITextView, shouldInteractWith URL: URL, in characterRange: NSRange, interaction: UITextItemInteraction) -> Bool {
-//        let urlString = URL.absoluteString
-//        if urlString.starts(with: "note:") {
-//            if let location = Int(urlString.replacingOccurrences(of: "note:", with: "")) {
-//                showNoteForLocation(location)
-//            }
-//            return false
-//        }
-//        return true
-//    }
     
     func textViewDidChange(_ textView: UITextView) {
         loadNoteIcons()
@@ -675,7 +665,6 @@ extension TextPageViewController {
 extension TextPageViewController {
     private func addBookmarkView() {
         let bookmarkedPages = BookmarkManager.shared.getAllBookmarkedPages()
-       // print("Bookmarked pages:", bookmarkedPages)
         guard let originalPageIndex = pageContent?.originalPageIndex else { return }
         removeBookmarkView()
         let bookmarkSize: CGFloat = 70
@@ -727,9 +716,8 @@ extension TextPageViewController {
         let isHalfFilled = BookmarkManager.shared.isHalfFilled(originalPageIndex: originalPageIndex)
         bookmarkView?.updateUI(isBookmarked: isBookmarked, isHalfFilled: isHalfFilled)
     }
-    
-    
 }
+
 extension  TextPageViewController {
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -787,7 +775,6 @@ extension TextPageViewController {
         
         if let internalLinkID = attributes[NSAttributedString.Key("InternalLinkID")] as? String {
             print("✅ Internal Link tapped with key: \(internalLinkID)")
-            // Now you can perform navigation using the `internalLinkID`
             self.handleInternalLinkClick(id: internalLinkID)
         }
     }
@@ -812,33 +799,6 @@ extension TextPageViewController {
             }
         }
     }
-    
-//    private func handleInternalLinkClick(id: String) {
-//        if let savedData = UserDefaults.standard.data(forKey: "PageReferencesKey"),
-//           let savedPageReferences = try? JSONDecoder().decode([PageReference].self, from: savedData) {
-//
-//            if let target = savedPageReferences.first(where: { $0.key == id }) {
-//                print("🔵 Found target page: Chapter \(target.chapterNumber), Page \(target.pageNumber), Index \(target.index)")
-//
-//                // Debugging: Ensure correct page number and index
-//                print("Navigate to page number: \(target.pageNumber), with index: \(target.index)")
-//
-//                guard let pageController = self.pageController else { return }
-//                let latestContent = pageController.pages[target.pageNumber]
-//                pageController.currentIndex = target.pageNumber
-//                pageContent = latestContent
-//                textView.attributedText = applyLanguageBasedAlignment(to: latestContent.attributedText)
-//                textView.setContentOffset(.zero, animated: false)
-//                pageController.refreshAllPages()
-//                view.setNeedsLayout()
-//                view.layoutIfNeeded()
-//             //   pageNavigationDelegate?.navigateToPage(index: target.pageNumber) // 🚀 Correctly navigate!
-//
-//            } else {
-//                print("❌ Target link not found")
-//            }
-//        }
-//    }
 
     private func handleInternalLinkClick(id: String) {
         if let savedData = UserDefaults.standard.data(forKey: "PageReferencesKey"),
@@ -849,29 +809,38 @@ extension TextPageViewController {
 
                 guard let pageController = self.pageController else { return }
 
-                // Update the index first
-                pageController.currentIndex = target.pageNumber
-                self.pageIndex = target.pageNumber
+                // 👇 Search the correct real page index
+                if let realPageIndex = pages.firstIndex(where: {
+                 //   $0.chapterNumber == target.chapterNumber &&
+                    $0.originalPageIndex == target.pageNumber
+                }) {
+                    print("realPageIndex : \(realPageIndex)")
+                    pageController.currentIndex = realPageIndex
+                    self.pageIndex = realPageIndex
 
-                // Clear and re-fetch fresh page
-                if let targetVC = pageController.getViewController(at: target.pageNumber) {
-                    // 🟰 Tell UIPageViewController to show this targetVC
-                    pageController.pageViewController.setViewControllers(
-                        [targetVC],
-                        direction: .forward,   // or .reverse based on where user jumps
-                        animated: false,
-                        completion: { finished in
-                            print("✅ Navigated to internal link target page.")
-                        }
-                    )
+                    // 🧹 Clear and re-fetch fresh page
+                    if let targetVC = pageController.getViewController(at: realPageIndex) {
+                        pageController.pageViewController.setViewControllers(
+                            [targetVC],
+                            direction: .forward,
+                            animated: false,
+                            completion: { finished in
+                                print("✅ Navigated to internal link target page.")
+                            }
+                        )
+                    }
+
+                    // Update pageControl
+                    pageController.pageControl.currentPage = realPageIndex
+
+                } else {
+                    print("❌ Target page not found in allPages")
                 }
-
-                // Update pageControl
-                pageController.pageControl.currentPage = target.pageNumber
 
             } else {
                 print("❌ Target link not found")
             }
         }
     }
+
 }
