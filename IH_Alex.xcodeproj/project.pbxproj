@@ -55,6 +55,11 @@
 		8303CFA22DBE506C00D10233 /* PageReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8303CFA12DBE506C00D10233 /* PageReference.swift */; };
 		830A7D932D75D3DA008D574D /* Token2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 830A7D922D75D3DA008D574D /* Token2.txt */; };
 		830A7D952D75D3F7008D574D /* Token4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 830A7D942D75D3F7008D574D /* Token4.txt */; };
+		832048E52DC8E2BE00F1B8BF /* BookSearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832048E32DC8E2BE00F1B8BF /* BookSearchResultViewController.swift */; };
+		832048E62DC8E2BE00F1B8BF /* BookSearchResultViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 832048E42DC8E2BE00F1B8BF /* BookSearchResultViewController.xib */; };
+		832048EA2DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832048E82DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift */; };
+		832048EB2DC8E3E900F1B8BF /* BookSearchResultTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 832048E92DC8E3E900F1B8BF /* BookSearchResultTableViewCell.xib */; };
+		83289AAE2DC0B68000447D39 /* CustomMainView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 83289AAD2DC0B68000447D39 /* CustomMainView.xib */; };
 		83695C542D799A7D00FA0566 /* BookMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83695C532D799A7D00FA0566 /* BookMarkView.swift */; };
 		83EDE1912D76F05200425A46 /* HighlightModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1902D76F05200425A46 /* HighlightModel.swift */; };
 		83EDE1932D76F0A900425A46 /* HighlightManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1922D76F0A900425A46 /* HighlightManager.swift */; };
@@ -117,6 +122,11 @@
 		8303CFA12DBE506C00D10233 /* PageReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageReference.swift; sourceTree = "<group>"; };
 		830A7D922D75D3DA008D574D /* Token2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token2.txt; sourceTree = "<group>"; };
 		830A7D942D75D3F7008D574D /* Token4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token4.txt; sourceTree = "<group>"; };
+		832048E32DC8E2BE00F1B8BF /* BookSearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSearchResultViewController.swift; sourceTree = "<group>"; };
+		832048E42DC8E2BE00F1B8BF /* BookSearchResultViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BookSearchResultViewController.xib; sourceTree = "<group>"; };
+		832048E82DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSearchResultTableViewCell.swift; sourceTree = "<group>"; };
+		832048E92DC8E3E900F1B8BF /* BookSearchResultTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BookSearchResultTableViewCell.xib; sourceTree = "<group>"; };
+		83289AAD2DC0B68000447D39 /* CustomMainView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomMainView.xib; sourceTree = "<group>"; };
 		83695C532D799A7D00FA0566 /* BookMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMarkView.swift; sourceTree = "<group>"; };
 		83EDE1902D76F05200425A46 /* HighlightModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightModel.swift; sourceTree = "<group>"; };
 		83EDE1922D76F0A900425A46 /* HighlightManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightManager.swift; sourceTree = "<group>"; };
@@ -226,6 +236,7 @@
 			children = (
 				83C3A1932D9EB75C00051598 /* CustomMenuViewControllers */,
 				833484A42D81C3230075A2C5 /* NoteViewControllers */,
+				832048E22DC8E29000F1B8BF /* BookSearchResult */,
 				8334849B2D81C2E70075A2C5 /* MenuViewControllers */,
 				833484A72D81C3460075A2C5 /* PagesViewControllers */,
 			);
@@ -271,6 +282,7 @@
 			children = (
 				5EDC43C42D61E80D007913CD /* LaunchScreen.storyboard */,
 				5EDC43BC2D61E80B007913CD /* Main.storyboard */,
+				83289AAD2DC0B68000447D39 /* CustomMainView.xib */,
 			);
 			path = UIViews;
 			sourceTree = "<group>";
@@ -311,6 +323,25 @@
 				5EDC43C72D61E80D007913CD /* Info.plist */,
 			);
 			path = IH_Alex;
+			sourceTree = "<group>";
+		};
+		832048E22DC8E29000F1B8BF /* BookSearchResult */ = {
+			isa = PBXGroup;
+			children = (
+				832048E72DC8E3A500F1B8BF /*  BookSearchResultCell */,
+				832048E32DC8E2BE00F1B8BF /* BookSearchResultViewController.swift */,
+				832048E42DC8E2BE00F1B8BF /* BookSearchResultViewController.xib */,
+			);
+			path = BookSearchResult;
+			sourceTree = "<group>";
+		};
+		832048E72DC8E3A500F1B8BF /*  BookSearchResultCell */ = {
+			isa = PBXGroup;
+			children = (
+				832048E82DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift */,
+				832048E92DC8E3E900F1B8BF /* BookSearchResultTableViewCell.xib */,
+			);
+			path = " BookSearchResultCell";
 			sourceTree = "<group>";
 		};
 		98999BA01AB827816EFB6C28 /* Frameworks */ = {
@@ -417,17 +448,20 @@
 				8303CF972DBE345200D10233 /* Tooken3.txt in Resources */,
 				8303CF982DBE345200D10233 /* Tooken7.txt in Resources */,
 				8303CF992DBE345200D10233 /* Tooken5.txt in Resources */,
+				832048E62DC8E2BE00F1B8BF /* BookSearchResultViewController.xib in Resources */,
 				8303CF9A2DBE345200D10233 /* Tooken4.txt in Resources */,
 				8303CF9B2DBE345200D10233 /* Tooken2.txt in Resources */,
 				8303CF9C2DBE345200D10233 /* Tooken1.txt in Resources */,
 				5E9D80912D6C879500E9A508 /* Cairo-VariableFont_slnt,wght.ttf in Resources */,
 				5E9D80A42D6C8BED00E9A508 /* Cairo-Regular.ttf in Resources */,
+				83289AAE2DC0B68000447D39 /* CustomMainView.xib in Resources */,
 				5E0FFEE62D65EB8E0090DECF /* Token3.txt in Resources */,
 				5E9D80932D6C897500E9A508 /* Cairo-Bold.ttf in Resources */,
 				830A7D932D75D3DA008D574D /* Token2.txt in Resources */,
 				5EDC43BE2D61E80B007913CD /* Main.storyboard in Resources */,
 				5E9D80A62D6C8BED00E9A508 /* Cairo-ExtraLight.ttf in Resources */,
 				5E9D80A52D6C8BED00E9A508 /* Cairo-Light.ttf in Resources */,
+				832048EB2DC8E3E900F1B8BF /* BookSearchResultTableViewCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -487,6 +521,7 @@
 				83EDE1932D76F0A900425A46 /* HighlightManager.swift in Sources */,
 				5EDC43BB2D61E80B007913CD /* ViewController.swift in Sources */,
 				8303CF8E2DBE262300D10233 /* NoteModel.swift in Sources */,
+				832048EA2DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift in Sources */,
 				5E9D80C82D6F0E6A00E9A508 /* FontClass.swift in Sources */,
 				83EDE1972D770E5900425A46 /* BookState.swift in Sources */,
 				8303CFA22DBE506C00D10233 /* PageReference.swift in Sources */,
@@ -494,6 +529,7 @@
 				5EDC43C12D61E80B007913CD /* IH_Alex.xcdatamodeld in Sources */,
 				5E575D2C2D63512E00ACFCEB /* ErrorModel.swift in Sources */,
 				83EDE1992D7715FC00425A46 /* BookmarkManager.swift in Sources */,
+				832048E52DC8E2BE00F1B8BF /* BookSearchResultViewController.swift in Sources */,
 				83EDE1912D76F05200425A46 /* HighlightModel.swift in Sources */,
 				5E9D80C22D6F0D6400E9A508 /* ReferenceClass.swift in Sources */,
 				5EDC43B92D61E80B007913CD /* SceneDelegate.swift in Sources */,

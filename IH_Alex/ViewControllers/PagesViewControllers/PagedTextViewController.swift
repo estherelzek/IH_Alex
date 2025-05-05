@@ -10,7 +10,8 @@ import UIKit
 import CloudKit
 
 // hello esther 
-struct PageContent {
+// hello esther
+struct PageContent: Equatable {
     let attributedText: NSAttributedString
     let image: UIImage?
     let originalPageIndex: Int
@@ -20,9 +21,14 @@ struct PageContent {
     let chunkNumber: Int
     let pageIndexInBook: Int
     let rangeInOriginal: NSRange
-    let globalStartIndex: Int  // To calculate the global position of the highlight
-    let globalEndIndex: Int   // End index of the page within the original content
+    let globalStartIndex: Int
+    let globalEndIndex: Int
+
+    static func == (lhs: PageContent, rhs: PageContent) -> Bool {
+        return lhs.pageIndexInBook == rhs.pageIndexInBook
+    }
 }
+
 
 struct OriginalPage {
     let index: Int
@@ -34,6 +40,9 @@ struct OriginalPage {
 enum ScrollMode: String {
     case horizontalPaging = "horizontal"
     case verticalScrolling = "vertical"
+}
+protocol PagedTextViewControllerDelegate: AnyObject {
+    func didUpdatePage(to index: Int)
 }
 
 class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate{
@@ -54,6 +63,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
     var isRotationLocked = false
     var lockedOrientation: UIInterfaceOrientation?
     var pageViewController: UIPageViewController!
+    weak var pageChangeDelegate: PagedTextViewControllerDelegate?
 
     var scrollMode: ScrollMode = .horizontalPaging {
         didSet {
@@ -71,6 +81,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
            } else {
                scrollMode = .horizontalPaging // Default mode
            }
+       
         dataSource = self
         reedFiles()
         switchScrollMode()
@@ -79,10 +90,10 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         let isScreenAlwaysOn = UserDefaults.standard.bool(forKey: "keepDisplayOn")
         UIApplication.shared.isIdleTimerDisabled = isScreenAlwaysOn
         pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
-            pageViewController.dataSource = self
-            pageViewController.delegate = self
+        pageViewController.dataSource = self
+        pageViewController.delegate = self
 
-            // Add the pageViewController as a child view controller
+           //  Add the pageViewController as a child view controller
             addChild(pageViewController)
             view.addSubview(pageViewController.view)
             pageViewController.didMove(toParent: self)
@@ -91,6 +102,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             if let firstVC = viewControllerForPage(0) {
                 pageViewController.setViewControllers([firstVC], direction: .forward, animated: false, completion: nil)
             }
+        self.view.backgroundColor = .red
     }
 
 
@@ -163,8 +175,8 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                     image: nil,
                     originalPageIndex: original.index,
                     pageNumberInChapter: original.index, // Assuming the chapter number logic is based on originalIndex or something else
-                    pageNumberInBook: pageNumberInBook,
-                    chapterNumber: chapterNumber, // This could be dynamic if you have chapters
+                    pageNumberInBook: original.index,
+                    chapterNumber: original.chunks.count, // This could be dynamic if you have chapters
                     chunkNumber: pageNumberInBook, // This could be a separate counter per chunk
                     pageIndexInBook: pageNumberInBook,
                     rangeInOriginal: chunk.range,
@@ -173,8 +185,9 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                 )
         
                 pages.append(pageContent)
-                pageNumberInBook += 1
+               pageNumberInBook += 1
                 globalStartIndex = globalEndIndex
+              //  print(" pageNumberInBook: \(pageNumberInBook)")
             }
         }
 
@@ -288,8 +301,8 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                     image: nil,
                     originalPageIndex: globalPageIndex,  // This should now represent the actual "global" original page
                     pageNumberInChapter: localPageIndex,
-                    pageNumberInBook: globalPageIndex,  // Ensure this is globally incremented
-                    chapterNumber: 0, // Use the correct chapter if available
+                    pageNumberInBook: globalPageIndex + 1,  // Ensure this is globally incremented
+                    chapterNumber: bookContent.count, // Use the correct chapter if available
                     chunkNumber: chunkNumber,
                     pageIndexInBook: globalPageIndex,
                     rangeInOriginal: chunk.range,
@@ -413,8 +426,9 @@ extension PagedTextViewController {
 
         DispatchQueue.main.async {
             self.currentIndex = visibleVC.pageIndex
-
             self.pageControl.currentPage = self.currentIndex
+            print("self.currentIndex: \(self.currentIndex)")
+            self.pageChangeDelegate?.didUpdatePage(to: self.currentIndex)
         }
     }
 }
@@ -825,4 +839,8 @@ extension PagedTextViewController {
             }
         }
     }
+    func currentTextPageViewController() -> TextPageViewController? {
+        return pageViewController?.viewControllers?.first as? TextPageViewController
+    }
+
 }

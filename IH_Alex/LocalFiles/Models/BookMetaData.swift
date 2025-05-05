@@ -50,3 +50,22 @@ extension MetaDataResponse {
         targetLinks: ""
     )
 }
+
+struct BookIndex: Codable {
+    let name: String
+    let number: Int
+    let pageNumber: Int
+    let chapterPagesCount: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case name, number, pageNumber, chapterPagesCount
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        number = try container.decode(Int.self, forKey: .number)
+        pageNumber = try container.decode(Int.self, forKey: .pageNumber)
+        chapterPagesCount = try? container.decode(Int.self, forKey: .chapterPagesCount)
+    }
+}

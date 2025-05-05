@@ -32,6 +32,7 @@ class MenuViewController: UIViewController {
     @IBOutlet weak var grayBackgroundButton: UIButton!
     @IBOutlet weak var darkBackgroundButton: UIButton!
     @IBOutlet weak var verticalScrollButton: UIButton!
+    @IBOutlet weak var outSideMenu: UIScrollView!
     @IBOutlet weak var horizontialScrollButton: UIButton!
 
     override func viewDidLoad() {
@@ -40,8 +41,9 @@ class MenuViewController: UIViewController {
         menuContentView.layer.cornerRadius = 10
         menuContentView.layer.masksToBounds = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleOutsideTap(_:)))
-        tapGesture.cancelsTouchesInView = false
-        view.addGestureRecognizer(tapGesture)
+         tapGesture.cancelsTouchesInView = false
+         outSideMenu.addGestureRecognizer(tapGesture) // 👈 Change this line
+
         lightBackgroundButton.backgroundColor = UIColor(hex: "#F5F4F4")
         setUpBriteness()
         setupSavedAppearanceButtons() // 👈 Highlight correct buttons based on saved appearance
@@ -58,11 +60,12 @@ class MenuViewController: UIViewController {
     }
 
     @objc private func handleOutsideTap(_ gesture: UITapGestureRecognizer) {
-        let touchPoint = gesture.location(in: view)
-        if !menuContentView.frame.contains(touchPoint) {
+        let touchPoint = gesture.location(in: menuContentView)
+        if !menuContentView.bounds.contains(touchPoint) {
             closeMenu()
         }
     }
+
     
     func setUpBriteness() {
         brightnessSlider.minimumValue = 0.0

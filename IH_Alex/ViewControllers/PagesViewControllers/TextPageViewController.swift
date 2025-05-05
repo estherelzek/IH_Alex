@@ -51,6 +51,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         setUpBritness()
         restoreBrightness()
         NotificationCenter.default.addObserver(self, selector: #selector(bookmarkUpdated(_:)), name: Notification.Name("BookmarkUpdated"), object: nil)
+        //self.view.backgroundColor = .red
     }
     
     override func viewWillLayoutSubviews() {
@@ -140,10 +141,10 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
             }
         }
 
-    private func showMenu() {
+     func showMenu() {
         let menuVC = MenuViewController()
         menuVC.delegate = self
-        menuVC.modalPresentationStyle = .overFullScreen // So the parent stays underneath
+         menuVC.modalPresentationStyle = .overCurrentContext // So the parent stays underneath
         menuVC.view.backgroundColor = UIColor.black.withAlphaComponent(0.0) // Semi-transparent
         menuVC.modalTransitionStyle = .crossDissolve   // Optional: for a smooth fade
         self.present(menuVC, animated: true, completion: nil)

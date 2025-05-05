@@ -34,6 +34,7 @@ struct BookContent: Codable {
         case isDeleted = "is_deleted"
     }
 }
+
 extension BookContent {
     func merge(with other: BookContent) -> BookContent {
         return BookContent(
@@ -72,11 +73,7 @@ struct FontStyle: Codable {
     let fontFamilyName: String?
 }
 
-// Book Index structure
-struct BookIndex: Codable {
-    let name: String
-    let number, pageNumber: Int
-}
+
 
 // TargetLink is empty in your example; define if needed
 struct TargetLink: Codable {}

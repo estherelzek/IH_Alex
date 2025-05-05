@@ -18,6 +18,7 @@
                 <outlet property="keepScreenOnSwitch" destination="Htu-ox-nSJ" id="KQl-fc-8cE"/>
                 <outlet property="lightBackgroundButton" destination="xH7-yf-veZ" id="Q9b-d9-vhQ"/>
                 <outlet property="menuContentView" destination="y16-N5-c7l" id="kTq-kx-ye8"/>
+                <outlet property="outSideMenu" destination="kCb-Sd-Pxv" id="6BH-82-HiM"/>
                 <outlet property="rotateScreenButton" destination="wns-9r-hQG" id="mBf-sm-jgM"/>
                 <outlet property="tightSpacingButton" destination="wtl-ch-C53" id="RSn-pR-NyK"/>
                 <outlet property="verticalScrollButton" destination="N4X-Ec-Ndn" id="lhl-vf-xf4"/>
@@ -362,6 +363,7 @@
                             </constraints>
                         </view>
                     </subviews>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     <constraints>
                         <constraint firstAttribute="width" constant="393" id="cYt-Md-1xf"/>
                         <constraint firstAttribute="bottom" secondItem="y16-N5-c7l" secondAttribute="bottom" constant="8" id="rN9-Sh-rDe"/>
