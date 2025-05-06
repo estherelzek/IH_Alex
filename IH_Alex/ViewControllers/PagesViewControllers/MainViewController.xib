@@ -131,17 +131,17 @@
                     </constraints>
                 </view>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ZVA-0V-gXA">
-                    <rect key="frame" x="0.0" y="0.0" width="393" height="90"/>
+                    <rect key="frame" x="0.0" y="0.0" width="393" height="80"/>
                     <subviews>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Book Title" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="CSk-48-fYC">
-                            <rect key="frame" x="103" y="54" width="233" height="31"/>
+                            <rect key="frame" x="103" y="54" width="233" height="21"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <fontDescription key="fontDescription" type="boldSystem" pointSize="19"/>
                             <color key="textColor" systemColor="secondarySystemBackgroundColor"/>
                             <color key="highlightedColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         </label>
                         <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="3Tl-Tl-EMg">
-                            <rect key="frame" x="0.0" y="50" width="98" height="40"/>
+                            <rect key="frame" x="0.0" y="40" width="98" height="40"/>
                             <subviews>
                                 <button opaque="NO" contentMode="scaleToFill" horizontalCompressionResistancePriority="749" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qb9-Pz-LVe">
                                     <rect key="frame" x="0.0" y="0.0" width="49" height="40"/>
@@ -167,13 +167,14 @@
                             </constraints>
                         </stackView>
                         <button opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="252" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pTw-OB-7sC">
-                            <rect key="frame" x="341" y="60" width="40" height="18"/>
+                            <rect key="frame" x="341" y="60" width="40" height="8"/>
                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="40" id="Ncm-E0-cmA"/>
                             </constraints>
+                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <state key="normal" title="Button"/>
-                            <buttonConfiguration key="configuration" style="plain" image="angle"/>
+                            <buttonConfiguration key="configuration" style="plain" image="arrowshape.turn.up.right" catalog="system"/>
                             <connections>
                                 <action selector="backButtonTapped:" destination="-1" eventType="touchUpInside" id="rTQ-a8-FUf"/>
                             </connections>
@@ -187,7 +188,7 @@
                         <constraint firstItem="pTw-OB-7sC" firstAttribute="top" secondItem="ZVA-0V-gXA" secondAttribute="top" constant="60" id="Gom-eC-VuC"/>
                         <constraint firstItem="3Tl-Tl-EMg" firstAttribute="leading" secondItem="ZVA-0V-gXA" secondAttribute="leading" id="OVR-Tr-U23"/>
                         <constraint firstAttribute="bottom" secondItem="pTw-OB-7sC" secondAttribute="bottom" constant="12" id="USi-FL-y8y"/>
-                        <constraint firstAttribute="height" constant="90" id="Y6u-6Z-OgS"/>
+                        <constraint firstAttribute="height" constant="80" id="Y6u-6Z-OgS"/>
                         <constraint firstAttribute="bottom" secondItem="CSk-48-fYC" secondAttribute="bottom" constant="5" id="cDo-Lt-G3S"/>
                         <constraint firstItem="CSk-48-fYC" firstAttribute="leading" secondItem="3Tl-Tl-EMg" secondAttribute="trailing" constant="5" id="vIO-zh-Kxp"/>
                         <constraint firstAttribute="bottom" secondItem="3Tl-Tl-EMg" secondAttribute="bottom" id="xsx-RO-O8W"/>
@@ -212,8 +213,8 @@
         </view>
     </objects>
     <resources>
-        <image name="angle" width="48" height="48"/>
         <image name="arrowshape.turn.up.backward" catalog="system" width="128" height="104"/>
+        <image name="arrowshape.turn.up.right" catalog="system" width="128" height="104"/>
         <image name="dots" width="8" height="32"/>
         <image name="lightT" width="25" height="24"/>
         <image name="magnifyingglass" catalog="system" width="128" height="117"/>

@@ -7,7 +7,8 @@
 
 import UIKit
 
-class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UISearchBarDelegate {
+class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UISearchBarDelegate, BookSearchDelegate {
+    
 
 
     @IBOutlet weak var contentView: UIView!
@@ -58,27 +59,68 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
     @IBAction func backButtonTapped(_ sender: Any) {}
     
     @IBAction func searchButtonTapped(_ sender: Any) {
-        self.searchBar.isHidden = false
-        self.resetStateButton.isHidden = false
-        self.slider.isHidden = true
+        let searchVC = BookSearchResultViewController()
+        searchVC.pageController = self.pagedVC
+        searchVC.pages = pagedVC?.pages ?? []
+        searchVC.metadata = pagedVC?.metadataa
+        searchVC.delegate = self
+        searchVC.modalPresentationStyle = .overCurrentContext
+        searchVC.modalTransitionStyle = .crossDissolve
+        present(searchVC, animated: true)
     }
+
     
     @IBAction func resetStateButton(_ sender: Any) {
         self.slider.isHidden = false
         self.searchBar.isHidden = true
         self.resetStateButton.isHidden = true
     }
-    
-    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        searchBar.resignFirstResponder() // hide keyboard
-
-        let searchVC = BookSearchResultViewController()
-        searchVC.modalPresentationStyle = .overCurrentContext
-        searchVC.modalTransitionStyle = .crossDissolve
-        self.definesPresentationContext = true
-        present(searchVC, animated: true, completion: nil)
-    }
-    
+    // canceled 
+//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//        searchBar.resignFirstResponder()
+//        guard let keyword = searchBar.text?.lowercased(), !keyword.isEmpty else { return }
+//        var results: [SearchResult] = []
+//
+//        if let pagedVC = self.pagedVC {
+//            for page in pagedVC.pages {
+//                let fullText = page.attributedText.string
+//                let lowercasedText = fullText.lowercased()
+//                
+//                if lowercasedText.contains(keyword) {
+//                    let matchedRanges = lowercasedText.ranges(of: keyword)
+//                    for range in matchedRanges {
+//                        let start = fullText.distance(from: fullText.startIndex, to: range.lowerBound)
+//                        let end = fullText.distance(from: fullText.startIndex, to: range.upperBound)
+//                        
+//                        let snippetStart = max(0, start - 40)
+//                        let snippetEnd = min(fullText.count, end + 40)
+//                        
+//                        let startIndex = fullText.index(fullText.startIndex, offsetBy: snippetStart)
+//                        let endIndex = fullText.index(fullText.startIndex, offsetBy: snippetEnd)
+//                        
+//                        let snippet = String(fullText[startIndex..<endIndex])
+//                        
+//                        results.append(SearchResult(
+//                            chapterNumber: page.chapterNumber,
+//                            pageNumber: page.pageNumberInBook,
+//                            content: snippet
+//                        ))
+//                    }
+//                }
+//            }
+//        }
+//
+//        let searchVC = BookSearchResultViewController()
+//        searchVC.results = results
+//        print("searchVC.results: \(searchVC.results)")
+//        print("searchVC.results . content : \(searchVC.results.map(\.content))")
+//        searchVC.modalPresentationStyle = .overCurrentContext
+//        searchVC.modalTransitionStyle = .crossDissolve
+//        self.definesPresentationContext = true
+//        present(searchVC, animated: true, completion: nil)
+//    }
+//
+//    
     @objc func contentViewTapped() {
         view.endEditing(true) // ✅ Hide keyboard
         let shouldHide = !topBar.isHidden
@@ -92,6 +134,16 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
     }
 
 
+}
+extension MainViewController {
+    func didSelectSearchResult(_ result: SearchResult) {
+        guard let index = pagedVC?.pages.firstIndex(where: {
+            $0.pageNumberInBook == result.pageNumber
+        }) else { return }
+
+        pagedVC?.goToPage(index: index)
+        updateCurrentPageLabels()
+    }
 }
 
 extension MainViewController: PagedTextViewControllerDelegate {

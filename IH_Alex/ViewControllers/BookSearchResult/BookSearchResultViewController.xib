@@ -11,6 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BookSearchResultViewController" customModule="IH_Alex" customModuleProvider="target">
             <connections>
+                <outlet property="searchBar" destination="TKn-Ra-obl" id="ojw-JF-aNT"/>
                 <outlet property="tableView" destination="WGA-a2-JVH" id="fhh-He-eAq"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
@@ -21,22 +22,66 @@
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="WGA-a2-JVH">
-                    <rect key="frame" x="39.333333333333343" y="126" width="314.33333333333326" height="625"/>
+                    <rect key="frame" x="0.0" y="126" width="393" height="625"/>
                     <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <color key="sectionIndexColor" red="0.031372549020000001" green="0.36078431370000003" blue="0.56470588239999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                 </tableView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RfI-g3-sZJ">
+                    <rect key="frame" x="0.0" y="0.0" width="393" height="118"/>
+                    <subviews>
+                        <searchBar contentMode="redraw" text="" translatesAutoresizingMaskIntoConstraints="NO" id="TKn-Ra-obl">
+                            <rect key="frame" x="0.0" y="80" width="357" height="40"/>
+                            <color key="backgroundColor" red="0.031372549020000001" green="0.36078431370000003" blue="0.56470588239999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="40" id="C0m-sy-Meh"/>
+                                <constraint firstAttribute="width" constant="357" id="sqU-Bm-XD4"/>
+                            </constraints>
+                            <color key="barTintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <textInputTraits key="textInputTraits"/>
+                            <connections>
+                                <outlet property="delegate" destination="-1" id="Jjc-gi-UwW"/>
+                            </connections>
+                        </searchBar>
+                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="fAR-0X-RWU">
+                            <rect key="frame" x="365" y="90" width="22" height="20"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="20" id="Gtc-IS-otK"/>
+                            </constraints>
+                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <state key="normal" title="Button"/>
+                            <buttonConfiguration key="configuration" style="plain" image="arrowshape.turn.up.forward" catalog="system"/>
+                            <connections>
+                                <action selector="backButton:" destination="-1" eventType="touchUpInside" id="J64-aM-GBK"/>
+                            </connections>
+                        </button>
+                    </subviews>
+                    <color key="backgroundColor" red="0.031372549019607843" green="0.36078431372549019" blue="0.56470588235294117" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    <constraints>
+                        <constraint firstAttribute="bottom" secondItem="fAR-0X-RWU" secondAttribute="bottom" constant="8" id="5zs-o4-MqO"/>
+                        <constraint firstAttribute="trailing" secondItem="fAR-0X-RWU" secondAttribute="trailing" constant="6" id="Ieb-yP-gpB"/>
+                        <constraint firstItem="TKn-Ra-obl" firstAttribute="leading" secondItem="RfI-g3-sZJ" secondAttribute="leading" id="dwb-2T-Pfn"/>
+                        <constraint firstAttribute="bottom" secondItem="TKn-Ra-obl" secondAttribute="bottom" constant="-2" id="o9j-IX-4jH"/>
+                        <constraint firstItem="fAR-0X-RWU" firstAttribute="leading" secondItem="TKn-Ra-obl" secondAttribute="trailing" constant="8" id="qSt-rd-K4o"/>
+                    </constraints>
+                </view>
             </subviews>
             <viewLayoutGuide key="safeArea" id="fnl-2z-Ty3"/>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
+                <constraint firstItem="RfI-g3-sZJ" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="3o3-hs-MaO"/>
+                <constraint firstItem="RfI-g3-sZJ" firstAttribute="leading" secondItem="fnl-2z-Ty3" secondAttribute="leading" id="GB8-qE-mNC"/>
+                <constraint firstItem="RfI-g3-sZJ" firstAttribute="trailing" secondItem="fnl-2z-Ty3" secondAttribute="trailing" id="dZw-1L-zHj"/>
                 <constraint firstItem="WGA-a2-JVH" firstAttribute="height" secondItem="i5M-Pr-FkT" secondAttribute="height" multiplier="0.733568" id="hMv-pj-Tqp"/>
+                <constraint firstItem="WGA-a2-JVH" firstAttribute="top" secondItem="RfI-g3-sZJ" secondAttribute="bottom" constant="8" symbolic="YES" id="hi3-3U-NWk"/>
                 <constraint firstItem="WGA-a2-JVH" firstAttribute="centerY" secondItem="fnl-2z-Ty3" secondAttribute="centerY" id="inh-c7-3Jw"/>
                 <constraint firstItem="WGA-a2-JVH" firstAttribute="centerX" secondItem="fnl-2z-Ty3" secondAttribute="centerX" id="kX3-WZ-fLE"/>
-                <constraint firstItem="WGA-a2-JVH" firstAttribute="width" secondItem="i5M-Pr-FkT" secondAttribute="width" multiplier="0.8" id="s3j-j2-H4n"/>
+                <constraint firstItem="WGA-a2-JVH" firstAttribute="width" secondItem="i5M-Pr-FkT" secondAttribute="width" id="s3j-j2-H4n"/>
             </constraints>
-            <point key="canvasLocation" x="130.53435114503816" y="-11.267605633802818"/>
+            <point key="canvasLocation" x="-629.7709923664122" y="-39.436619718309863"/>
         </view>
     </objects>
     <resources>
+        <image name="arrowshape.turn.up.forward" catalog="system" width="128" height="104"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

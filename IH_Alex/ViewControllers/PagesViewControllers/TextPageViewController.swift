@@ -380,6 +380,7 @@ extension TextPageViewController: NoteViewControllerDelegate {
             self.addBookmarkView()
         }
     }
+    
     func reloadContent(at index: Int) {
         guard pages.indices.contains(index) else {
             print("❌ Index \(index) out of bounds. Cannot reload.")

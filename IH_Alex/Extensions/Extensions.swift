@@ -218,3 +218,28 @@ extension TextPageViewController {
        return arabicRange != nil
    }
 }
+
+extension NSRange {
+    func expanded(to characters: Int, in text: String) -> NSRange {
+        let start = max(location - characters, 0)
+        let end = min(location + length + characters, text.count)
+        return NSRange(location: start, length: end - start)
+    }
+}
+extension String {
+    func ranges(of searchString: String) -> [Range<String.Index>] {
+        var ranges: [Range<String.Index>] = []
+        var start = startIndex
+        while let range = self[start...].range(of: searchString) {
+            ranges.append(range)
+            start = range.upperBound
+        }
+        return ranges
+    }
+
+    func snippet(around range: Range<String.Index>, radius: Int) -> String {
+        let lower = index(range.lowerBound, offsetBy: -radius, limitedBy: startIndex) ?? startIndex
+        let upper = index(range.upperBound, offsetBy: radius, limitedBy: endIndex) ?? endIndex
+        return String(self[lower..<upper])
+    }
+}

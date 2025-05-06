@@ -72,7 +72,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         }
     }
 
- 
     override func viewDidLoad() {
         super.viewDidLoad()
         if let savedModeString = UserDefaults.standard.string(forKey: "savedScrollMode"),
@@ -92,13 +91,9 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         pageViewController = UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
         pageViewController.dataSource = self
         pageViewController.delegate = self
-
-           //  Add the pageViewController as a child view controller
             addChild(pageViewController)
             view.addSubview(pageViewController.view)
             pageViewController.didMove(toParent: self)
-
-            // Optionally set the initial page
             if let firstVC = viewControllerForPage(0) {
                 pageViewController.setViewControllers([firstVC], direction: .forward, animated: false, completion: nil)
             }
@@ -118,6 +113,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             backgroundView.frame = view.bounds // Ensure it covers the full screen properly
         }
     }
+    
     func refreshAllPages() {
         print("🔄 Refreshing all pages")
         for (index, viewController) in viewControllerCache {
