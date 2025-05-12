@@ -8,9 +8,6 @@
 import UIKit
 
 class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, UISearchBarDelegate, BookSearchDelegate {
-    
-
-
     @IBOutlet weak var contentView: UIView!
     @IBOutlet weak var backButton: UIButton!
     @IBOutlet weak var bookTitleLabel: UILabel!
@@ -22,6 +19,8 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
     @IBOutlet weak var currentPageComparedToBookPages: UILabel!
     @IBOutlet weak var chapterTitleLabel: UILabel!
     @IBOutlet weak var resetStateButton: UIButton!
+    
+    private let lastThreePagesKey = "LastThreePages"
     var pageViewController: UIPageViewController!
     var pages: [UIViewController] = []
     let pageControl = UIPageControl()
@@ -41,11 +40,17 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         setUpInformation()
         updateCurrentPageLabels()
         registerForKeyboardNotifications()
+        slider.minimumValue = 0
+        slider.maximumValue = Float(pagedVC?.pages.count ?? 1) - 1
+        slider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
+        let tapGestureslider = UITapGestureRecognizer(target: self, action: #selector(sliderTapped(_:)))
+        slider.addGestureRecognizer(tapGestureslider)
+
+
     }
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
-    
     // MARK: - Button Actions
     @IBAction func menuButton(_ sender: Any) {}
     @IBAction func editingButton(_ sender: Any) {
@@ -55,9 +60,55 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         }
             textPageVC.toggleMenu()
     }
-
-    @IBAction func backButtonTapped(_ sender: Any) {}
     
+    @IBAction func backButtonTapped(_ sender: Any) {}
+    @IBAction func sliderValueChanged(_ sender: UISlider) {
+        let pageIndex = Int(sender.value.rounded())
+        updateCurrentPageLabels()
+        guard let pageController = self.pagedVC else { return }
+        pageController.currentIndex = pageIndex
+        
+        if let targetVC = pageController.getViewController(at: pageIndex) {
+            pageController.pageViewController.setViewControllers(
+                [targetVC],
+                direction: .forward,
+                animated: false,
+                completion: { finished in
+                    print("✅ Navigated to page \(pageIndex) by sliding the slider.")
+                }
+            )
+        }
+        pageController.pageControl.currentPage = pageIndex
+        savePageToUserDefaults(pageIndex)
+        updatePageMarkers()
+    }
+
+    @objc func sliderTapped(_ gestureRecognizer: UITapGestureRecognizer) {
+        let tapLocation = gestureRecognizer.location(in: slider)
+        let sliderWidth = slider.bounds.width
+        let tappedValueRatio = tapLocation.x / sliderWidth
+        let newValue = Float(tappedValueRatio) * (slider.maximumValue - slider.minimumValue) + slider.minimumValue
+        slider.setValue(newValue, animated: true)
+        let pageIndex = Int(newValue.rounded())
+        updateCurrentPageLabels()
+        guard let pageController = self.pagedVC else { return }
+        pageController.currentIndex = pageIndex
+        if let targetVC = pageController.getViewController(at: pageIndex) {
+            pageController.pageViewController.setViewControllers(
+                [targetVC],
+                direction: .forward,
+                animated: false,
+                completion: { finished in
+                    print("✅ Navigated to page \(pageIndex) by tapping slider.")
+                }
+            )
+        }
+        pageController.pageControl.currentPage = pageIndex
+        savePageToUserDefaults(pageIndex)
+        updatePageMarkers()
+    }
+
+
     @IBAction func searchButtonTapped(_ sender: Any) {
         let searchVC = BookSearchResultViewController()
         searchVC.pageController = self.pagedVC
@@ -68,80 +119,28 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         searchVC.modalTransitionStyle = .crossDissolve
         present(searchVC, animated: true)
     }
-
     
     @IBAction func resetStateButton(_ sender: Any) {
         self.slider.isHidden = false
         self.searchBar.isHidden = true
         self.resetStateButton.isHidden = true
     }
-    // canceled 
-//    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-//        searchBar.resignFirstResponder()
-//        guard let keyword = searchBar.text?.lowercased(), !keyword.isEmpty else { return }
-//        var results: [SearchResult] = []
-//
-//        if let pagedVC = self.pagedVC {
-//            for page in pagedVC.pages {
-//                let fullText = page.attributedText.string
-//                let lowercasedText = fullText.lowercased()
-//                
-//                if lowercasedText.contains(keyword) {
-//                    let matchedRanges = lowercasedText.ranges(of: keyword)
-//                    for range in matchedRanges {
-//                        let start = fullText.distance(from: fullText.startIndex, to: range.lowerBound)
-//                        let end = fullText.distance(from: fullText.startIndex, to: range.upperBound)
-//                        
-//                        let snippetStart = max(0, start - 40)
-//                        let snippetEnd = min(fullText.count, end + 40)
-//                        
-//                        let startIndex = fullText.index(fullText.startIndex, offsetBy: snippetStart)
-//                        let endIndex = fullText.index(fullText.startIndex, offsetBy: snippetEnd)
-//                        
-//                        let snippet = String(fullText[startIndex..<endIndex])
-//                        
-//                        results.append(SearchResult(
-//                            chapterNumber: page.chapterNumber,
-//                            pageNumber: page.pageNumberInBook,
-//                            content: snippet
-//                        ))
-//                    }
-//                }
-//            }
-//        }
-//
-//        let searchVC = BookSearchResultViewController()
-//        searchVC.results = results
-//        print("searchVC.results: \(searchVC.results)")
-//        print("searchVC.results . content : \(searchVC.results.map(\.content))")
-//        searchVC.modalPresentationStyle = .overCurrentContext
-//        searchVC.modalTransitionStyle = .crossDissolve
-//        self.definesPresentationContext = true
-//        present(searchVC, animated: true, completion: nil)
-//    }
-//
-//    
-    @objc func contentViewTapped() {
-        view.endEditing(true) // ✅ Hide keyboard
-        let shouldHide = !topBar.isHidden
-        UIView.animate(withDuration: 0.3) {
-            self.topBar.alpha = shouldHide ? 0 : 1
-            self.bottomBar.alpha = shouldHide ? 0 : 1
-        } completion: { _ in
-            self.topBar.isHidden = shouldHide
-            self.bottomBar.isHidden = shouldHide
-        }
+    
+    @IBAction func dropDownButton(_ sender: Any) {
     }
-
-
+    
+    @objc func contentViewTapped() {
+        topBar.isHidden.toggle()
+        bottomBar.isHidden.toggle()
+    }
 }
+
 extension MainViewController {
     func didSelectSearchResult(_ result: SearchResult) {
         guard let index = pagedVC?.pages.firstIndex(where: {
             $0.pageNumberInBook == result.pageNumber
         }) else { return }
-
-        pagedVC?.goToPage(index: index)
+        pagedVC?.getViewController(at: index)
         updateCurrentPageLabels()
     }
 }
@@ -150,52 +149,118 @@ extension MainViewController: PagedTextViewControllerDelegate {
     func didUpdatePage(to index: Int) {
         pagedVC?.currentIndex = index
         updateCurrentPageLabels()
-    }
-    func updateCurrentPageLabels() {
-        guard let pagedVC = pagedVC else { return }
-        let currentIndex = pagedVC.currentIndex
-        let currentPage = pagedVC.pages[currentIndex]
-        let globalPageIndex = currentPage.pageNumberInBook - 1 // 0-based
-        var displayChapterNumber = currentPage.chapterNumber
-        var pageInChapter = 1
-        var totalChapterPages = 1
-        var chapterName = "Chapter \(displayChapterNumber)"
-        if let indexList = pagedVC.metadataa?.decodedIndex() {
-            var cumulative = 0
-            for chapter in indexList {
-                let chapterCount = chapter.chapterPagesCount ?? 0
-                if globalPageIndex < cumulative + chapterCount {
-                    displayChapterNumber = chapter.number
-                    totalChapterPages = chapterCount
-                    pageInChapter = globalPageIndex - cumulative + 1
-                    chapterName = chapter.name
-                    break
-                }
-                cumulative += chapterCount
-            }
-        } else {
-            let chapterPages = pagedVC.pages.filter { $0.chapterNumber == currentPage.chapterNumber }
-            pageInChapter = (chapterPages.firstIndex(of: currentPage) ?? 0) + 1
-            totalChapterPages = chapterPages.count
-            chapterName = "Chapter \(displayChapterNumber)"
+        slider.setValue(Float(index), animated: true)
+        if let currentTextPageVC = pagedVC?.currentTextPageViewController() {
+            currentTextPageVC.internalLinkDelegate = self
         }
+        savePageToUserDefaults(index) // Save the page to the last three
+        updatePageMarkers()
+    }
 
-        let totalBookPages = pagedVC.pages.count
-        let pageInBook = currentPage.pageNumberInBook
-        chapterTitleLabel.text = chapterName
-        currentPageComparedToChapterPages.text = "chapter:\(displayChapterNumber): Page \(pageInChapter) / \(totalChapterPages)"
-        currentPageComparedToBookPages.text = "Page \(pageInBook) / \(totalBookPages)"
+    func updatePageMarkers() {
+        let lastThreePages = getLastThreePages()
+        slider.subviews.forEach { subview in
+            if subview.tag == 999 { // Custom tag to identify
+                subview.removeFromSuperview()
+            }
+        }
+        
+        for pageIndex in lastThreePages {
+            if pageIndex == Int(slider.value.rounded()) {
+                continue
+            }
+            let marker = UIView()
+            marker.tag = 999
+            marker.backgroundColor = .systemCyan
+            marker.layer.cornerRadius = 5
+            let markerX = CGFloat(pageIndex) / CGFloat(slider.maximumValue) * slider.frame.width - 5
+            if abs(markerX - slider.frame.width * CGFloat(slider.value) / CGFloat(slider.maximumValue)) < 10 {
+                continue
+            }
+            marker.frame = CGRect(x: markerX,
+                                  y: slider.frame.height / 2 - 5,
+                                  width: 10,
+                                  height: 10)
+            slider.addSubview(marker)
+        }
+    }
+
+    func updateCurrentPageLabels() {
+           guard let pagedVC = pagedVC else { return }
+           let currentIndex = pagedVC.currentIndex
+           let currentPage = pagedVC.pages[currentIndex]
+           let globalPageIndex = currentPage.pageNumberInBook - 1 // 0-based
+           var displayChapterNumber = currentPage.chapterNumber
+           var pageInChapter = 1
+           var totalChapterPages = 1
+           var chapterName = "Chapter \(displayChapterNumber)"
+           if let indexList = pagedVC.metadataa?.decodedIndex() {
+               var cumulative = 0
+               for chapter in indexList {
+                   let chapterCount = chapter.chapterPagesCount ?? 0
+                   if globalPageIndex < cumulative + chapterCount {
+                       displayChapterNumber = chapter.number
+                       totalChapterPages = chapterCount
+                       pageInChapter = globalPageIndex - cumulative + 1
+                       chapterName = chapter.name
+                       break
+                   }
+                   cumulative += chapterCount
+               }
+           } else {
+               let chapterPages = pagedVC.pages.filter { $0.chapterNumber == currentPage.chapterNumber }
+               pageInChapter = (chapterPages.firstIndex(of: currentPage) ?? 0) + 1
+               totalChapterPages = chapterPages.count
+               chapterName = "Chapter \(displayChapterNumber)"
+           }
+
+           let totalBookPages = pagedVC.pages.count
+           let pageInBook = currentPage.pageNumberInBook
+           chapterTitleLabel.text = chapterName
+           currentPageComparedToChapterPages.text = "chapter:\(displayChapterNumber): Page \(pageInChapter) / \(totalChapterPages)"
+           currentPageComparedToBookPages.text = "Page \(pageInBook) / \(totalBookPages)"
+       
+        print("currentPageComparedToChapterPages.text: \(String(describing: currentPageComparedToChapterPages.text))")
+        print("currentPageComparedToBookPages.text: \(String(describing: currentPageComparedToBookPages.text))")
     }
 
   func setUpInformation() {
       print("pagedVC?.bookInfo?.name : \(String(describing: pagedVC?.bookResponse?.book))")
        bookTitleLabel.text = pagedVC?.bookResponse?.book.name
+      func setUpInformation() {
+          guard let totalPages = pagedVC?.pages.count else { return }
+          slider.minimumValue = 0
+          slider.maximumValue = Float(totalPages) - 1
+          slider.isContinuous = true
+      }
+
     }
     
+
+    func savePageToUserDefaults(_ pageIndex: Int) {
+        var lastPages = UserDefaults.standard.array(forKey: lastThreePagesKey) as? [Int] ?? []
+        lastPages.removeAll { $0 == pageIndex }
+        lastPages.insert(pageIndex, at: 0)
+        if lastPages.count > 4 {
+            lastPages.removeLast()
+        }
+        UserDefaults.standard.set(lastPages, forKey: lastThreePagesKey)
+    }
+
+    func getLastThreePages() -> [Int] {
+        var lastPages = UserDefaults.standard.array(forKey: lastThreePagesKey) as? [Int] ?? []
+        if let currentPageIndex = Int(exactly: slider.value) {
+            lastPages.removeAll { $0 == currentPageIndex }
+        }
+        return Array(lastPages.prefix(4))
+    }
+
+
     func preparePager() {
         let pagedVC = PagedTextViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
-        pagedVC.pageChangeDelegate = self // ✅ Set delegate here after instantiating
-        self.pagedVC = pagedVC // store reference
+        pagedVC.pageChangeDelegate = self
+        self.pagedVC = pagedVC
+        pagedVC.pageChangeDelegate = self
         addChild(pagedVC)
         contentView.addSubview(pagedVC.view)
         pagedVC.view.translatesAutoresizingMaskIntoConstraints = false
@@ -206,6 +271,9 @@ extension MainViewController: PagedTextViewControllerDelegate {
             pagedVC.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
         pagedVC.didMove(toParent: self)
+        if let currentTextPageVC = pagedVC.currentTextPageViewController() {
+            currentTextPageVC.internalLinkDelegate = self
+        }
     }
 
     private func setupPages() {
@@ -290,4 +358,14 @@ extension MainViewController {
         }
     }
     
+}
+extension MainViewController: InternalLinkNavigationDelegate {
+    func didNavigateToInternalLink(pageIndex: Int) {
+        print("🌟 Navigated to page: \(pageIndex) from internal link")
+        slider.setValue(Float(pageIndex), animated: true)
+        pagedVC?.currentIndex = pageIndex
+        updateCurrentPageLabels()
+        savePageToUserDefaults(pageIndex) // Save the page to the last three
+        updatePageMarkers()
+    }
 }

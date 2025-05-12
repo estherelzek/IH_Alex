@@ -13,6 +13,9 @@ extension TextPageViewController {
         pageController?.goToPage(index: index)
     }
 }
+protocol InternalLinkNavigationDelegate: AnyObject {
+    func didNavigateToInternalLink(pageIndex: Int)
+}
 
 class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewDelegate,CustomMenuDelegate {
     var menuButton: UIButton!
@@ -31,7 +34,11 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     var pages: [PageContent] = []
     var originalPages: [OriginalPage] = []
     weak var pageNavigationDelegate: PageNavigationDelegate?
+    weak var internalLinkDelegate: InternalLinkNavigationDelegate?
+    var searchKeyword: String?
+    var searchResults: [SearchResult] = []
 
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupTextView()
@@ -51,7 +58,11 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         setUpBritness()
         restoreBrightness()
         NotificationCenter.default.addObserver(self, selector: #selector(bookmarkUpdated(_:)), name: Notification.Name("BookmarkUpdated"), object: nil)
-        //self.view.backgroundColor = .red
+        print("textVc pages = \(pages) ")
+//        if let keyword = searchKeyword {
+//            print("keyword: \(keyword)")
+//               highlightSearchResult(keyword: keyword)
+//           }
     }
     
     override func viewWillLayoutSubviews() {
@@ -593,18 +604,26 @@ extension TextPageViewController {
     }
 
     func loadHighlights(for pageContent: PageContent) {
+        // Load main highlights from HighlightManager
         let highlights = HighlightManager.shared.loadHighlights()
         let pageGlobalRange = NSRange(location: pageContent.globalStartIndex, length: pageContent.globalEndIndex - pageContent.globalStartIndex)
+        
+        // 🔍 Filter only the highlights that belong to the current page
         let filteredHighlights = highlights.filter { highlight in
             let highlightRange = highlight.globalRange.location..<(highlight.globalRange.location + highlight.globalRange.length)
             let pageRange = pageContent.globalStartIndex..<pageContent.globalEndIndex
             return highlightRange.overlaps(pageRange)
         }
-
+        
         print("📌 Highlights for this page: \(filteredHighlights)")
+        
         textView.textStorage.beginEditing()
+        
+        // 🧽 Clear previous highlights (both main and search-based)
         let fullRange = NSRange(location: 0, length: textView.textStorage.length)
         textView.textStorage.removeAttribute(.backgroundColor, range: fullRange)
+
+        // 🌟 Apply Main Highlights
         for highlight in filteredHighlights {
             let localLocation = highlight.globalRange.location - pageContent.globalStartIndex
             let localRange = NSRange(location: localLocation, length: highlight.globalRange.length)
@@ -614,8 +633,28 @@ extension TextPageViewController {
                 print("⚠️ Skipping out-of-bounds highlight: \(highlight)")
             }
         }
+
+        // 🌟 Apply Temporary Search Highlights (if any)
+        if !searchResults.isEmpty {
+            let fullText = textView.text.lowercased()
+            
+            for searchResult in searchResults {
+                let searchText = searchResult.content.lowercased()
+                var searchRange = fullText.startIndex..<fullText.endIndex
+                
+                while let range = fullText.range(of: searchText, options: [], range: searchRange) {
+                    let nsRange = NSRange(range, in: fullText)
+                    textView.textStorage.addAttribute(.backgroundColor, value: UIColor.systemCyan.withAlphaComponent(0.2), range: nsRange)
+                    searchRange = range.upperBound..<searchRange.upperBound
+                }
+            }
+        }
+        
         textView.textStorage.endEditing()
     }
+
+
+
 
 
     func deleteNoteForLocation(_ location: Int) {
@@ -801,26 +840,40 @@ extension TextPageViewController {
             }
         }
     }
-
+    
     private func handleInternalLinkClick(id: String) {
         if let savedData = UserDefaults.standard.data(forKey: "PageReferencesKey"),
            let savedPageReferences = try? JSONDecoder().decode([PageReference].self, from: savedData) {
-
+            print("🔵 savedPageReferences \(savedPageReferences)")
+            
+            // 👉 Find the target link by ID
             if let target = savedPageReferences.first(where: { $0.key == id }) {
-                print("🔵 Found target page: Chapter \(target.chapterNumber), Page \(target.pageNumber), Index \(target.index)")
+                print("🔵 Found target page: Chapter \(target.chapterNumber), Page \(target.pageNumber) in Chapter")
 
                 guard let pageController = self.pageController else { return }
 
-                // 👇 Search the correct real page index
+                // 🔍 **PRINT THE FULL STRUCTURE OF PAGES FOR THE TARGET CHAPTER**
+                print("🔍 Full structure of pages for Chapter \(target.chapterNumber):")
+                var foundPageInChapter = false
+                pages.forEach { page in
+                    if page.chapterNumber == target.chapterNumber {
+                        foundPageInChapter = true
+                        print("➡️ Chapter: \(page.chapterNumber), Page In Chapter: \(page.pageNumberInChapter)")
+                    }
+                }
+                
+                print("🔍 pages \(pages):")
+                if !foundPageInChapter {
+                    print("❌ No pages found for Chapter \(target.chapterNumber)")
+                }
+
+                // 👉 Find the actual page chunk in `pages`
                 if let realPageIndex = pages.firstIndex(where: {
-                 //   $0.chapterNumber == target.chapterNumber &&
-                    $0.originalPageIndex == target.pageNumber
+                    $0.chapterNumber == target.chapterNumber && $0.pageNumberInChapter == target.pageNumber
                 }) {
-                    print("realPageIndex : \(realPageIndex)")
                     pageController.currentIndex = realPageIndex
                     self.pageIndex = realPageIndex
 
-                    // 🧹 Clear and re-fetch fresh page
                     if let targetVC = pageController.getViewController(at: realPageIndex) {
                         pageController.pageViewController.setViewControllers(
                             [targetVC],
@@ -832,17 +885,92 @@ extension TextPageViewController {
                         )
                     }
 
-                    // Update pageControl
-                    pageController.pageControl.currentPage = realPageIndex
+                    if internalLinkDelegate == nil {
+                        print("❌ Delegate is nil")
+                    } else {
+                        print("✅ Delegate is set")
+                    }
+
+                    // 👉 Notify the delegate (MainViewController) to update slider and labels
+                    internalLinkDelegate?.didNavigateToInternalLink(pageIndex: realPageIndex)
 
                 } else {
-                    print("❌ Target page not found in allPages")
+                    print("❌ Target page not found in allPages for Chapter \(target.chapterNumber) and Page \(target.pageNumber)")
                 }
 
             } else {
                 print("❌ Target link not found")
             }
         }
+    }
+
+
+
+}
+extension TextPageViewController {
+//    func highlightSearchResult(keyword: String) {
+//        guard !keyword.isEmpty else { return }
+//        
+//        // Remove previous highlights
+//        let fullRange = NSRange(location: 0, length: textView.attributedText.length)
+//        let mutableAttributed = NSMutableAttributedString(attributedString: textView.attributedText)
+//        mutableAttributed.removeAttribute(.backgroundColor, range: fullRange)
+//        
+//        // Find all occurrences of the search term
+//        let string = textView.text.lowercased()
+//        let lowercasedKeyword = keyword.lowercased()
+//        var searchRange = NSRange(location: 0, length: string.utf16.count)
+//        var ranges: [NSRange] = []
+//
+//        while searchRange.location < string.utf16.count {
+//            let foundRange = (string as NSString).range(of: lowercasedKeyword, options: [], range: searchRange)
+//            if foundRange.location != NSNotFound {
+//                ranges.append(foundRange)
+//                let newLocation = foundRange.location + foundRange.length
+//                searchRange = NSRange(location: newLocation, length: string.utf16.count - newLocation)
+//            } else {
+//                break
+//            }
+//        }
+//        
+//        // Apply highlight color (Light Blue)
+//        for range in ranges {
+//            mutableAttributed.addAttribute(.backgroundColor, value: UIColor.systemBlue.withAlphaComponent(0.3), range: range)
+//        }
+//        
+//        // Update the text view with highlighted text
+//        textView.attributedText = mutableAttributed
+//        
+//        // Scroll to the first occurrence
+//        if let firstRange = ranges.first {
+//            textView.scrollRangeToVisible(firstRange)
+//        }
+//    }
+    func highlightSearchResults() {
+        // Make sure searchResults is not empty
+        guard !searchResults.isEmpty else { return }
+
+        textView.textStorage.beginEditing()
+
+        // Remove any previous background color
+        let fullRange = NSRange(location: 0, length: textView.textStorage.length)
+        textView.textStorage.removeAttribute(.backgroundColor, range: fullRange)
+
+        // Loop through each search result and highlight the keyword in the text
+        for result in searchResults {
+            let content = result.content.lowercased()
+            let fullText = textView.text.lowercased()
+
+            // Search for the keyword in the full text
+            if let range = fullText.range(of: content) {
+                let nsRange = NSRange(range, in: fullText)
+
+                // Apply background color highlight
+                textView.textStorage.addAttribute(.backgroundColor, value: UIColor.lightGray, range: nsRange)
+            }
+        }
+
+        textView.textStorage.endEditing()
     }
 
 }

@@ -76,7 +76,7 @@ struct FontStyle: Codable {
 
 
 // TargetLink is empty in your example; define if needed
-struct TargetLink: Codable {}
+
 extension BookContent {
     static let `default` = BookContent(
         id: 0,

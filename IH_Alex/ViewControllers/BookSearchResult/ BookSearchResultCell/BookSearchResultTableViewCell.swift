@@ -9,7 +9,7 @@ import UIKit
 
 class BookSearchResultTableViewCell: UITableViewCell {
 
-    @IBOutlet weak var chapterNumberLabel: UILabel!
+   // @IBOutlet weak var chapterNumberLabel: UILabel!
     @IBOutlet weak var pageNumberLabel: UILabel!
     @IBOutlet weak var contentSearchLabel: UILabel!
     

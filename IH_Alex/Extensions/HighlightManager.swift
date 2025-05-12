@@ -73,3 +73,5 @@ class HighlightManager {
         return nil
     }
 }
+
+
