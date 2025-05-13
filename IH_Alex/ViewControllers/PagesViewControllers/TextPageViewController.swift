@@ -58,11 +58,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         setUpBritness()
         restoreBrightness()
         NotificationCenter.default.addObserver(self, selector: #selector(bookmarkUpdated(_:)), name: Notification.Name("BookmarkUpdated"), object: nil)
-        print("textVc pages = \(pages) ")
-//        if let keyword = searchKeyword {
-//            print("keyword: \(keyword)")
-//               highlightSearchResult(keyword: keyword)
-//           }
+      
     }
     
     override func viewWillLayoutSubviews() {

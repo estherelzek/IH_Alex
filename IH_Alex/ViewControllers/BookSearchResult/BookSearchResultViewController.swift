@@ -6,7 +6,6 @@
 //
 
 import UIKit
-
 import Foundation
 
 struct SearchResult: Codable {
@@ -41,8 +40,6 @@ protocol BookSearchDelegate: AnyObject {
     func didSelectSearchResult(_ result: SearchResult)
 }
 
-import UIKit
-
 class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
 
     @IBOutlet weak var tableView: UITableView!
@@ -66,11 +63,20 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UINib(nibName: "BookSearchResultTableViewCell", bundle: nil), forCellReuseIdentifier: "BookSearchResultCell")
+
+        // 👉 Load previously saved search results and keyword
+        let (savedResults, savedKeyword) = SearchResultManager.shared.loadSearchResults()
         
-        // 👉 Load previously saved search results
-        results = SearchResultManager.shared.loadSearchResults()
-        groupResultsByChapter()
+        if !savedResults.isEmpty, let keyword = savedKeyword {
+            results = savedResults
+            searchBar.text = keyword
+            groupResultsByChapter()
+            emptySearchimage.isHidden = !results.isEmpty
+            tableView.isHidden = results.isEmpty
+            tableView.reloadData()
+        }
     }
+
     
     @IBAction func backButton(_ sender: Any) {
         dismissSelf()
@@ -108,22 +114,22 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
                         chapterName: chapterName,
                         pageNumber: page.pageNumberInBook,
                         content: snippet,
-                        globalRange: NSRange(range, in: text) // ✅ Corrected here
+                        globalRange: NSRange(range, in: text)
                     )
-
-                    // 👉 Save each search result
-                    SearchResultManager.shared.saveSearchResult(searchResult)
                     results.append(searchResult)
                 }
             }
         }
 
-
+        // 👉 Save the search results and keyword
+        SearchResultManager.shared.saveSearchResults(results, keyword: keyword)
+        
         groupResultsByChapter()
         emptySearchimage.isHidden = !results.isEmpty
         tableView.isHidden = results.isEmpty
         tableView.reloadData()
     }
+
 
     func groupResultsByChapter() {
         resultsByChapter = Dictionary(grouping: results, by: { $0.chapterNumber })
@@ -136,10 +142,9 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
         sortedChapters = []
         emptySearchimage.isHidden = false
         tableView.isHidden = true
-        
-        // 👉 Clear stored search results
         SearchResultManager.shared.clearAllSearchResults()
     }
+
 }
 
 // MARK: - UITableView Data Source & Delegate
@@ -161,7 +166,6 @@ extension BookSearchResultViewController: UITableViewDataSource, UITableViewDele
         }
         return "Chapter \(chapter)"
     }
-
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: "BookSearchResultCell", for: indexPath) as? BookSearchResultTableViewCell else {
@@ -185,58 +189,44 @@ extension BookSearchResultViewController: UITableViewDataSource, UITableViewDele
             tableView.deselectRow(at: indexPath, animated: true)
             return
         }
-
-        // 📝 Find the real page index
         if let realPageIndex = pages.firstIndex(where: {
             $0.chapterNumber == result.chapterNumber &&
             $0.pageNumberInBook == result.pageNumber
         }) {
             pageController.currentIndex = realPageIndex
-            
+            internalLinkDelegate?.didNavigateToInternalLink(pageIndex: realPageIndex)
             if let targetVC = pageController.getViewController(at: realPageIndex) {
-                
-                // 🗂️ Pass the full list of results to the page
                 let resultsInSamePage = results.filter {
                     $0.pageNumber == result.pageNumber && $0.chapterNumber == result.chapterNumber
                 }
-                
                 targetVC.searchResults = resultsInSamePage
-                
-                // 🌟 Set View Controllers
                 pageController.pageViewController.setViewControllers(
                     [targetVC],
                     direction: .forward,
                     animated: false,
                     completion: { [weak self] finished in
                         print("✅ Navigated to selected search result.")
-                        // 🔹 Highlight all results on that page
                         targetVC.highlightSearchResults()
                     }
                 )
             }
-
             pageController.pageControl.currentPage = realPageIndex
-         //   internalLinkDelegate?.didNavigateToInternalLink(pageIndex: realPageIndex)
-            
         } else {
             print("❌ Could not find matching page in current list.")
         }
 
+
         tableView.deselectRow(at: indexPath, animated: true)
         self.dismissSelf()
     }
-
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 80 // or any fixed height you prefer
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-            if searchText.isEmpty {
-                // Text was cleared with the delete button
-                // Reload the table with default or empty results
-                clearSearchResultsAndReload()
-            }
+        if searchText.isEmpty {
+            clearSearchResultsAndReload()
         }
-
+    }
 }

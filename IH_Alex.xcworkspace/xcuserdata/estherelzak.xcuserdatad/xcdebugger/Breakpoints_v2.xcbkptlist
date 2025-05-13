@@ -14,8 +14,8 @@
             filePath = "IH_Alex/ViewControllers/PagesViewControllers/TextPageViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "851"
-            endingLineNumber = "851"
+            startingLineNumber = "847"
+            endingLineNumber = "847"
             landmarkName = "handleInternalLinkClick(id:)"
             landmarkType = "7">
          </BreakpointContent>
@@ -30,8 +30,8 @@
             filePath = "IH_Alex/ViewControllers/PagesViewControllers/TextPageViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "911"
-            endingLineNumber = "911"
+            startingLineNumber = "907"
+            endingLineNumber = "907"
             landmarkName = "TextPageViewController"
             landmarkType = "21">
          </BreakpointContent>
@@ -39,16 +39,16 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "E8110772-0CEA-49F5-A2DE-153385AC8F6A"
-            shouldBeEnabled = "Yes"
+            uuid = "B6F8AB06-97DB-426F-9184-B238C4DE56D7"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "IH_Alex/ViewControllers/PagesViewControllers/MainViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "364"
-            endingLineNumber = "364"
-            landmarkName = "didNavigateToInternalLink(pageIndex:)"
+            startingLineNumber = "83"
+            endingLineNumber = "83"
+            landmarkName = "sliderValueChanged(_:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

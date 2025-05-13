@@ -80,7 +80,7 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         }
         pageController.pageControl.currentPage = pageIndex
         savePageToUserDefaults(pageIndex)
-        updatePageMarkers()
+        didNavigateToInternalLink(pageIndex: pageIndex)
     }
 
     @objc func sliderTapped(_ gestureRecognizer: UITapGestureRecognizer) {
@@ -105,7 +105,7 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         }
         pageController.pageControl.currentPage = pageIndex
         savePageToUserDefaults(pageIndex)
-        updatePageMarkers()
+        didNavigateToInternalLink(pageIndex: pageIndex)
     }
 
 
@@ -115,6 +115,7 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         searchVC.pages = pagedVC?.pages ?? []
         searchVC.metadata = pagedVC?.metadataa
         searchVC.delegate = self
+        searchVC.internalLinkDelegate = self
         searchVC.modalPresentationStyle = .overCurrentContext
         searchVC.modalTransitionStyle = .crossDissolve
         present(searchVC, animated: true)
@@ -186,6 +187,44 @@ extension MainViewController: PagedTextViewControllerDelegate {
     }
 
     func updateCurrentPageLabels() {
+           guard let pagedVC = pagedVC else { return }
+           let currentIndex = pagedVC.currentIndex
+           let currentPage = pagedVC.pages[currentIndex]
+           let globalPageIndex = currentPage.pageNumberInBook - 1 // 0-based
+           var displayChapterNumber = currentPage.chapterNumber
+           var pageInChapter = 1
+           var totalChapterPages = 1
+           var chapterName = "Chapter \(displayChapterNumber)"
+           if let indexList = pagedVC.metadataa?.decodedIndex() {
+               var cumulative = 0
+               for chapter in indexList {
+                   let chapterCount = chapter.chapterPagesCount ?? 0
+                   if globalPageIndex < cumulative + chapterCount {
+                       displayChapterNumber = chapter.number
+                       totalChapterPages = chapterCount
+                       pageInChapter = globalPageIndex - cumulative + 1
+                       chapterName = chapter.name
+                       break
+                   }
+                   cumulative += chapterCount
+               }
+           } else {
+               let chapterPages = pagedVC.pages.filter { $0.chapterNumber == currentPage.chapterNumber }
+               pageInChapter = (chapterPages.firstIndex(of: currentPage) ?? 0) + 1
+               totalChapterPages = chapterPages.count
+               chapterName = "Chapter \(displayChapterNumber)"
+           }
+
+           let totalBookPages = pagedVC.pages.count
+           let pageInBook = currentPage.pageNumberInBook
+           chapterTitleLabel.text = chapterName
+           currentPageComparedToChapterPages.text = "chapter:\(displayChapterNumber): Page \(pageInChapter) / \(totalChapterPages)"
+           currentPageComparedToBookPages.text = "Page \(pageInBook) / \(totalBookPages)"
+       
+        print("currentPageComparedToChapterPages.text: \(String(describing: currentPageComparedToChapterPages.text))")
+        print("currentPageComparedToBookPages.text: \(String(describing: currentPageComparedToBookPages.text))")
+    }
+    func updateCurrentLabels() {
            guard let pagedVC = pagedVC else { return }
            let currentIndex = pagedVC.currentIndex
            let currentPage = pagedVC.pages[currentIndex]

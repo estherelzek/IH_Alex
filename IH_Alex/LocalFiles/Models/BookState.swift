@@ -16,7 +16,7 @@ struct BookState {
     let cover: String?
     let bookSize: Float?
     let readingProgress: Int?
-    var chapters: [Chapter]
+    var chapters: [ChapterData]
     let bookMetadata: BookMetadata?
     let subscriptionId: Int
     let summary: String?
@@ -42,7 +42,7 @@ struct BookState {
         cover: String? = "",
         bookSize: Float? = nil,
         readingProgress: Int? = nil,
-        chapters: [Chapter] = [],
+        chapters: [ChapterData] = [],
         bookMetadata: BookMetadata? = nil,
         subscriptionId: Int = -1,
         summary: String? = nil,
@@ -90,7 +90,7 @@ struct BookState {
 
 
 
-struct Chapter: Codable {
+struct ChapterData: Codable {
     let chapterNumber: Int
     let title: String
     let content: String

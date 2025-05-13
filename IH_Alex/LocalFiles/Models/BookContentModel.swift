@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct BookContent: Codable {
+struct Chapter: Codable {
     let id: Int
     let bookID: Int
     let count: Int
@@ -35,9 +35,9 @@ struct BookContent: Codable {
     }
 }
 
-extension BookContent {
-    func merge(with other: BookContent) -> BookContent {
-        return BookContent(
+extension Chapter {
+    func merge(with other: Chapter) -> Chapter {
+        return Chapter(
             id: self.id, // Keep the same ID (or adjust if necessary)
             bookID: self.bookID, // Assuming bookID remains the same
             count: self.count + other.count, // Sum count
@@ -77,8 +77,8 @@ struct FontStyle: Codable {
 
 // TargetLink is empty in your example; define if needed
 
-extension BookContent {
-    static let `default` = BookContent(
+extension Chapter {
+    static let `default` = Chapter(
         id: 0,
         bookID: 0,
         count: 0,
