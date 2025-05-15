@@ -200,7 +200,7 @@ extension BookSearchResultViewController: UITableViewDataSource, UITableViewDele
                     $0.pageNumber == result.pageNumber && $0.chapterNumber == result.chapterNumber
                 }
                 targetVC.searchResults = resultsInSamePage
-                pageController.pageViewController.setViewControllers(
+                pageController.pageViewController?.setViewControllers(
                     [targetVC],
                     direction: .forward,
                     animated: false,

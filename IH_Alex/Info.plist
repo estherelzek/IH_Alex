@@ -29,6 +29,11 @@
         <string>Cairo-Italic.ttf</string>
         <string>Cairo-BoldItalic.ttf</string>
     </array>
+    <key>UIAppFonts</key>
+    <array>
+        <string>Cairo-Italic.ttf</string>
+        <string>Cairo-BoldItalic.ttf</string>
+    </array>
 
 
 </dict>

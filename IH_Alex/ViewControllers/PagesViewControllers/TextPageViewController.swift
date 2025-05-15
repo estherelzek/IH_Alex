@@ -41,6 +41,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
+       
         setupTextView()
         setupCustomMenu()
         if let pageContent = pageContent {
@@ -164,7 +165,6 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
 
         guard pages.indices.contains(pageIndex) else {
             print("📍 Invalid pageIndex: \(pageIndex), out of bounds.")
-            preservedAbsoluteLocation = 0
             return
         }
 
@@ -176,19 +176,38 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
 
         preservedAbsoluteLocation = previousOriginalPagesLength + currentPage.rangeInOriginal.location
         print("📍 Preserved absolute location: \(preservedAbsoluteLocation) for current visible page \(pageIndex)")
+
+        // ✅ Get the current values
         let finalFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
         let screenSize = view.bounds.inset(by: UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)).size
-        let spacingEnabled = UserDefaults.standard.bool(forKey: "globalLineSpacing")
-        let lineSpacing: CGFloat = spacingEnabled ? 8.0 : 0.0
 
-        self.pageController?.rebuildPages(
-            fontSize: CGFloat(finalFontSize),
-            screenSize: screenSize
-        )
+        // ✅ Get previous stored values
+        let lastFontSize = UserDefaults.standard.float(forKey: "lastFontSize")
+        let lastScreenWidth = UserDefaults.standard.float(forKey: "lastScreenWidth")
+        let lastScreenHeight = UserDefaults.standard.float(forKey: "lastScreenHeight")
 
-       refreshContent()
-       reloadPageContent()
-       
+        // ✅ Check if they are different before rebuilding
+        if finalFontSize != lastFontSize || screenSize.width != CGFloat(lastScreenWidth) || screenSize.height != CGFloat(lastScreenHeight) {
+            print("🔄 Detected change in font size or screen size, rebuilding pages...")
+
+            // ✅ Update the stored values
+            UserDefaults.standard.set(finalFontSize, forKey: "lastFontSize")
+            UserDefaults.standard.set(Float(screenSize.width), forKey: "lastScreenWidth")
+            UserDefaults.standard.set(Float(screenSize.height), forKey: "lastScreenHeight")
+
+            // ✅ Rebuild the pages
+            self.pageController?.rebuildPages(
+                fontSize: CGFloat(finalFontSize),
+                screenSize: screenSize
+            )
+        } else {
+            print("✅ No changes detected, skipping rebuild.")
+        }
+
+        // ✅ Always refresh the content to reflect the preserved absolute location
+        refreshContent()
+        reloadPageContent()
+        
         menuVC?.willMove(toParent: nil)
         menuVC?.view.removeFromSuperview()
         menuVC?.removeFromParent()
@@ -870,8 +889,8 @@ extension TextPageViewController {
                     pageController.currentIndex = realPageIndex
                     self.pageIndex = realPageIndex
 
-                    if let targetVC = pageController.getViewController(at: realPageIndex) {
-                        pageController.pageViewController.setViewControllers(
+                    if let targetVC = pageController.getViewController(at: realPageIndex - 1) {
+                        pageController.pageViewController?.setViewControllers(
                             [targetVC],
                             direction: .forward,
                             animated: false,

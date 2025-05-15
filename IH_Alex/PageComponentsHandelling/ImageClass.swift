@@ -55,6 +55,7 @@ class ParseImage {
         let cleanedAlignment = alignmentString
             .trimmingCharacters(in: .whitespacesAndNewlines) // ✅ Remove spaces & newlines
         print("alignmentString cleaned: '\(cleanedAlignment)'")
+        
         switch cleanedAlignment {
         case "L": return .left
         case "C": return .center
@@ -68,8 +69,14 @@ class ParseImage {
     }
 
     func isRTL() -> Bool {
-        return UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
+        var isRTL = false
+        // ✅ Ensure UI direction is checked on the main thread
+        DispatchQueue.main.sync {
+            isRTL = UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
+        }
+        return isRTL
     }
+
 }
 
 extension UIImage {
