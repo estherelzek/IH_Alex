@@ -14,8 +14,8 @@
             filePath = "IH_Alex/ViewControllers/PagesViewControllers/TextPageViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "926"
-            endingLineNumber = "926"
+            startingLineNumber = "936"
+            endingLineNumber = "936"
             landmarkName = "TextPageViewController"
             landmarkType = "21">
          </BreakpointContent>
@@ -71,16 +71,32 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "2F6FDB13-F288-4B9A-BA0F-38C2B828605A"
-            shouldBeEnabled = "Yes"
+            uuid = "CDEB770E-8B33-4B59-99A4-7F91E4CDACE2"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "IH_Alex/ViewControllers/PagesViewControllers/PagedTextViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "635"
-            endingLineNumber = "635"
-            landmarkName = "currentTextPageViewController()"
+            startingLineNumber = "217"
+            endingLineNumber = "217"
+            landmarkName = "paginate(attributedText:fontSize:maxSize:)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "92E6F307-65E0-40D1-B028-CA25B3C6CEBA"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "IH_Alex/ViewControllers/PagesViewControllers/PagedTextViewController.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "218"
+            endingLineNumber = "218"
+            landmarkName = "paginate(attributedText:fontSize:maxSize:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

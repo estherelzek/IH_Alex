@@ -147,63 +147,98 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             backgroundView.frame = view.bounds // Ensure it covers the full screen properly
         }
     }
-
     func paginate(attributedText: NSAttributedString, fontSize: CGFloat, maxSize: CGSize) -> [(text: NSAttributedString, range: NSRange)] {
         print("📐 Starting Pagination with Max Size: \(maxSize) and Font Size: \(fontSize)")
         
         let effectiveFontSize = fontSize > 0 ? fontSize : 16.0
         print("🖋️ Effective Font Size for Pagination: \(effectiveFontSize)")
-
-        let layoutManager = NSLayoutManager()
-        let textStorage = NSTextStorage(attributedString: attributedText)
-        textStorage.addLayoutManager(layoutManager)
-
-        var results: [(NSAttributedString, NSRange)] = []
-        var currentLocation = 0
-
-        // Ensure fonts are valid, or replace with a fallback font if not found
-        textStorage.enumerateAttribute(.font, in: NSRange(location: 0, length: attributedText.length)) { value, range, _ in
-            if let font = value as? UIFont {
-                if font.pointSize == 0 {
-                    print("⚠️ Font with 0 size detected, correcting...")
-                    textStorage.addAttribute(.font, value: UIFont.systemFont(ofSize: effectiveFontSize), range: range)
-                }
+        
+        // 🔧 Override font size
+        let fullText = NSMutableAttributedString(attributedString: attributedText)
+        fullText.enumerateAttribute(.font, in: NSRange(location: 0, length: fullText.length)) { value, range, _ in
+            if let existingFont = value as? UIFont {
+                fullText.addAttribute(.font, value: existingFont.withSize(effectiveFontSize), range: range)
             } else {
-                print("⚠️ No Font Detected at range \(range), setting default.")
-                textStorage.addAttribute(.font, value: UIFont.systemFont(ofSize: effectiveFontSize), range: range)
+                fullText.addAttribute(.font, value: UIFont.systemFont(ofSize: effectiveFontSize), range: range)
             }
         }
-
-        while currentLocation < layoutManager.numberOfGlyphs {
+        
+        var results: [(NSAttributedString, NSRange)] = []
+        var currentLocation = 0
+        var iterationCount = 0
+        let fullLength = fullText.length
+        
+        while currentLocation < fullLength {
+            iterationCount += 1
+            if iterationCount > 10000 {
+                print("❌ Infinite loop detected. Aborting.")
+                break
+            }
+            
+            let visibleRange = NSRange(location: currentLocation, length: fullLength - currentLocation)
+            let visibleText = fullText.attributedSubstring(from: visibleRange)
+            
+            let textStorage = NSTextStorage(attributedString: visibleText)
+            let layoutManager = NSLayoutManager()
+            textStorage.addLayoutManager(layoutManager)
+            
             let textContainer = NSTextContainer(size: maxSize)
             textContainer.lineFragmentPadding = 0
             layoutManager.addTextContainer(textContainer)
-
+            
             layoutManager.ensureLayout(for: textContainer)
-
+            
             let glyphRange = layoutManager.glyphRange(for: textContainer)
-            print("📝 Glyph Range Extracted: \(glyphRange), Total Glyphs: \(layoutManager.numberOfGlyphs)")
-
             if glyphRange.length == 0 {
-                layoutManager.removeTextContainer(at: 0)
+                print("⚠️ Empty glyph range. Ending pagination.")
                 break
             }
-
-            let charRange = layoutManager.characterRange(forGlyphRange: glyphRange, actualGlyphRange: nil)
-            let pageText = attributedText.attributedSubstring(from: charRange)
-            print("✅ Created chunk from \(charRange.location) to \(charRange.location + charRange.length)")
             
-            results.append((pageText, charRange))
-
-            currentLocation = charRange.location + charRange.length
-            layoutManager.removeTextContainer(at: 0)
+            let charRange = layoutManager.characterRange(forGlyphRange: glyphRange, actualGlyphRange: nil)
+            if charRange.length == 0 {
+                print("⚠️ Empty character range. Ending pagination.")
+                break
+            }
+            
+            let actualRange = NSRange(location: currentLocation + charRange.location, length: charRange.length)
+            let pageText = fullText.attributedSubstring(from: actualRange)
+            
+            results.append((text: pageText, range: actualRange))
+            print("✅ Page \(results.count): Range \(actualRange)")
+            
+            currentLocation = actualRange.location + actualRange.length
         }
-
-        print("✅ Total Chunks Created: \(results.count)")
+        
+        print("✅ Pagination completed with \(results.count) chunks.")
         return results
     }
 
 
+//    func paginatet(attributedText: NSAttributedString, fontSize: CGFloat, maxSize: CGSize) -> [(text: NSAttributedString, range: NSRange)] {
+//                 let layoutManager = NSLayoutManager()
+//                 let textStorage = NSTextStorage(attributedString: attributedText)
+//                 textStorage.addLayoutManager(layoutManager)
+//
+//                 var results: [(NSAttributedString, NSRange)] = []
+//                 var currentLocation = 0
+//
+//                 while currentLocation < layoutManager.numberOfGlyphs {
+//                     let textContainer = NSTextContainer(size: maxSize)
+//                     textContainer.lineFragmentPadding = 0
+//                     layoutManager.addTextContainer(textContainer)
+//
+//                     let glyphRange = layoutManager.glyphRange(for: textContainer)
+//                     if glyphRange.length == 0 { break }
+//
+//                     let charRange = layoutManager.characterRange(forGlyphRange: glyphRange, actualGlyphRange: nil)
+//                     let pageText = attributedText.attributedSubstring(from: charRange)
+//                     results.append((pageText, charRange))
+//
+//                     currentLocation = charRange.location + charRange.length
+//                 }
+//
+//                 return results
+//             }
     
     func processMultipleBookContents(
         contents: [Chapter],
@@ -280,47 +315,34 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
     ) -> [OriginalPage] {
         let decryptor = Decryptor()
         let decryptedText = decryptor.decryption(txt: bookContent.content, id: book.id)
-
         // 🔍 Debug: Check decrypted content
         print("✅ Decrypted Text for Chapter \(firstChapterNumber):\n\(decryptedText.prefix(500))...") // Showing first 500 chars
-
         let parsedPages = ParsePage().invoke(pageEncodedString: decryptedText, metadata: metadata, book: book)
-
         // 🔍 Debug: Parsed pages count
         print("✅ Parsed Pages Count for Chapter \(firstChapterNumber): \(parsedPages.count)")
-
         var originalPages: [OriginalPage] = []
         var globalPageIndex = originalPageOffset
         var chapterNumber = firstChapterNumber
         var pageNumberInBook = firstPageNumber
-
         var totalPagesInChapter = 0
         var chapterPages: [PageContent] = []
-
         // ✅ Access the chapter name from the index list
         if let indexList = metadata.decodedIndex() {
             if let matchingChapter = indexList.first(where: { $0.number == chapterNumber }) {
                 bookContent.chapterName = matchingChapter.name
             }
         }
-
         for (localPageIndex, attributedText) in parsedPages.enumerated() {
             // 🔍 Debug: Print page content size
             print("✅ Attributed Text Size for Chapter \(chapterNumber), Page \(localPageIndex): \(attributedText.length)")
-            
             let mutable = NSMutableAttributedString(attributedString: attributedText)
             mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
-
             // 🔍 Debug: Check before pagination
             print("✅ Paginating Chapter \(chapterNumber), Page \(localPageIndex) - Text Length: \(mutable.length)")
-
             let chunksWithRanges = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
-            
             // 🔍 Debug: Check chunk count
             print("✅ Chunks Found: \(chunksWithRanges.count) for Chapter \(chapterNumber), Page \(localPageIndex)")
-
             var chunkNumber = 0
-            
             let pageChunks = chunksWithRanges.map { chunk in
                 let globalEndIndex = chunk.range.location + chunk.range.length
                 
@@ -337,7 +359,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                     globalStartIndex: chunk.range.location,
                     globalEndIndex: globalEndIndex
                 )
-                
                 // 🔍 Debug: Log chunk details
                 print("    🔍 Chunk #\(chunkNumber): Range (\(chunk.range.location) - \(globalEndIndex)), Length: \(chunk.range.length)")
                 
@@ -356,23 +377,19 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                 OriginalPage(index: globalPageIndex, fullAttributedText: mutable, chunks: pageChunks)
             )
         }
-        
         print("chapterPages: \(chapterPages)")
         bookContent.pages = chapterPages
         bookContent.numberOfPages = totalPagesInChapter
-        
         // 🔍 Debug: Final Chapter Summary
         if let chapterName = bookContent.chapterName {
             print("✅ Chapter \(bookContent.firstChapterNumber) - \(chapterName) Processed with \(totalPagesInChapter) Pages.")
         } else {
             print("✅ Chapter \(bookContent.firstChapterNumber) Processed with \(totalPagesInChapter) Pages.")
         }
-
         print("✅ Pages in Chapter \(bookContent.firstChapterNumber):")
         for (index, page) in chapterPages.enumerated() {
             print("    - Page \(index + 1) → Range: \(page.rangeInOriginal)")
         }
-
         return originalPages
     }
 }
@@ -615,7 +632,6 @@ extension PagedTextViewController {
         }
         
         let direction: UIPageViewController.NavigationDirection = (index >= currentIndex) ? .forward : .reverse
-        
         let newVC = TextPageViewController()
         newVC.pages = pages
         newVC.originalPages = originalPages
@@ -630,6 +646,7 @@ extension PagedTextViewController {
             }
         }
     }
+    
     func currentTextPageViewController() -> TextPageViewController? {
         guard let pageVC = pageViewController else {
             print("❌ pageViewController is nil.")
@@ -640,7 +657,6 @@ extension PagedTextViewController {
             print("❌ No TextPageViewController found in viewControllers.")
             return nil
         }
-        
         print("✅ Found active TextPageViewController.")
         return firstVC
     }
@@ -964,113 +980,124 @@ extension PagedTextViewController {
             viewController.reloadPageContent()
         }
     }
+    
+    func paginater(attributedText: NSAttributedString, fontSize: CGFloat, maxSize: CGSize) -> [(text: NSAttributedString, range: NSRange)] {
+        let layoutManager = NSLayoutManager()
+        let textStorage = NSTextStorage(attributedString: attributedText)
+        textStorage.addLayoutManager(layoutManager)
+
+        var results: [(NSAttributedString, NSRange)] = []
+        var currentLocation = 0
+
+        while currentLocation < layoutManager.numberOfGlyphs {
+            let textContainer = NSTextContainer(size: maxSize)
+            textContainer.lineFragmentPadding = 0
+            layoutManager.addTextContainer(textContainer)
+
+            // Compute the range for this container
+            let glyphRange = layoutManager.glyphRange(for: textContainer)
+            
+            if glyphRange.length == 0 {
+                print("❌ Glyph range is zero, stopping pagination.")
+                break
+            }
+
+            let charRange = layoutManager.characterRange(forGlyphRange: glyphRange, actualGlyphRange: nil)
+            let pageText = attributedText.attributedSubstring(from: charRange)
+            
+            print("🔹 Page created | Location: \(charRange.location), Length: \(charRange.length)")
+
+            results.append((pageText, charRange))
+
+            // Move to the end of the last character range
+            currentLocation = charRange.upperBound
+            
+            // Explicitly remove the textContainer to prevent memory bloat
+            layoutManager.removeTextContainer(at: layoutManager.textContainers.count - 1)
+        }
+
+        return results
+    }
+
+    
     func rebuildPages(fontSize: CGFloat, screenSize: CGSize) {
-            // Clear existing pages and cache
-            pages.removeAll()
-            viewControllerCache.removeAll()
-            originalPages.removeAll()
+        pages.removeAll()
+        viewControllerCache.removeAll()
+        
+        var globalStartIndex = 0
+        var globalPageIndex = 0
+        
+        for content in bookChapters {
+            // ✅ Step 1: Load the related `BookContent` properties.
+            let firstChapterNumber = content.firstChapterNumber
+            let firstPageNumber = content.firstPageNumber
+            
+            // ✅ Step 2: Decrypt and parse the content using the same logic.
+            let decryptor = Decryptor()
+            let decryptedText = decryptor.decryption(txt: content.content, id: bookResponse?.book.id ?? 0)
+            let parsedPages = ParsePage().invoke(pageEncodedString: decryptedText, metadata: metadataa ?? MetaDataResponse.default, book: bookResponse?.book ?? Book.default)
+            
+            var chapterNumber = firstChapterNumber
+            var pageNumberInBook = firstPageNumber
 
-            var globalStartIndex = 0
-            var globalPageIndex = 0
-
-            // ✅ Loop through each chapter in the book using its index
-            for (index, _) in bookChapters.enumerated() {
-                var chapter = bookChapters[index]  // ➡️ Make a mutable copy
-
-                let firstChapterNumber = chapter.firstChapterNumber
-                let firstPageNumber = chapter.firstPageNumber
-
-                // ✅ Decrypt the content
-                let decryptor = Decryptor()
-                let decryptedText = decryptor.decryption(txt: chapter.content, id: bookResponse?.book.id ?? 0)
-
-                // ✅ Parse the pages
-                let parsedPages = ParsePage().invoke(
-                    pageEncodedString: decryptedText,
-                    metadata: metadataa ?? MetaDataResponse.default,
-                    book: bookResponse?.book ?? Book.default
-                )
-
-                var chapterNumber = firstChapterNumber
-                var pageNumberInBook = firstPageNumber
-                var chapterPages: [PageContent] = []
-                var totalPagesInChapter = 0
-
-                // ✅ Loop through parsed pages
-                for (localPageIndex, attributedText) in parsedPages.enumerated() {
-                    // ✅ Set font attributes
-                    let mutable = NSMutableAttributedString(attributedString: attributedText)
-                    mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
-
-                    // ✅ Paginate the content based on the screen size
-                    let chunksWithRanges = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
-                    var chunkNumber = 0
-
-                    // ✅ Create `PageContent` for each chunk
-                    let pageChunks = chunksWithRanges.map { chunk in
-                        let globalEndIndex = globalStartIndex + chunk.text.length
-
-                        let pageContent = PageContent(
-                            attributedText: chunk.text,
-                            image: nil,
-                            originalPageIndex: globalPageIndex,
-                            pageNumberInChapter: localPageIndex + 1,
-                            pageNumberInBook: pageNumberInBook,
-                            chapterNumber: chapterNumber,
-                            chunkNumber: chunkNumber,
-                            pageIndexInBook: globalPageIndex,
-                            rangeInOriginal: chunk.range,
-                            globalStartIndex: globalStartIndex,
-                            globalEndIndex: globalEndIndex
-                        )
-
-                        // ✅ Collect chapter pages
-                        chapterPages.append(pageContent)
-
-                        globalStartIndex = globalEndIndex
-                        chunkNumber += 1
-                        globalPageIndex += 1
-                        pageNumberInBook += 1
-                        totalPagesInChapter += 1
-
-                        return pageContent
-                    }
-
-                    // ✅ Create OriginalPage and append to the list
-                    let originalPage = OriginalPage(index: globalPageIndex, fullAttributedText: mutable, chunks: pageChunks)
-                    self.originalPages.append(originalPage)
-                    self.pages.append(contentsOf: pageChunks)
+            for (localPageIndex, attributedText) in parsedPages.enumerated() {
+                // ✅ Step 3: Create mutable attributed string and paginate
+                let mutable = NSMutableAttributedString(attributedString: attributedText)
+                mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
+                
+                let chunksWithRanges = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
+                var chunkNumber = 0
+                
+                let pageChunks = chunksWithRanges.map { chunk in
+                    let globalEndIndex = globalStartIndex + chunk.text.length
+                    
+                    let pageContent = PageContent(
+                        attributedText: chunk.text,
+                        image: nil,
+                        originalPageIndex: globalPageIndex,
+                        pageNumberInChapter: localPageIndex + 1,
+                        pageNumberInBook: pageNumberInBook,
+                        chapterNumber: chapterNumber,
+                        chunkNumber: chunkNumber,
+                        pageIndexInBook: globalPageIndex,
+                        rangeInOriginal: chunk.range,
+                        globalStartIndex: globalStartIndex,
+                        globalEndIndex: globalEndIndex
+                    )
+                    
+                    // ✅ Step 4: Update counters and tracking
+                    globalStartIndex = globalEndIndex
+                    chunkNumber += 1
+                    globalPageIndex += 1
+                    pageNumberInBook += 1
+                    
+                    return pageContent
                 }
+                
+                // ✅ Step 5: Append to original pages and main page list
+                let originalPage = OriginalPage(index: globalPageIndex, fullAttributedText: mutable, chunks: pageChunks)
+                self.originalPages.append(originalPage)
+                self.pages.append(contentsOf: pageChunks)
 
-                // ✅ Attach the chapter pages and page count back to the Chapter instance
-                chapter.pages = chapterPages
-                chapter.numberOfPages = totalPagesInChapter
-
-                // ✅ Set the chapter name if available
-                if let chapterMetadata = metadataa?.decodedIndex()?.first(where: { $0.number == chapterNumber }) {
-                    chapter.chapterName = chapterMetadata.name
-                }
-
-                // ✅ Reassign the updated chapter back into the array
-                bookChapters[index] = chapter
-
-                // ✅ Log the results for verification
-                print("✅ Chapter \(chapter.firstChapterNumber) Processed with \(totalPagesInChapter) Pages.")
-                print("✅ Pages in Chapter \(chapter.firstChapterNumber):")
-                for (index, page) in chapterPages.enumerated() {
-                    print("    - Page \(index + 1) → Range: \(page.rangeInOriginal)")
+                // ✅ Step 6: Update chapter if necessary
+                if chapterNumber < content.lastChapterNumber {
+                    chapterNumber += 1
                 }
             }
+        }
 
-            // ✅ Clear the cache and refresh the UI
-            clearAdjacentViewControllerCache()
-            DispatchQueue.main.async {
-                guard self.pages.indices.contains(self.currentIndex) else { return }
-                if let refreshedVC = self.recreateViewController(at: self.currentIndex) {
-                    self.setViewControllers([refreshedVC], direction: .forward, animated: false, completion: nil)
-                }
-                self.updatePageControl()
+        // 🔄 Restore page index and reload UI
+        clearAdjacentViewControllerCache()
+        DispatchQueue.main.async {
+            guard self.pages.indices.contains(self.currentIndex) else { return }
+
+            if let refreshedVC = self.recreateViewController(at: self.currentIndex) {
+                self.setViewControllers([refreshedVC], direction: .forward, animated: false, completion: nil)
             }
-       }
+            self.updatePageControl()
+        }
+    }
+
+
 
 }

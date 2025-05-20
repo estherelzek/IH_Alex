@@ -196,10 +196,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
             UserDefaults.standard.set(Float(screenSize.height), forKey: "lastScreenHeight")
 
             // ✅ Rebuild the pages
-            self.pageController?.rebuildPages(
-                fontSize: CGFloat(finalFontSize),
-                screenSize: screenSize
-            )
+            self.pageController?.rebuildPages(fontSize: CGFloat(finalFontSize),screenSize: screenSize)
         } else {
             print("✅ No changes detected, skipping rebuild.")
         }
@@ -263,27 +260,39 @@ extension TextPageViewController: MenuViewDelegate {
     }
     
     func zoom(increase: Bool) {
-           let step: CGFloat = 1.0
-           guard let currentFont = textView.attributedText.attribute(.font, at: 0, effectiveRange: nil) as? UIFont else {
-               print("⚠️ No font found in attributed text!")
-               return
-           }
-           let currentSize = currentFont.pointSize
-           let newFontSize = increase ? currentSize + step : currentSize - step
-           let finalFontSize = max(min(newFontSize, 30), 12)
-           print("🔹 Before Zoom | Current Size: \(currentSize), New Size: \(newFontSize), Final Size: \(finalFontSize)")
-           if finalFontSize == currentSize {
-               print("🔹 Font size unchanged. Skipping update.")
-               return
-           }
-           UserDefaults.standard.set(finalFontSize, forKey: "globalFontSize")
-           UserDefaults.standard.synchronize()
-           print("✅ Saved finalFontSize: \(finalFontSize)")
-           applyFontSize(finalFontSize)
-           pageController?.applyFontSizeToAllPages(finalFontSize)
-           loadNoteIcons()
-       }
-    
+        let step: CGFloat = 1.0
+        guard let currentFont = textView.attributedText.attribute(.font, at: 0, effectiveRange: nil) as? UIFont else {
+            print("⚠️ No font found in attributed text!")
+            return
+        }
+
+        let currentSize = currentFont.pointSize
+        let newFontSize = increase ? currentSize + step : currentSize - step
+        let finalFontSize = max(min(newFontSize, 30), 12)
+
+        print("🔹 Before Zoom | Current Size: \(currentSize), New Size: \(newFontSize), Final Size: \(finalFontSize)")
+
+        if finalFontSize == currentSize {
+            if finalFontSize == 30 {
+                print("🔹 Font size is already at the maximum limit (30). Skipping update.")
+            } else if finalFontSize == 12 {
+                print("🔹 Font size is already at the minimum limit (12). Skipping update.")
+            } else {
+                print("🔹 Font size unchanged. Skipping update.")
+            }
+            return
+        }
+
+        UserDefaults.standard.set(finalFontSize, forKey: "globalFontSize")
+        UserDefaults.standard.synchronize()
+        print("✅ Saved finalFontSize: \(finalFontSize)")
+
+        // Apply the font size
+        applyFontSize(finalFontSize)
+        pageController?.applyFontSizeToAllPages(finalFontSize)
+        loadNoteIcons()
+    }
+
     func refreshContent() {
         guard let pageController = self.pageController else { return }
         let latestContent = pageController.pages[pageIndex]
@@ -752,6 +761,7 @@ extension TextPageViewController {
     }
 
     @objc private func toggleBookmark() {
+        print("current page index: \(pageContent?.originalPageIndex ?? -1)")
         guard let originalPageIndex = pageContent?.originalPageIndex else { return }
         let isBookmarked = BookmarkManager.shared.isBookmarked(originalPageIndex: originalPageIndex)
         if isBookmarked {
