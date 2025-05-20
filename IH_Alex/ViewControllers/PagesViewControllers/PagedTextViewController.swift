@@ -4,12 +4,11 @@
 //
 //  Created by esterelzek on 16/02/2025.
 //
-
 import Foundation
 import UIKit
 import CloudKit
 
-// hello esther 
+// hello esther
 // hello esther
 struct PageContent: Equatable {
     let attributedText: NSAttributedString
@@ -427,7 +426,6 @@ extension PagedTextViewController {
         vc.pageContent = pages[index]
         vc.pageIndex = index
         vc.pageController = self
-  //      print("current index in text vc  : \(vc.pageIndex)")
         vc.searchKeyword = self.searchKeyword
         let savedFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
         if savedFontSize > 0 {
@@ -444,6 +442,7 @@ extension PagedTextViewController {
         let vc = TextPageViewController()
         vc.pageContent = pages[pageIndex]
         vc.pages = self.pages
+        vc.pageController = self
         vc.pageIndex = pageIndex
         return vc
     }
@@ -452,11 +451,13 @@ extension PagedTextViewController {
     // MARK: - PageViewController DataSource Methods
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         guard let vc = viewController as? TextPageViewController else { return nil }
+        vc.pageController = self
         return getViewController(at: vc.pageIndex - 1)
     }
 
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         guard let vc = viewController as? TextPageViewController else { return nil }
+        vc.pageController = self
         return getViewController(at: vc.pageIndex + 1)
     }
 
@@ -476,7 +477,9 @@ extension PagedTextViewController {
                             willTransitionTo pendingViewControllers: [UIViewController]) {
         for vc in pendingViewControllers {
             if let textVC = vc as? TextPageViewController {
+                textVC.pageController = self
                 textVC.refreshContent()
+                textVC.reloadPageContent()
                 textVC.closeMenu()
                 textVC.closeNote()// Prepare content before it appears
                 textVC.pages = self.pages
@@ -495,7 +498,7 @@ extension PagedTextViewController {
         DispatchQueue.main.async {
             self.currentIndex = visibleVC.pageIndex
             self.pageControl.currentPage = self.currentIndex
-         //   print("self.currentIndex: \(self.currentIndex)")
+            visibleVC.pageController = self
             self.pageChangeDelegate?.didUpdatePage(to: self.currentIndex)
         }
     }
@@ -657,6 +660,7 @@ extension PagedTextViewController {
             print("❌ No TextPageViewController found in viewControllers.")
             return nil
         }
+        firstVC.pageController = self
         print("✅ Found active TextPageViewController.")
         return firstVC
     }
@@ -671,6 +675,7 @@ extension PagedTextViewController {
     func recreateViewController(at index: Int) -> TextPageViewController? {
         guard index >= 0 && index < pages.count else { return nil }
         let vc = TextPageViewController()
+        vc.pageController = self
         vc.originalPages = self.originalPages
         vc.pages = self.pages
         vc.pageContent = pages[index]
@@ -874,7 +879,7 @@ extension PagedTextViewController {
         if isRotationLocked {
             isRotationLocked = false
             lockedOrientation = nil
-            print("🔄 Rotation Unlocked: Now follows device movement")
+       //     print("🔄 Rotation Unlocked: Now follows device movement")
             UserDefaults.standard.set(false, forKey: "rotationLocked")
             UserDefaults.standard.removeObject(forKey: "lockedOrientation")
             let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .all)
@@ -944,11 +949,11 @@ extension PagedTextViewController {
                return
            }
            let newOrientation = windowScene.interfaceOrientation
-           print("🔄 Detected Rotation: New Orientation = \(newOrientation.rawValue)")
+       //    print("🔄 Detected Rotation: New Orientation = \(newOrientation.rawValue)")
            if isRotationLocked, let lockedOrientation = lockedOrientation {
                print("🔒 Rotation is LOCKED to: \(lockedOrientation.rawValue)")
            } else {
-               print("🔄 Rotation is UNLOCKED: Device can rotate freely.")
+             //  print("🔄 Rotation is UNLOCKED: Device can rotate freely.")
            }
        }
     func loadJSON<T: Decodable>(from filename: String, as type: T.Type) -> T? {
@@ -973,9 +978,9 @@ extension PagedTextViewController {
     }
     
     func refreshAllPages() {
-        print("🔄 Refreshing all pages")
+      //  print("🔄 Refreshing all pages")
         for (index, viewController) in viewControllerCache {
-            print("🔄 Refreshing page at index: \(index)")
+         //   print("🔄 Refreshing page at index: \(index)")
             viewController.applySavedAppearance()
             viewController.reloadPageContent()
         }
@@ -1021,41 +1026,55 @@ extension PagedTextViewController {
 
     
     func rebuildPages(fontSize: CGFloat, screenSize: CGSize) {
+        print("🔄 Rebuilding pages...")
+
         pages.removeAll()
+        originalPages.removeAll()
         viewControllerCache.removeAll()
-        
+
         var globalStartIndex = 0
         var globalPageIndex = 0
-        
+
+        var seenChapters: Set<Int> = []
+
         for content in bookChapters {
-            // ✅ Step 1: Load the related `BookContent` properties.
-            let firstChapterNumber = content.firstChapterNumber
+            let chapterNumber = content.firstChapterNumber
             let firstPageNumber = content.firstPageNumber
-            
-            // ✅ Step 2: Decrypt and parse the content using the same logic.
+
+            guard !seenChapters.contains(chapterNumber) else {
+                print("⚠️ Skipping duplicate chapter \(chapterNumber)")
+                continue
+            }
+            seenChapters.insert(chapterNumber)
+
             let decryptor = Decryptor()
             let decryptedText = decryptor.decryption(txt: content.content, id: bookResponse?.book.id ?? 0)
-            let parsedPages = ParsePage().invoke(pageEncodedString: decryptedText, metadata: metadataa ?? MetaDataResponse.default, book: bookResponse?.book ?? Book.default)
-            
-            var chapterNumber = firstChapterNumber
+
+            let parsedPages = ParsePage().invoke(
+                pageEncodedString: decryptedText,
+                metadata: metadataa ?? MetaDataResponse.default,
+                book: bookResponse?.book ?? Book.default
+            )
+
             var pageNumberInBook = firstPageNumber
+            var chapterPages: [PageContent] = []
 
             for (localPageIndex, attributedText) in parsedPages.enumerated() {
-                // ✅ Step 3: Create mutable attributed string and paginate
                 let mutable = NSMutableAttributedString(attributedString: attributedText)
                 mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
-                
+
                 let chunksWithRanges = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
                 var chunkNumber = 0
-                
-                let pageChunks = chunksWithRanges.map { chunk in
+                var pageChunks: [PageContent] = []
+
+                for chunk in chunksWithRanges {
                     let globalEndIndex = globalStartIndex + chunk.text.length
-                    
+
                     let pageContent = PageContent(
                         attributedText: chunk.text,
                         image: nil,
                         originalPageIndex: globalPageIndex,
-                        pageNumberInChapter: localPageIndex + 1,
+                        pageNumberInChapter: localPageIndex,
                         pageNumberInBook: pageNumberInBook,
                         chapterNumber: chapterNumber,
                         chunkNumber: chunkNumber,
@@ -1064,40 +1083,41 @@ extension PagedTextViewController {
                         globalStartIndex: globalStartIndex,
                         globalEndIndex: globalEndIndex
                     )
-                    
-                    // ✅ Step 4: Update counters and tracking
+
                     globalStartIndex = globalEndIndex
                     chunkNumber += 1
                     globalPageIndex += 1
                     pageNumberInBook += 1
-                    
-                    return pageContent
-                }
-                
-                // ✅ Step 5: Append to original pages and main page list
-                let originalPage = OriginalPage(index: globalPageIndex, fullAttributedText: mutable, chunks: pageChunks)
-                self.originalPages.append(originalPage)
-                self.pages.append(contentsOf: pageChunks)
 
-                // ✅ Step 6: Update chapter if necessary
-                if chapterNumber < content.lastChapterNumber {
-                    chapterNumber += 1
+                    pageChunks.append(pageContent)
+                    chapterPages.append(pageContent)
+                    pages.append(pageContent)
                 }
+
+                let originalPage = OriginalPage(index: originalPages.count, fullAttributedText: mutable, chunks: pageChunks)
+                originalPages.append(originalPage)
+            }
+
+            // ✅ Update chapter with new pages and count
+            if let index = bookChapters.firstIndex(where: { $0.firstChapterNumber == chapterNumber }) {
+                bookChapters[index].pages = chapterPages
+                bookChapters[index].numberOfPages = chapterPages.count
+                print("✅ Rebuilt chapter \(chapterNumber) with \(chapterPages.count) pages.")
             }
         }
 
-        // 🔄 Restore page index and reload UI
+        // ✅ UI Restoration
         clearAdjacentViewControllerCache()
         DispatchQueue.main.async {
             guard self.pages.indices.contains(self.currentIndex) else { return }
-
             if let refreshedVC = self.recreateViewController(at: self.currentIndex) {
                 self.setViewControllers([refreshedVC], direction: .forward, animated: false, completion: nil)
             }
             self.updatePageControl()
         }
+
+        let loadedChapters = Set(pages.map { $0.chapterNumber }).sorted()
+        print("✅ Chapters loaded: \(loadedChapters)")
     }
-
-
 
 }

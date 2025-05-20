@@ -234,6 +234,7 @@ extension MainViewController: PagedTextViewControllerDelegate {
         print("currentPageComparedToChapterPages.text: \(String(describing: currentPageComparedToChapterPages.text))")
         print("currentPageComparedToBookPages.text: \(String(describing: currentPageComparedToBookPages.text))")
     }
+    
     func updateCurrentLabels() {
         guard let pagedVC = pagedVC else { return }
         print("pagedVC: \(pagedVC.pages.count)")
@@ -244,49 +245,30 @@ extension MainViewController: PagedTextViewControllerDelegate {
             return
         }
         let currentPage = pagedVC.pages[currentIndex]
-
         let globalPageIndex = currentPage.pageNumberInBook - 1 // 0-based
-        
-        // 🔹 Initialize variables
         var displayChapterNumber = currentPage.chapterNumber
         var pageInChapter = 1
         var totalChapterPages = 1
         var chapterName = "Chapter \(displayChapterNumber)"
-        
-        // ✅ Find the correct chapter by matching the number
         for chapter in pagedVC.bookChapters {
             if chapter.firstChapterNumber == displayChapterNumber {
-                
-                // ✅ Directly count the pages from the chapter's pages array
                 totalChapterPages = chapter.pages?.count ?? 0
-                
-                // ✅ Find the index of the page in the chapter
                 if let pageIndex = chapter.pages?.firstIndex(where: {
                     $0.pageIndexInBook == currentPage.pageIndexInBook
                 }) {
                     pageInChapter = pageIndex + 1
                 }
-                
-                // ✅ Update the chapter name from the model if it exists
                 if let name = chapter.chapterName {
                     chapterName = name
                 }
-                
-                // ✅ Early exit as the chapter is already found
                 break
             }
         }
-
-        // ✅ Book-level page display, calculated from all chapters
         let totalBookPages = pagedVC.bookChapters.reduce(0) { $0 + ($1.pages?.count ?? 0) }
         let pageInBook = currentPage.pageNumberInBook
-
-        // ✅ Update the labels
         chapterTitleLabel.text = chapterName
         currentPageComparedToChapterPages.text = "\(chapterName): Page \(pageInChapter) / \(totalChapterPages)"
         currentPageComparedToBookPages.text = "Page \(pageInBook) / \(totalBookPages)"
-
-        // ✅ Debugging information
         print("📌 Chapter Name: \(chapterName)")
         print("📌 Page in Chapter: \(pageInChapter) / \(totalChapterPages)")
         print("📌 Page in Book: \(pageInBook) / \(totalBookPages)")

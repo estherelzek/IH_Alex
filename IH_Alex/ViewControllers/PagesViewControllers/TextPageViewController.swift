@@ -41,14 +41,18 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     
     override func viewDidLoad() {
         super.viewDidLoad()
-       
-        setupTextView()
-        setupCustomMenu()
         if let pageContent = pageContent {
             loadHighlights(for: pageContent)
         } else {
             print("❌ No page content available — cannot load highlights.")
         }
+        setupTextView()
+        setupCustomMenu()
+//        if let pageContent = pageContent {
+//            loadHighlights(for: pageContent)
+//        } else {
+//            print("❌ No page content available — cannot load highlights.")
+//        }
         print("pageContent?.originalPageIndex : \(String(describing: pageContent?.originalPageIndex))")
         applySavedAppearance()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
@@ -66,6 +70,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         super.viewWillLayoutSubviews()
         self.loadNoteIcons()
         self.addBookmarkView()
+      //  self.reloadPageContent()
     }
     
     func setupTextView() {
@@ -116,6 +121,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         addBookmarkView()
+        reloadPageContent()
     }
 
     private func setupPageViewController() {
@@ -561,33 +567,40 @@ extension TextPageViewController {
     }
 
     
-    func textViewDidChange(_ textView: UITextView) {
-        loadNoteIcons()
-    }
     func applyHighlight(color: UIColor) {
         guard let selectedRange = textView.selectedTextRange, let text = textView.text(in: selectedRange) else {
             print("No text selected")
             return
         }
 
-        let nsRange = getNSRange(from: selectedRange) ?? NSRange(location: 0, length: 0)
-        let hexColor = color.toHexString()
+        // Convert UITextRange to NSRange
+        guard let nsRange = getNSRange(from: selectedRange), nsRange.length > 0 else {
+            print("Invalid selection range")
+            return
+        }
+
+        // Get current page content
         guard let currentPageContent = getCurrentPageContent() else {
             print("Current page content not found")
             return
         }
+
+        // Calculate global range of the highlight (offset by page global start)
         let globalRange = calculateGlobalRange(from: nsRange, pageContent: currentPageContent)
-        let highlight = Highlight(range: nsRange, page: pageIndex, globalRange: globalRange, color: hexColor)
+
+        // Create and save the highlight globally
+        let hexColor = color.toHexString()
+        let highlight = Highlight(range: nsRange, page: currentPageContent.pageNumberInBook, globalRange: globalRange, color: hexColor)
         HighlightManager.shared.saveHighlight(highlight)
         print("highlight saved: \(highlight)")
+
+        // Apply highlight locally in this page's textView
         updateTextViewHighlight(range: nsRange, color: color)
     }
 
     func calculateGlobalRange(from nsRange: NSRange, pageContent: PageContent) -> NSRange {
         let globalStart = nsRange.location + pageContent.globalStartIndex
-        let globalEnd = globalStart + nsRange.length
-        
-        return NSRange(location: globalStart, length: globalEnd - globalStart)
+        return NSRange(location: globalStart, length: nsRange.length)
     }
 
     func updateTextViewHighlight(range: NSRange, color: UIColor) {
@@ -595,77 +608,102 @@ extension TextPageViewController {
         textView.textStorage.addAttribute(.backgroundColor, value: color, range: range)
         textView.textStorage.endEditing()
     }
+
     func getCurrentPageContent() -> PageContent? {
+        // Find page content for the current visible page index
         return pages.first { $0.pageIndexInBook == pageIndex }
     }
 
     func clearHighlight() {
-        guard let selectedRange = textView.selectedTextRange else { return }
-        let nsRange = getNSRange(from: selectedRange) ?? NSRange(location: 0, length: 0)
+        guard let selectedRange = textView.selectedTextRange, let nsRange = getNSRange(from: selectedRange) else {
+            print("No selection to clear")
+            return
+        }
+
+        // Load all highlights
         var highlights = HighlightManager.shared.loadHighlights()
+
+        // Remove highlights intersecting the selected range on the current page only
         highlights.removeAll { highlight in
             NSIntersectionRange(highlight.range, nsRange).length > 0 && highlight.page == pageIndex
         }
+
         HighlightManager.shared.saveAllHighlights(highlights)
         refreshTextViewHighlights()
     }
 
     func refreshTextViewHighlights() {
+        guard let currentPageContent = getCurrentPageContent() else {
+            print("Current page content not found for refresh")
+            return
+        }
+
         let attributedString = NSMutableAttributedString(attributedString: textView.attributedText)
         let fullRange = NSRange(location: 0, length: attributedString.length)
-        attributedString.removeAttribute(.backgroundColor, range: fullRange)
-        let highlights = HighlightManager.shared.loadHighlights().filter { $0.page == pageIndex }
 
+        // Remove all existing highlight backgrounds
+        attributedString.removeAttribute(.backgroundColor, range: fullRange)
+
+        // Load all highlights and filter those belonging to current page
+        let highlights = HighlightManager.shared.loadHighlights().filter { $0.page == currentPageContent.pageIndexInBook }
+
+        // Apply each highlight, converting from globalRange to local range
         for highlight in highlights {
-            if highlight.range.location + highlight.range.length <= attributedString.length {
-                attributedString.addAttribute(.backgroundColor, value: UIColor(hex: highlight.color), range: highlight.range)
+            let localLocation = highlight.globalRange.location - currentPageContent.globalStartIndex
+            let localRange = NSRange(location: localLocation, length: highlight.globalRange.length)
+            if localRange.location >= 0 && localRange.location + localRange.length <= attributedString.length {
+                attributedString.addAttribute(.backgroundColor, value: UIColor(hex: highlight.color), range: localRange)
+            } else {
+                print("⚠️ Skipping out-of-bounds highlight during refresh: \(highlight)")
             }
         }
-        
+
         DispatchQueue.main.async {
             self.textView.attributedText = attributedString
         }
     }
 
     func loadHighlights(for pageContent: PageContent) {
-        // Load main highlights from HighlightManager
         let highlights = HighlightManager.shared.loadHighlights()
+        print("highlights \(highlights)")
         let pageGlobalRange = NSRange(location: pageContent.globalStartIndex, length: pageContent.globalEndIndex - pageContent.globalStartIndex)
-        
-        // 🔍 Filter only the highlights that belong to the current page
+
+        // Filter highlights that overlap this page's global range
         let filteredHighlights = highlights.filter { highlight in
-            let highlightRange = highlight.globalRange.location..<(highlight.globalRange.location + highlight.globalRange.length)
-            let pageRange = pageContent.globalStartIndex..<pageContent.globalEndIndex
-            return highlightRange.overlaps(pageRange)
+            let highlightStart = highlight.globalRange.location
+            let highlightEnd = highlight.globalRange.location + highlight.globalRange.length
+            let pageStart = pageContent.globalStartIndex
+            let pageEnd = pageContent.globalEndIndex
+            // Overlaps if highlight start < page end and highlight end > page start
+            return highlightStart < pageEnd && highlightEnd > pageStart
         }
-        
-        print("📌 Highlights for this page: \(filteredHighlights)")
-        
+
+        print("📌 Highlights for page \(pageContent.pageIndexInBook): \(filteredHighlights)")
+
         textView.textStorage.beginEditing()
-        
-        // 🧽 Clear previous highlights (both main and search-based)
+        // Clear previous highlights
         let fullRange = NSRange(location: 0, length: textView.textStorage.length)
         textView.textStorage.removeAttribute(.backgroundColor, range: fullRange)
 
-        // 🌟 Apply Main Highlights
+        // Apply filtered highlights with local offset
         for highlight in filteredHighlights {
             let localLocation = highlight.globalRange.location - pageContent.globalStartIndex
             let localRange = NSRange(location: localLocation, length: highlight.globalRange.length)
             if localRange.location >= 0 && localRange.location + localRange.length <= textView.textStorage.length {
                 textView.textStorage.addAttribute(.backgroundColor, value: UIColor(hex: highlight.color), range: localRange)
             } else {
-                print("⚠️ Skipping out-of-bounds highlight: \(highlight)")
+                print("⚠️ Skipping out-of-bounds highlight during loadHighlights: \(highlight)")
             }
         }
 
-        // 🌟 Apply Temporary Search Highlights (if any)
+        // Apply search highlights if any
         if !searchResults.isEmpty {
             let fullText = textView.text.lowercased()
-            
+
             for searchResult in searchResults {
                 let searchText = searchResult.content.lowercased()
                 var searchRange = fullText.startIndex..<fullText.endIndex
-                
+
                 while let range = fullText.range(of: searchText, options: [], range: searchRange) {
                     let nsRange = NSRange(range, in: fullText)
                     textView.textStorage.addAttribute(.backgroundColor, value: UIColor.systemCyan.withAlphaComponent(0.2), range: nsRange)
@@ -673,10 +711,9 @@ extension TextPageViewController {
                 }
             }
         }
-        
+
         textView.textStorage.endEditing()
     }
-
 
 
 
