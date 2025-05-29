@@ -23,7 +23,7 @@ struct Chapter: Codable {
     
     // Properties NOT from JSON, added after processing
     var numberOfPages: Int?        // Computed after splitting content into pages
-    var pages: [PageContent]?      // Split pages assigned after processing content
+    var pages: [ChapterPages]?      // Split pages assigned after processing content
     var chapterName: String?       // Optional, can be assigned after loading or processing
     
     enum CodingKeys: String, CodingKey {

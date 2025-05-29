@@ -12,17 +12,20 @@ class NoteManager {
     static let shared = NoteManager()
     private let notesKey = "savedNotes"
 
+    // MARK: - Save a Single Note
     func saveNote(_ note: Note) {
         var notes = loadNotes()
         notes.append(note)
         saveAllNotes(notes)
     }
 
+    // MARK: - Save All Notes
     func saveAllNotes(_ notes: [Note]) {
         let noteDicts = notes.map { $0.toDictionary() }
         UserDefaults.standard.set(noteDicts, forKey: notesKey)
     }
 
+    // MARK: - Load All Notes
     func loadNotes() -> [Note] {
         guard let savedNotes = UserDefaults.standard.array(forKey: notesKey) as? [[String: Any]] else {
             return []
@@ -30,24 +33,28 @@ class NoteManager {
         return savedNotes.compactMap { Note.fromDictionary($0) }
     }
 
-    func loadNotes(for pages: [PageContent]) -> [Note] {
+    // MARK: - Load Notes for Chapter Pages (adjusted ranges)
+    func loadNotes(for pages: [ChapterPages]) -> [Note] {
         let savedNotes = loadNotes()
         var adjustedNotes: [Note] = []
 
         for note in savedNotes {
-            if let newRange = findRange(for: note.globalRange, in: pages) {
-                adjustedNotes.append(note.withUpdatedRange(newRange))
+            if let newRange = findAdjustedRange(start: note.start, end: note.end, in: pages) {
+                let updatedNote = note.withUpdatedRange(start: newRange.location, end: newRange.location + newRange.length)
+                adjustedNotes.append(updatedNote)
             }
         }
 
         return adjustedNotes
     }
 
-    private func findRange(for globalRange: NSRange, in pages: [PageContent]) -> NSRange? {
+    // MARK: - Find Relative Range for Global Start/End
+    private func findAdjustedRange(start: Int, end: Int, in pages: [ChapterPages]) -> NSRange? {
         for page in pages {
-            if NSLocationInRange(globalRange.location, page.rangeInOriginal) {
-                let relativeLocation = globalRange.location - page.rangeInOriginal.location
-                return NSRange(location: relativeLocation, length: globalRange.length)
+            if NSLocationInRange(start, page.rangeInOriginal) {
+                let relativeLocation = start - page.rangeInOriginal.location
+                let relativeLength = end - start
+                return NSRange(location: relativeLocation, length: relativeLength)
             }
         }
         return nil

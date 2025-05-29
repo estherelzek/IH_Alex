@@ -158,11 +158,7 @@ extension Collection {
 }
 
 extension TextPageViewController {
-    func getNSRange(from textRange: UITextRange) -> NSRange? {
-        let location = textView.offset(from: textView.beginningOfDocument, to: textRange.start)
-        let length = textView.offset(from: textRange.start, to: textRange.end)
-        return NSRange(location: location, length: length)
-    }
+  
     
     func createColorImage(color: UIColor) -> UIImage? {
         let size = CGSize(width: 20, height: 20)
@@ -218,6 +214,24 @@ extension TextPageViewController {
        return arabicRange != nil
    }
 }
+extension UIColor {
+    func toHexInt() -> Int {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0
+        getRed(&red, green: &green, blue: &blue, alpha: nil)
+        let r = Int(red * 255)
+        let g = Int(green * 255)
+        let b = Int(blue * 255)
+        return (r << 16) + (g << 8) + b
+    }
+
+    convenience init(rgb: Int) {
+        let red = CGFloat((rgb >> 16) & 0xFF) / 255
+        let green = CGFloat((rgb >> 8) & 0xFF) / 255
+        let blue = CGFloat(rgb & 0xFF) / 255
+        self.init(red: red, green: green, blue: blue, alpha: 1.0)
+    }
+}
+
 
 extension NSRange {
     func expanded(to characters: Int, in text: String) -> NSRange {
@@ -242,4 +256,266 @@ extension String {
         let upper = index(range.upperBound, offsetBy: radius, limitedBy: endIndex) ?? endIndex
         return String(self[lower..<upper])
     }
+}
+extension PagedTextViewController {
+    func loadRawChapters(completion: @escaping () -> Void) {
+        let dispatchGroup = DispatchGroup()
+
+        var bookLoaded = false
+        var metadataLoaded = false
+
+        // ✅ Load Book Info
+        dispatchGroup.enter()
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let bookInfo: BookResponse = self.loadJSON(from: "Bookinfo", as: BookResponse.self) {
+                self.bookResponse = bookInfo
+                bookLoaded = true
+                print("✅ Book Info loaded.")
+            } else {
+                print("❌ Failed to load Book Info.")
+            }
+            dispatchGroup.leave()
+        }
+
+        // ✅ Load Metadata
+        dispatchGroup.enter()
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let metadata: MetaDataResponse = self.loadJSON(from: "metadataResponse", as: MetaDataResponse.self) {
+                self.metadataa = metadata
+                metadataLoaded = true
+                print("✅ Metadata loaded.")
+
+                if let targetLinksData = metadata.targetLinks.data(using: .utf8) {
+                    do {
+                        // Decode TargetLink JSON
+                        let targetLinks = try JSONDecoder().decode([TargetLink].self, from: targetLinksData)
+
+                        // Map to PageReference
+                        let pageReferences = targetLinks.map {
+                            PageReference(
+                                key: $0.key,
+                                chapterNumber: $0.chapterNumber,
+                                pageNumber: $0.pageNumber,
+                                index: $0.index
+                            )
+                        }
+
+                        // Assign to local property
+                        self.pageReference = pageReferences
+
+                        // ✅ Save to UserDefaults
+                        if let encoded = try? JSONEncoder().encode(pageReferences) {
+                            UserDefaults.standard.set(encoded, forKey: "PageReferencesKey")
+                            print("✅ PageReferences saved to UserDefaults.")
+                        }
+
+                    } catch {
+                        print("❌ Failed to decode targetLinks: \(error.localizedDescription)")
+                    }
+                }
+
+            } else {
+                print("❌ Failed to load Metadata.")
+            }
+            dispatchGroup.leave()
+        }
+
+
+        // ✅ Wait until Book + Metadata are ready
+        dispatchGroup.notify(queue: .global(qos: .userInitiated)) {
+            guard bookLoaded, metadataLoaded,
+                  let book = self.bookResponse?.book,
+                  let metadata = self.metadataa else {
+                print("❌ Cannot process chapters: Book or Metadata not ready.")
+                DispatchQueue.main.async { completion() }
+                return
+            }
+
+            // ✅ Load fallback values from UserDefaults
+            let finalFontSize: CGFloat = {
+                let value = UserDefaults.standard.float(forKey: "globalFontSize")
+                return value > 0 ? CGFloat(value) : 16.0
+            }()
+
+            let finalScreenSize: CGSize = {
+                let width = UserDefaults.standard.float(forKey: "lastScreenWidth")
+                let height = UserDefaults.standard.float(forKey: "lastScreenHeight")
+                if width > 0, height > 0 {
+                    return CGSize(width: CGFloat(width), height: CGFloat(height))
+                } else {
+                    return UIScreen.main.bounds.inset(by: UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)).size
+                }
+            }()
+
+            // ✅ Save values back to UserDefaults
+            UserDefaults.standard.set(finalFontSize, forKey: "lastFontSize")
+            UserDefaults.standard.set(Float(finalScreenSize.width), forKey: "lastScreenWidth")
+            UserDefaults.standard.set(Float(finalScreenSize.height), forKey: "lastScreenHeight")
+
+            self.bookChapterrs.removeAll()
+            self.pagess.removeAll()
+            let tokens = ["Tooken1", "Tooken2", "Tooken3", "Tooken4", "Tooken5", "Tooken6", "Tooken7"]
+
+            var globalPageOffset = 0
+
+            for token in tokens {
+                if var chapter: Chapterr = self.loadJSON(from: token, as: Chapterr.self) {
+                    let pages = self.generatePagesForChapter(
+                        chapter: &chapter,
+                        book: book,
+                        metadata: metadata,
+                        fontSize: finalFontSize,
+                        screenSize: finalScreenSize,
+                        globalPageOffset: globalPageOffset
+                    )
+                    globalPageOffset += pages.count
+                    self.pagess.append(contentsOf: pages)
+                    self.bookChapterrs.append(chapter)
+                    print("✅ Processed \(token) → \(pages.count) pages")
+                } else {
+                    print("❌ Failed to load \(token)")
+                }
+            }
+
+            // ✅ Create chunks after pages are fully ready
+            self.chunkedPages = self.createChunks(fontSize: finalFontSize, screenSize: finalScreenSize)
+            print("✅ Created \(self.chunkedPages.count) chunks")
+
+            DispatchQueue.main.async {
+                print("✅ All files loaded, chapters paginated, and chunks created!")
+                completion()
+            }
+        }
+    }
+
+    func generatePagesForChapter(
+        chapter: inout Chapterr,
+        book: Book,
+        metadata: MetaDataResponse,
+        fontSize: CGFloat,
+        screenSize: CGSize,
+        globalPageOffset: Int
+    ) -> [Page] {
+        
+        // 1. Decrypt the content
+        let decryptor = Decryptor()
+        let decryptedText = decryptor.decryption(txt: chapter.content, id: book.id)
+        
+        // 2. Parse into attributed pages (logical pages)
+        let attributedPages = ParsePage().invoke(
+            pageEncodedString: decryptedText,
+            metadata: metadata,
+            book: book
+        )
+        
+        // 3. Optional: fetch chapter name from metadata
+        if let indexList = metadata.decodedIndex(),
+           let matching = indexList.first(where: { $0.number == chapter.firstChapterNumber }) {
+            chapter.chapterName = matching.name
+        }
+
+        var generatedPages: [Page] = []
+        var currentPageNumberInBook = chapter.firstPageNumber
+        var currentPageIndexInBook = globalPageOffset
+        var pageNumberInChapter = 0
+        
+        for attributedPage in attributedPages {
+            let mutableText = NSMutableAttributedString(attributedString: attributedPage)
+            mutableText.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutableText.length))
+            
+            let chunks = paginate(attributedText: mutableText, fontSize: fontSize, maxSize: screenSize)
+
+            for chunk in chunks {
+                let plainText = chunk.text.string
+                
+                let page = Page(
+                    pageNumber: currentPageNumberInBook,
+                    pageNumberInChapter: pageNumberInChapter,
+                    body: plainText,
+                    chapterNumber: chapter.firstChapterNumber,
+                    pageIndexInBook: currentPageIndexInBook
+                )
+                
+                generatedPages.append(page)
+                currentPageNumberInBook += 1
+                currentPageIndexInBook += 1
+                pageNumberInChapter += 1
+            }
+        }
+
+        // Update the chapter with page data
+        chapter.pages = generatedPages
+        chapter.numberOfPages = generatedPages.count
+        
+        return generatedPages
+    }
+
+//
+    func createChunks(fontSize: CGFloat, screenSize: CGSize) -> [Chunk] {
+        var chunks: [Chunk] = []
+        var globalStartIndex = 0
+        var globalPageIndex = 0
+        var chunkNumber = 0
+        var seenChapters: Set<Int> = []
+
+        for content in bookChapterrs {
+            let chapterNumber = content.firstChapterNumber
+            
+            guard !seenChapters.contains(chapterNumber) else {
+                print("⚠️ Skipping duplicate chapter \(chapterNumber)")
+                continue
+            }
+            seenChapters.insert(chapterNumber)
+            
+            let decryptor = Decryptor()
+            let decryptedText = decryptor.decryption(txt: content.content, id: bookResponse?.book.id ?? 0)
+            
+            let parsedPages = ParsePage().invoke(
+                pageEncodedString: decryptedText,
+                metadata: metadataa ?? MetaDataResponse.default,
+                book: bookResponse?.book ?? Book.default
+            )
+            
+            var localPageIndex = 0
+            
+            for attributedText in parsedPages {
+                let mutable = NSMutableAttributedString(attributedString: attributedText)
+                mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
+                
+                let pageChunks = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
+                
+                for chunk in pageChunks {
+                    let globalEndIndex = globalStartIndex + chunk.text.length
+                    
+                    let newChunk = Chunk(
+                        attributedText: chunk.text,
+                        image: nil,
+                        originalPageIndex: localPageIndex,
+                        pageNumberInChapter: localPageIndex,
+                        pageNumberInBook: content.firstPageNumber + localPageIndex,
+                        chapterNumber: chapterNumber,
+                        chunkNumber: chunkNumber,
+                        pageIndexInBook: globalPageIndex,
+                        rangeInOriginal: chunk.range,
+                        globalStartIndex: globalStartIndex,
+                        globalEndIndex: globalEndIndex
+                    )
+                    
+                    
+                    chunks.append(newChunk)
+                    
+                    globalStartIndex = globalEndIndex
+                    chunkNumber += 1
+                    globalPageIndex += 1
+                }
+                
+                localPageIndex += 1
+            }
+        }
+        print("chunks.count: \(chunks.count)")
+        print("self.pagesss.count: \(self.pagess.count)")
+        return chunks
+    }
+
+    
 }

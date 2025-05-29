@@ -27,6 +27,19 @@ class NoteViewController: UIViewController {
     var noteTitleContent: String?
     var noteRange: NSRange?
     var pageIndex: Int?
+   
+       /// The original page index from your data model (static page info)
+       var originalPageIndex: Int?
+       
+       /// The full text body of the original page (static content of the page)
+       var originalPageBody: String?
+    //
+    var bookChapterrs: [Chapterr] = []
+    var pagess: [Page] = []
+    var chunkedPages: [Chunk] = []  // This is rebuilt every time
+    var pageContentt: Chunk?
+    //
+    var noteId: Int64?
     weak var delegate: NoteViewControllerDelegate?
     var isEdit: Bool = false
     var globalNoteRange: NSRange?
@@ -61,30 +74,69 @@ class NoteViewController: UIViewController {
     }
 
     @IBAction func deleteNoteTapped(_ sender: Any) {
-        guard let globalRange = noteRange else { return }
+        guard let noteId = noteId else { return }
         var notes = NoteManager.shared.loadNotes()
-        notes.removeAll { $0.globalRange == globalRange }
+        notes.removeAll { $0.id == noteId }
         NoteManager.shared.saveAllNotes(notes)
         delegate?.didDeleteNote()
         dismissSelf()
     }
 
+
     @IBAction func saveNoteTapped(_ sender: Any) {
-        guard let globalRange = noteRange else { return } // Now using noteRange as globalRange
+        guard let bookId = bookChapterrs.first?.bookID else {
+            print("❌ Missing bookId")
+            return
+        }
+
+        guard let pageContentt = pageContentt else {
+            print("❌ Missing page content")
+            return
+        }
+
+        let chapterNumber = pageContentt.chapterNumber
+        let pageNumberInChapter = pageContentt.pageNumberInChapter
+        let pageNumberInBook = pageContentt.pageNumberInBook
+
+        guard let noteRange = noteRange else {
+            print("❌ Missing local note range")
+            return
+        }
+
+        let start = noteRange.location
+        let end = start + noteRange.length
+
+        let noteContent = noteText.text ?? ""
+
+        noteTextContent = noteContent ?? ""
+        print("✅ noteTextContent.count = \(noteTextContent.count)")
+        print("✅ noteRange = \(noteRange)")
+        print("✅ noteRange.location + noteRange.length = \(end)")
+       
+
         var notes = NoteManager.shared.loadNotes()
 
-        if let existingIndex = notes.firstIndex(where: { $0.globalRange == globalRange }) {
-            notes[existingIndex].content = noteText.text
-            notes[existingIndex].title = noteTitle.text ?? ""
+        if let noteId = noteId, let existingIndex = notes.firstIndex(where: { $0.id == noteId }) {
+            notes[existingIndex].noteText = noteContent
+            notes[existingIndex].selectedNoteText = noteTextContent
+            notes[existingIndex].lastUpdated = Date()
+            notes[existingIndex] = notes[existingIndex].withUpdatedRange(start: start, end: end)
         } else {
             let newNote = Note(
-                page: 0, range: globalRange, // Deprecated or unused, you can drop this or keep for legacy support
-                globalRange: globalRange,
-                title: noteTitle.text ?? "",
-                content: noteText.text ?? "",
-                position: nil
+                id: Int64(Date().timeIntervalSince1970 * 1000),
+                bookId: bookId,
+                chapterNumber: chapterNumber,
+                pageNumberInChapter: pageNumberInChapter,
+                pageNumberInBook: pageNumberInBook,
+                start: start,
+                end: end,
+                noteText: noteContent,
+                selectedNoteText: noteTitleContent ?? "",
+                lastUpdated: Date()
             )
+            print("newNote: \(newNote)")
             notes.append(newNote)
+            self.noteId = newNote.id
         }
 
         NoteManager.shared.saveAllNotes(notes)

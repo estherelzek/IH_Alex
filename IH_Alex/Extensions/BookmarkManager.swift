@@ -8,41 +8,51 @@
 
 import Foundation
 
-
 class BookmarkManager {
     static let shared = BookmarkManager()
     private let bookmarksKey = "bookBookmarks"
 
+    // MARK: - Save Bookmark
     func saveBookmark(_ bookmark: Bookmark) {
         var bookmarks = loadBookmarks()
-        if !bookmarks.contains(where: { $0.originalPageIndex == bookmark.originalPageIndex }) {
+
+        let isAlreadySaved = bookmarks.contains {
+            $0.bookId == bookmark.bookId &&
+            $0.chapterNumber == bookmark.chapterNumber &&
+            $0.pageNumberInChapter == bookmark.pageNumberInChapter
+        }
+
+        if !isAlreadySaved {
             bookmarks.append(bookmark)
             saveAllBookmarks(bookmarks)
-            print("✅ Bookmark added for original page: \(bookmark.originalPageIndex)")
+            print("✅ Bookmark added for Book ID \(bookmark.bookId), Page \(bookmark.pageNumberInBook)")
+        } else {
+            print("⚠️ Bookmark already exists for Book ID \(bookmark.bookId), Page \(bookmark.pageNumberInBook)")
         }
+
         printAllBookmarks()
     }
 
-    func removeBookmark(forOriginalPage originalPageIndex: Int) {
+    // MARK: - Remove Bookmark
+    func removeBookmark(bookId: Int, chapterNumber: Int, pageNumberInChapter: Int) {
         var bookmarks = loadBookmarks()
-        if bookmarks.contains(where: { $0.originalPageIndex == originalPageIndex }) {
-            bookmarks.removeAll { $0.originalPageIndex == originalPageIndex }
-            saveAllBookmarks(bookmarks)
-            print("❌ Bookmark removed for original page: \(originalPageIndex)")
+        let originalCount = bookmarks.count
+
+        bookmarks.removeAll {
+            $0.bookId == bookId &&
+            $0.chapterNumber == chapterNumber &&
+            $0.pageNumberInChapter == pageNumberInChapter
         }
+
+        if bookmarks.count < originalCount {
+            saveAllBookmarks(bookmarks)
+            print("❌ Bookmark removed for Book ID \(bookId), Chapter \(chapterNumber), Page \(pageNumberInChapter)")
+        }
+
         printAllBookmarks()
     }
 
-    func updateBookmark(forOriginalPage originalPageIndex: Int, isHalfFilled: Bool) {
-        var bookmarks = loadBookmarks()
-        if let index = bookmarks.firstIndex(where: { $0.originalPageIndex == originalPageIndex }) {
-            bookmarks[index].isHalfFilled = isHalfFilled
-            saveAllBookmarks(bookmarks)
-            print("🔄 Bookmark updated for original page: \(originalPageIndex), Half-filled: \(isHalfFilled)")
-        }
-        printAllBookmarks()
-    }
-
+    // MARK: - Load Bookmarks
     func loadBookmarks() -> [Bookmark] {
         guard let data = UserDefaults.standard.data(forKey: bookmarksKey),
               let bookmarks = try? JSONDecoder().decode([Bookmark].self, from: data) else {
@@ -51,31 +61,36 @@ class BookmarkManager {
         return bookmarks
     }
 
-    func isBookmarked(originalPageIndex: Int) -> Bool {
-        return loadBookmarks().contains { $0.originalPageIndex == originalPageIndex }
+    // MARK: - Check if Page is Bookmarked
+    func isBookmarked(bookId: Int, chapterNumber: Int, pageNumberInChapter: Int) -> Bool {
+        return loadBookmarks().contains {
+            $0.bookId == bookId &&
+            $0.chapterNumber == chapterNumber &&
+            $0.pageNumberInChapter == pageNumberInChapter
+        }
     }
 
-    func isHalfFilled(originalPageIndex: Int) -> Bool {
-        return loadBookmarks().first(where: { $0.originalPageIndex == originalPageIndex })?.isHalfFilled ?? false
+    // MARK: - Get All Bookmarked Pages for Book
+    func getAllBookmarkedPages(bookId: Int) -> [Bookmark] {
+        return loadBookmarks().filter { $0.bookId == bookId }
     }
 
+    // MARK: - Save All
     private func saveAllBookmarks(_ bookmarks: [Bookmark]) {
         if let data = try? JSONEncoder().encode(bookmarks) {
             UserDefaults.standard.set(data, forKey: bookmarksKey)
         }
     }
 
+    // MARK: - Debug
     private func printAllBookmarks() {
-        let pages = loadBookmarks().map { $0.originalPageIndex }
-        if pages.isEmpty {
+        let bookmarks = loadBookmarks()
+        if bookmarks.isEmpty {
             print("📜 No bookmarks set.")
         } else {
-            print("📌 Currently bookmarked original pages: \(pages.sorted())")
+            for bm in bookmarks.sorted(by: { $0.pageNumberInBook < $1.pageNumberInBook }) {
+                print("📌 Book ID: \(bm.bookId), Chapter: \(bm.chapterNumber), Page: \(bm.pageNumberInChapter), Text: \"\(bm.text)\"")
+            }
         }
     }
-    func getAllBookmarkedPages() -> [Int] {
-        return loadBookmarks().map { $0.originalPageIndex }.sorted()
-    }
-
 }
-

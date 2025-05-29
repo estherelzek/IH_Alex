@@ -14,14 +14,14 @@
                 <outlet property="brightnessSlider" destination="Raj-XV-0vh" id="Np1-3J-Kg7"/>
                 <outlet property="darkBackgroundButton" destination="siQ-xk-Ht3" id="5EG-Iy-okZ"/>
                 <outlet property="grayBackgroundButton" destination="mVB-HC-y5q" id="oUj-JZ-MmR"/>
-                <outlet property="horizontialScrollButton" destination="LsI-jc-rp2" id="JCC-mD-qU6"/>
+                <outlet property="horizontialScrollButton" destination="N4X-Ec-Ndn" id="rud-Ao-TZx"/>
                 <outlet property="keepScreenOnSwitch" destination="Htu-ox-nSJ" id="KQl-fc-8cE"/>
                 <outlet property="lightBackgroundButton" destination="xH7-yf-veZ" id="Q9b-d9-vhQ"/>
                 <outlet property="menuContentView" destination="y16-N5-c7l" id="kTq-kx-ye8"/>
                 <outlet property="outSideMenu" destination="kCb-Sd-Pxv" id="6BH-82-HiM"/>
                 <outlet property="rotateScreenButton" destination="wns-9r-hQG" id="mBf-sm-jgM"/>
                 <outlet property="tightSpacingButton" destination="wtl-ch-C53" id="RSn-pR-NyK"/>
-                <outlet property="verticalScrollButton" destination="N4X-Ec-Ndn" id="lhl-vf-xf4"/>
+                <outlet property="verticalScrollButton" destination="LsI-jc-rp2" id="Y1t-eh-fWW"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
                 <outlet property="whiteBackgroundButton" destination="7Tf-72-WPC" id="tNC-mb-pCY"/>
                 <outlet property="wideSpacingButton" destination="1ku-YB-4NU" id="ZQI-6T-oNI"/>
@@ -35,8 +35,8 @@
                 <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kCb-Sd-Pxv">
                     <rect key="frame" x="0.0" y="59" width="393" height="759"/>
                     <subviews>
-                        <view contentMode="scaleAspectFit" translatesAutoresizingMaskIntoConstraints="NO" id="y16-N5-c7l">
-                            <rect key="frame" x="43" y="60" width="307.33333333333331" height="550"/>
+                        <view contentMode="scaleAspectFit" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="y16-N5-c7l">
+                            <rect key="frame" x="43" y="56" width="307.33333333333331" height="550"/>
                             <subviews>
                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="50" translatesAutoresizingMaskIntoConstraints="NO" id="TJC-LT-6Q7">
                                     <rect key="frame" x="8" y="8" width="291.33333333333331" height="25"/>
@@ -148,7 +148,7 @@
                                             <state key="normal" title="Button"/>
                                             <buttonConfiguration key="configuration" style="plain" image="Vertical"/>
                                             <connections>
-                                                <action selector="horizontialScrollTapped:" destination="-1" eventType="touchUpInside" id="D8P-Kq-sS1"/>
+                                                <action selector="verticalScrollTapped:" destination="-1" eventType="touchUpInside" id="y1c-mF-jly"/>
                                             </connections>
                                         </button>
                                         <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="N4X-Ec-Ndn">
@@ -156,7 +156,7 @@
                                             <state key="normal" title="Button"/>
                                             <buttonConfiguration key="configuration" style="plain" image="Horizontial"/>
                                             <connections>
-                                                <action selector="verticalScrollTapped:" destination="-1" eventType="touchUpInside" id="gup-Ls-kKr"/>
+                                                <action selector="horizontialScrollTapped:" destination="-1" eventType="touchUpInside" id="TVg-jF-yeu"/>
                                             </connections>
                                         </button>
                                     </subviews>
@@ -203,16 +203,6 @@
                                         <constraint firstAttribute="height" constant="50" id="T2M-wH-ugd"/>
                                     </constraints>
                                 </stackView>
-                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="الأوضاع" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h9U-GV-AqN">
-                                    <rect key="frame" x="8" y="323" width="291.33333333333331" height="25"/>
-                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                    <constraints>
-                                        <constraint firstAttribute="height" constant="25" id="hTS-LZ-h7Y"/>
-                                    </constraints>
-                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                    <nil key="textColor"/>
-                                    <nil key="highlightedColor"/>
-                                </label>
                                 <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="0L2-fz-RnX">
                                     <rect key="frame" x="8" y="358" width="291.33333333333331" height="50"/>
                                     <subviews>
@@ -322,6 +312,16 @@
                                         <constraint firstAttribute="height" constant="50" id="Bxm-Ia-eS4"/>
                                     </constraints>
                                 </stackView>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="الأوضاع" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="h9U-GV-AqN">
+                                    <rect key="frame" x="8" y="311" width="291.33333333333331" height="25"/>
+                                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                    <constraints>
+                                        <constraint firstAttribute="height" constant="25" id="hTS-LZ-h7Y"/>
+                                    </constraints>
+                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                    <nil key="textColor"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
                             </subviews>
                             <color key="backgroundColor" systemColor="systemGray6Color"/>
                             <constraints>

@@ -8,6 +8,8 @@
 import Foundation
 import UIKit
 
+import Foundation
+
 class HighlightManager {
     static let shared = HighlightManager()
     private let highlightsKey = "bookHighlights"
@@ -15,9 +17,7 @@ class HighlightManager {
     func saveHighlight(_ highlight: Highlight) {
         var highlights = loadHighlights()
         highlights.append(highlight)
-        if let data = try? JSONEncoder().encode(highlights) {
-            UserDefaults.standard.set(data, forKey: highlightsKey)
-        }
+        saveAllHighlights(highlights)
     }
 
     func loadHighlights() -> [Highlight] {
@@ -30,10 +30,14 @@ class HighlightManager {
 
     func removeHighlight(_ highlight: Highlight) {
         var highlights = loadHighlights()
-        highlights.removeAll { $0.range == highlight.range && $0.page == highlight.page }
-        if let data = try? JSONEncoder().encode(highlights) {
-            UserDefaults.standard.set(data, forKey: highlightsKey)
+        highlights.removeAll {
+            $0.bookId == highlight.bookId &&
+            $0.chapterNumber == highlight.chapterNumber &&
+            $0.pageNumberInChapter == highlight.pageNumberInChapter &&
+            $0.start == highlight.start &&
+            $0.end == highlight.end
         }
+        saveAllHighlights(highlights)
     }
 
     func saveAllHighlights(_ highlights: [Highlight]) {
@@ -41,37 +45,20 @@ class HighlightManager {
             UserDefaults.standard.set(data, forKey: highlightsKey)
         }
     }
+
     func deleteAllHighlights() {
         UserDefaults.standard.removeObject(forKey: highlightsKey)
     }
 
-    func loadHighlights(for pages: [PageContent]) -> [Highlight] {
-        guard let data = UserDefaults.standard.data(forKey: highlightsKey),
-              let savedHighlights = try? JSONDecoder().decode([Highlight].self, from: data) else {
-            return []
-        }
-
-        var adjustedHighlights: [Highlight] = []
-
-        for highlight in savedHighlights {
-            if let newRange = findRange(for: highlight.globalRange, in: pages) {
-                adjustedHighlights.append(highlight.withUpdatedRange(newRange))
-            }
-        }
-        return adjustedHighlights
+    /// Optionally filter highlights for a chapter or pages
+    func loadHighlights(for chapterNumber: Int) -> [Highlight] {
+        return loadHighlights().filter { $0.chapterNumber == chapterNumber }
     }
 
-    func findRange(for globalRange: NSRange, in pages: [PageContent]) -> NSRange? {
-        for page in pages {
-            // Check if the highlight range falls within this page's original range
-            if NSLocationInRange(globalRange.location, page.rangeInOriginal) {
-                let relativeLocation = globalRange.location - page.rangeInOriginal.location
-                let newRange = NSRange(location: relativeLocation, length: globalRange.length)
-                return newRange
-            }
+    /// Load highlights for a list of page numbers in a chapter
+    func loadHighlights(for chapterNumber: Int, pages: [Int]) -> [Highlight] {
+        return loadHighlights().filter {
+            $0.chapterNumber == chapterNumber && pages.contains($0.pageNumberInChapter)
         }
-        return nil
     }
 }
-
-

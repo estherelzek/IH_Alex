@@ -8,51 +8,66 @@
 import Foundation
 
 struct Note: Codable {
-    var page: Int
-    var range: NSRange
-    var globalRange: NSRange // New
-    var title: String
-    var content: String
-    var position: CGPoint?
+    var id: Int64
+    var bookId: Int
+    var chapterNumber: Int
+    var pageNumberInChapter: Int
+    var pageNumberInBook: Int
+    var start: Int
+    var end: Int
+    var noteText: String
+    var selectedNoteText: String
+    var lastUpdated: Date
 
     func toDictionary() -> [String: Any] {
         return [
-            "page": page,
-            "range": ["location": range.location, "length": range.length],
-            "globalRange": ["location": globalRange.location, "length": globalRange.length],
-            "title": title,
-            "content": content,
-            "position": position != nil ? ["x": position!.x, "y": position!.y] : nil
-        ].compactMapValues { $0 }
+            "id": id,
+            "bookId": bookId,
+            "chapterNumber": chapterNumber,
+            "pageNumberInChapter": pageNumberInChapter,
+            "pageNumberInBook": pageNumberInBook,
+            "start": start,
+            "end": end,
+            "noteText": noteText,
+            "selectedNoteText": selectedNoteText,
+            "lastUpdated": ISO8601DateFormatter().string(from: lastUpdated)
+        ]
     }
 
     static func fromDictionary(_ dict: [String: Any]) -> Note? {
-        guard let page = dict["page"] as? Int,
-              let rangeDict = dict["range"] as? [String: Int],
-              let globalRangeDict = dict["globalRange"] as? [String: Int],
-              let location = rangeDict["location"],
-              let length = rangeDict["length"],
-              let globalLocation = globalRangeDict["location"],
-              let globalLength = globalRangeDict["length"],
-              let title = dict["title"] as? String,
-              let content = dict["content"] as? String else { return nil }
-
-        let range = NSRange(location: location, length: length)
-        let globalRange = NSRange(location: globalLocation, length: globalLength)
-
-        var position: CGPoint? = nil
-        if let positionDict = dict["position"] as? [String: CGFloat],
-           let x = positionDict["x"],
-           let y = positionDict["y"] {
-            position = CGPoint(x: x, y: y)
+        guard let id = dict["id"] as? Int64 ?? (dict["id"] as? Int).map(Int64.init),
+              let bookId = dict["bookId"] as? Int,
+              let chapterNumber = dict["chapterNumber"] as? Int,
+              let pageNumberInChapter = dict["pageNumberInChapter"] as? Int,
+              let pageNumberInBook = dict["pageNumberInBook"] as? Int,
+              let start = dict["start"] as? Int,
+              let end = dict["end"] as? Int,
+              let noteText = dict["noteText"] as? String,
+              let selectedNoteText = dict["selectedNoteText"] as? String,
+              let lastUpdatedString = dict["lastUpdated"] as? String,
+              let lastUpdated = ISO8601DateFormatter().date(from: lastUpdatedString)
+        else {
+            return nil
         }
 
-        return Note(page: page, range: range, globalRange: globalRange, title: title, content: content, position: position)
+        return Note(
+            id: id,
+            bookId: bookId,
+            chapterNumber: chapterNumber,
+            pageNumberInChapter: pageNumberInChapter,
+            pageNumberInBook: pageNumberInBook,
+            start: start,
+            end: end,
+            noteText: noteText,
+            selectedNoteText: selectedNoteText,
+            lastUpdated: lastUpdated
+        )
     }
 
-    func withUpdatedRange(_ newRange: NSRange) -> Note {
+    func withUpdatedRange(start: Int, end: Int) -> Note {
         var updated = self
-        updated.range = newRange
+        updated.start = start
+        updated.end = end
         return updated
     }
 }

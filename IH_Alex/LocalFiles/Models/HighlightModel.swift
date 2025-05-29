@@ -7,22 +7,27 @@
 
 import Foundation
 
-struct Highlight: Codable {
-    var range: NSRange
-    var page: Int
-    var globalRange: NSRange // The original range before pagination
-    var color: String // Color stored as a hex string
 
-    init(range: NSRange, page: Int, globalRange: NSRange, color: String) {
-        self.range = range
-        self.page = page
-        self.globalRange = globalRange
-        self.color = color
+
+struct Highlight: Identifiable, Codable {
+    let serverId: String?
+    let id: Int64?
+    let bookId: Int
+    let chapterNumber: Int
+    let pageNumberInChapter: Int
+    let pageNumberInBook: Int
+    let start: Int
+    let end: Int
+    let text: String
+    let color: Int
+    let lastUpdated: Date
+
+    // Conform to Identifiable protocol
+    var identifier: String {
+        return serverId ?? "\(id ?? -1)"
     }
 
-    func withUpdatedRange(_ newRange: NSRange) -> Highlight {
-        var updatedHighlight = self
-        updatedHighlight.range = newRange
-        return updatedHighlight
+    var isSynced: Bool {
+        return serverId != nil
     }
 }

@@ -150,17 +150,19 @@ class MenuViewController: UIViewController {
     }
 
     @IBAction func verticalScrollTapped(_ sender: Any) {
-        delegate?.changeScrollMode(to: .verticalScrolling)
-        setActiveBorder(for: horizontialScrollButton, among: [verticalScrollButton, horizontialScrollButton])
+        delegate?.changeScrollMode(to: .horizontalPaging) // ✅ Scroll vertically
+        setActiveBorder(for: verticalScrollButton, among: [verticalScrollButton, horizontialScrollButton])
+        UserDefaults.standard.set(ScrollMode.verticalScrolling.rawValue, forKey: "savedScrollMode")
         setupSavedAppearanceButtons()
-        
     }
 
     @IBAction func horizontialScrollTapped(_ sender: Any) {
-        delegate?.changeScrollMode(to: .horizontalPaging)
-        setActiveBorder(for: verticalScrollButton, among: [verticalScrollButton, horizontialScrollButton])
+        delegate?.changeScrollMode(to: .verticalScrolling) // ✅ Scroll horizontally
+        setActiveBorder(for: horizontialScrollButton, among: [verticalScrollButton, horizontialScrollButton])
+        UserDefaults.standard.set(ScrollMode.horizontalPaging.rawValue, forKey: "savedScrollMode")
         setupSavedAppearanceButtons()
     }
+
     
     func setActiveBorder(for selectedButton: UIButton, among buttons: [UIButton]) {
         for button in buttons {
@@ -214,6 +216,7 @@ class MenuViewController: UIViewController {
         
         // Handle saved scroll mode
         let savedScrollModeRaw = UserDefaults.standard.string(forKey: "savedScrollMode") ?? ScrollMode.verticalScrolling.rawValue
+        print("savedScrollModeRaw: \(savedScrollModeRaw)")
         if let savedScrollMode = ScrollMode(rawValue: savedScrollModeRaw) {
             switch savedScrollMode {
             case .verticalScrolling:

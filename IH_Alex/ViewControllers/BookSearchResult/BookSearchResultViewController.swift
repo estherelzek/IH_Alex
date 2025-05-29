@@ -47,7 +47,7 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
     @IBOutlet weak var emptySearchimage: UIImageView!
     
     var pageController: PagedTextViewController?
-    var pages: [PageContent] = []
+    var pages: [Chunk] = []
     var metadata: MetaDataResponse?
     var results: [SearchResult] = []
     weak var delegate: BookSearchDelegate?
