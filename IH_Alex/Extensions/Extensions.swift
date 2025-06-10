@@ -453,40 +453,42 @@ extension PagedTextViewController {
 //
     func createChunks(fontSize: CGFloat, screenSize: CGSize) -> [Chunk] {
         var chunks: [Chunk] = []
-        var globalStartIndex = 0
         var globalPageIndex = 0
         var chunkNumber = 0
         var seenChapters: Set<Int> = []
 
         for content in bookChapterrs {
             let chapterNumber = content.firstChapterNumber
-            
+
             guard !seenChapters.contains(chapterNumber) else {
                 print("⚠️ Skipping duplicate chapter \(chapterNumber)")
                 continue
             }
             seenChapters.insert(chapterNumber)
-            
+
             let decryptor = Decryptor()
             let decryptedText = decryptor.decryption(txt: content.content, id: bookResponse?.book.id ?? 0)
-            
+
             let parsedPages = ParsePage().invoke(
                 pageEncodedString: decryptedText,
                 metadata: metadataa ?? MetaDataResponse.default,
                 book: bookResponse?.book ?? Book.default
             )
-            
+
             var localPageIndex = 0
-            
+
             for attributedText in parsedPages {
                 let mutable = NSMutableAttributedString(attributedString: attributedText)
                 mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
-                
+
                 let pageChunks = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
-                
+
+                var pageLocalStartIndex = 0  // 🔧 Reset for each page
+
                 for chunk in pageChunks {
-                    let globalEndIndex = globalStartIndex + chunk.text.length
-                    
+                    let localStartIndex = chunk.range.location
+                    let localEndIndex = localStartIndex + chunk.range.length
+
                     let newChunk = Chunk(
                         attributedText: chunk.text,
                         image: nil,
@@ -497,25 +499,25 @@ extension PagedTextViewController {
                         chunkNumber: chunkNumber,
                         pageIndexInBook: globalPageIndex,
                         rangeInOriginal: chunk.range,
-                        globalStartIndex: globalStartIndex,
-                        globalEndIndex: globalEndIndex
+                        globalStartIndex: localStartIndex,  // ✅ Relative to full page
+                        globalEndIndex: localEndIndex       // ✅ Relative to full page
                     )
-                    
-                    
+
                     chunks.append(newChunk)
-                    
-                    globalStartIndex = globalEndIndex
                     chunkNumber += 1
                     globalPageIndex += 1
                 }
-                
+
+
                 localPageIndex += 1
             }
         }
+
         print("chunks.count: \(chunks.count)")
         print("self.pagesss.count: \(self.pagess.count)")
         return chunks
     }
+
 
     
 }

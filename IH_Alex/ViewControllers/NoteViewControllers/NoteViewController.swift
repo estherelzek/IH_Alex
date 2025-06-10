@@ -33,7 +33,7 @@ class NoteViewController: UIViewController {
        
        /// The full text body of the original page (static content of the page)
        var originalPageBody: String?
-    //
+    var bookId: Int?
     var bookChapterrs: [Chapterr] = []
     var pagess: [Page] = []
     var chunkedPages: [Chunk] = []  // This is rebuilt every time
@@ -84,7 +84,7 @@ class NoteViewController: UIViewController {
 
 
     @IBAction func saveNoteTapped(_ sender: Any) {
-        guard let bookId = bookChapterrs.first?.bookID else {
+        guard let bookId = bookId else {
             print("❌ Missing bookId")
             return
         }
@@ -124,7 +124,7 @@ class NoteViewController: UIViewController {
         } else {
             let newNote = Note(
                 id: Int64(Date().timeIntervalSince1970 * 1000),
-                bookId: bookId,
+                bookId: self.bookId ?? 0,
                 chapterNumber: chapterNumber,
                 pageNumberInChapter: pageNumberInChapter,
                 pageNumberInBook: pageNumberInBook,
@@ -152,6 +152,7 @@ class NoteViewController: UIViewController {
         self.removeFromParent()
         delegate?.reloadPageContent() // Reload content after dismissing
     }
+    
     @objc private func handleOutsideTap(_ gesture: UITapGestureRecognizer) {
         let touchPoint = gesture.location(in: view)
         if !contentView.frame.contains(touchPoint) {

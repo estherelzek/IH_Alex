@@ -265,7 +265,7 @@ extension PagedTextViewController {
 
         // ✅ Then set content that may depend on above
         let content = chunkedPages[index]
-        print("chunkedPages[index]: \(content)")
+     //   print("chunkedPages[index]: \(content)")
         vc.pageContentt = content
 
         // ✅ Font size after content
@@ -294,7 +294,7 @@ extension PagedTextViewController {
 
         // ✅ Then set content that may depend on above
         let content = chunkedPages[pageIndex]
-        print("chunkedPages[index]: \(content)")
+  //      print("chunkedPages[index]: \(content)")
         vc.pageContentt = content
 
         return vc
@@ -311,7 +311,7 @@ extension PagedTextViewController {
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         guard let vc = viewController as? TextPageViewController else { return nil }
         vc.pageController = self
-        print("  vc.chunkedPages = self.chunkedPages:\(  vc.chunkedPages)")
+       // print("  vc.chunkedPages = self.chunkedPages:\(  vc.chunkedPages)")
         return getViewController(at: vc.pageIndex + 1)
     }
 

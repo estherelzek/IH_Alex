@@ -493,10 +493,11 @@ extension TextPageViewController {
         noteVC.pagess = pagess
         noteVC.chunkedPages = chunkedPages
         noteVC.pageContentt = pageContentt
+        noteVC.bookId = bookChapterrs.first?.bookID
         print("✅ selectedText: \"\(selectedText)\"")
         print("✅ nsRange: \(nsRange)")
         print("✅ globalRange: \(globalRange)")
-            
+        print("✅ noteVC.bookId: \(noteVC.bookId)")
             noteVC.view.frame = CGRect(x: -10, y: -10, width: view.frame.width - 80, height: view.frame.height - 80)
             noteVC.view.center = view.center
             addChild(noteVC)
@@ -526,18 +527,23 @@ extension TextPageViewController {
     }
 
     func loadNoteIcons() {
-        // Remove existing note icons
+        guard let bookId = bookChapterrs.first?.bookID else {
+            print("❌ Missing bookId")
+            return
+        }
+
         textView.subviews.forEach { subview in
             if subview is UIImageView { subview.removeFromSuperview() }
         }
 
         guard let pageContent = pageContentt else { return }
 
-        // Load notes overlapping this page
         let notes = NoteManager.shared.loadNotes().filter { note in
-            let noteRange = note.start..<note.end
-            let pageRange = pageContent.globalStartIndex..<pageContent.globalEndIndex
-            return noteRange.overlaps(pageRange)
+            note.bookId == bookId &&
+            note.pageNumberInChapter == pageContent.pageNumberInChapter &&
+            note.chapterNumber == pageContent.chapterNumber &&
+            note.start < pageContent.globalEndIndex &&
+            note.end > pageContent.globalStartIndex
         }
 
         for note in notes {
@@ -577,24 +583,35 @@ extension TextPageViewController {
         }
     }
 
-
     func showNoteForNoteId(_ noteId: Int64) {
-        let allNotes = NoteManager.shared.loadNotes()
-        guard let note = allNotes.first(where: { $0.id == noteId }) else { return }
+          print("noteId: \(noteId)")
+          let allNotes = NoteManager.shared.loadNotes()
+          guard let note = allNotes.first(where: { $0.id == noteId }) else { return }
 
-        let noteVC = NoteViewController(nibName: "NoteViewController", bundle: nil)
-        noteVC.noteTitleContent = note.noteText
-        noteVC.noteTextContent = note.selectedNoteText
-        // Provide whatever range info you want to show or store
-        noteVC.delegate = self
-        noteVC.isEdit = true
-        noteVC.view.frame = CGRect(x: -10 , y: -10, width: view.frame.width - 60, height: view.frame.height - 80)
-        noteVC.view.center = view.center
-        addChild(noteVC)
-        view.addSubview(noteVC.view)
-        noteVC.didMove(toParent: self)
-        self.noteVC = noteVC
-    }
+          let noteVC = NoteViewController(nibName: "NoteViewController", bundle: nil)
+          noteVC.noteTitleContent = note.selectedNoteText
+          noteVC.noteTextContent = note.noteText
+          noteVC.bookId = note.bookId
+          noteVC.noteId = noteId
+          noteVC.bookChapterrs = bookChapterrs
+          noteVC.pagess = pagess
+          noteVC.chunkedPages = chunkedPages
+          noteVC.pageContentt = pageContentt
+          noteVC.delegate = self
+          noteVC.isEdit = true
+          if let pageContent = pageContentt {
+              let localStart = max(0, note.start - pageContent.globalStartIndex)
+              let length = max(0, min(note.end, pageContent.globalEndIndex) - note.start)
+              noteVC.noteRange = NSRange(location: localStart, length: length)
+          }
+
+          noteVC.view.frame = CGRect(x: -10 , y: -10, width: view.frame.width - 60, height: view.frame.height - 80)
+          noteVC.view.center = view.center
+          addChild(noteVC)
+          view.addSubview(noteVC.view)
+          noteVC.didMove(toParent: self)
+          self.noteVC = noteVC
+      }
 
     
     func applyHighlight(color: UIColor) {
@@ -706,6 +723,7 @@ extension TextPageViewController {
         // Filter highlights that match this book & chapter AND overlap the page range
         let highlights = HighlightManager.shared.loadHighlights().filter { h in
             h.bookId == bookId &&
+            h.pageNumberInChapter == pageContent.pageNumberInChapter &&
             h.chapterNumber == chapterNumber &&
             h.start < pageContent.globalEndIndex &&
             h.end > pageContent.globalStartIndex
@@ -976,9 +994,7 @@ extension TextPageViewController {
 
     private func handleInternalLinkClick(id: String) {
         print("📩 handleInternalLinkClick triggered for key: \(id)")
-        print("🔍 savedData: \(UserDefaults.standard.data(forKey: "PageReferencesKey") ?? Data())")
-
-        // 1. Load target from saved references
+        
         guard let savedData = UserDefaults.standard.data(forKey: "PageReferencesKey"),
               let savedPageReferences = try? JSONDecoder().decode([PageReference].self, from: savedData),
               let target = savedPageReferences.first(where: { $0.key == id }) else {
@@ -986,48 +1002,53 @@ extension TextPageViewController {
             return
         }
 
-        print("🔵 Found target → Chapter \(target.chapterNumber), Page \(target.pageNumber), Index \(target.index)")
+        let targetChapterNumber = target.chapterNumber
+        let targetPageNumber = target.pageNumber
+        let targetIndex = target.index
 
-        // 2. Ensure pageController and chunkedPages exist
+        print("🔵 Target → Chapter: \(targetChapterNumber), Page: \(targetPageNumber), Index: \(targetIndex)")
+
         guard let pageController = self.pageController else {
             print("❌ pageController is nil")
             return
         }
 
-        // 3. First: Try to locate exact match by chapter + page number
-        print("📘 target.chapterNumber: \(target.chapterNumber)  target.pageNumber: \(target.pageNumber)  target.index: \(target.index)")
-        if let exactPageIndex = chunkedPages.firstIndex(where: {
-            $0.chapterNumber == target.chapterNumber &&
-            $0.pageNumberInChapter == target.pageNumber &&
-            $0.globalStartIndex  >= target.index &&  target.index <= $0.globalEndIndex
+        // ✅ 1. Try exact match first (index match is most accurate)
+        if let exactMatch = chunkedPages.firstIndex(where: {
+            $0.chapterNumber == targetChapterNumber &&
+            $0.pageNumberInChapter   == targetPageNumber - 1 &&
+            $0.globalStartIndex <= targetIndex &&
+            targetIndex < $0.globalEndIndex
         }) {
-            print("📘 Exact match at page index: \(exactPageIndex)")
-           
-            navigateToPage(index: exactPageIndex - 1)
-            print("📘 Exact match at page index: \(chunkedPages[exactPageIndex ].chapterNumber) , \(chunkedPages[exactPageIndex].pageNumberInChapter) , \(chunkedPages[exactPageIndex].globalStartIndex)")
+            let chunk = chunkedPages[exactMatch]
+            print("✅ Exact match at index: \(exactMatch)")
+            print("📌\(exactMatch) Chapter : \(chunkedPages[exactMatch].chapterNumber), Page: \(chunkedPages[exactMatch].pageNumberInChapter), globalStartIndex: \(chunkedPages[exactMatch].globalStartIndex)")
+            print("📌\(exactMatch - 1) Chapter: \(chunkedPages[exactMatch - 1].chapterNumber), Page: \(chunkedPages[exactMatch - 1 ].pageNumberInChapter), globalStartIndex: \(chunkedPages[exactMatch - 1].globalStartIndex )")
+            print("📌\(exactMatch - 2) Chapter: \(chunkedPages[exactMatch - 2].chapterNumber ), Page: \(chunkedPages[exactMatch - 2].pageNumberInChapter), globalStartIndex: \(chunkedPages[exactMatch - 2].globalStartIndex)" )
+            navigateToPage(index: exactMatch)
             return
         }
 
-        // 4. Fallback: Locate using global character index range (in case pages were split due to zoom/font)
+        // 🔄 2. Fallback: Try matching by page number in chapter only (less accurate)
         if let fallbackIndex = chunkedPages.firstIndex(where: {
-            $0.chapterNumber == target.chapterNumber &&
-            $0.globalStartIndex <= target.index &&
-            target.index < $0.globalStartIndex
+            $0.chapterNumber == targetChapterNumber &&
+            $0.pageNumberInChapter == targetPageNumber
         }) {
-            print("🔄 Fallback match by index range at page index: \(fallbackIndex)")
+            let chunk = chunkedPages[fallbackIndex]
+            print("🔄 Fallback match at index: \(fallbackIndex)")
+            print("📌 Chapter: \(chunk.chapterNumber), Page: \(chunk.pageNumberInChapter), globalStartIndex: \(chunk.globalStartIndex)")
             navigateToPage(index: fallbackIndex)
             return
         }
 
-        print("❌ Could not find a matching chunk for internal link \(id)")
+        print("❌ No matching chunk found for internal link id: \(id)")
     }
-
 
 
     private func navigateToPage(index: Int) {
         print("index : \(index)")
         guard let pageController = self.pageController,
-              let targetVC = pageController.getViewController(at: index - 1 ) else {
+              let targetVC = pageController.getViewController(at: index ) else {
             print("❌ Could not get view controller at index \(index)")
             return
         }
