@@ -50,14 +50,19 @@ class FontStyler {
                 paragraphStyle.alignment = .right
             case "l":
                 paragraphStyle.alignment = .left
+            case "j":
+                paragraphStyle.alignment = .justified
+                let textSegment = (spannable.string as NSString).substring(with: NSRange(location: start, length: end - start))
+                paragraphStyle.baseWritingDirection = isArabic(text: textSegment) ? .rightToLeft : .leftToRight
             default:
                 break
             }
         } else {
             let textSegment = (spannable.string as NSString).substring(with: NSRange(location: start, length: end - start))
             paragraphStyle.alignment = isArabic(text: textSegment) ? .right : .left
-         //   print("Auto-detected alignment: \(paragraphStyle.alignment)")
+            paragraphStyle.baseWritingDirection = isArabic(text: textSegment) ? .rightToLeft : .leftToRight
         }
+
         attributes[.paragraphStyle] = paragraphStyle
         if fontStyle.fontColor != "0" {
             attributes[.foregroundColor] = UIColor(hex: fontStyle.fontColor)

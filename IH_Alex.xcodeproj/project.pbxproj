@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		5E0FFEDF2D65EB660090DECF /* metadataResponse.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5E0FFEDE2D65EB660090DECF /* metadataResponse.txt */; };
-		5E0FFEE62D65EB8E0090DECF /* Token3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5E0FFEE22D65EB8D0090DECF /* Token3.txt */; };
 		5E575D2A2D63506C00ACFCEB /* Reachability in Frameworks */ = {isa = PBXBuildFile; productRef = 5E575D292D63506C00ACFCEB /* Reachability */; };
 		5E575D2C2D63512E00ACFCEB /* ErrorModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E575D2B2D63512E00ACFCEB /* ErrorModel.swift */; };
 		5E575D2E2D63530500ACFCEB /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E575D2D2D63530500ACFCEB /* NetworkManager.swift */; };
@@ -29,7 +28,6 @@
 		5E9D80A52D6C8BED00E9A508 /* Cairo-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5E9D809D2D6C8BEC00E9A508 /* Cairo-Light.ttf */; };
 		5E9D80A62D6C8BED00E9A508 /* Cairo-ExtraLight.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5E9D809E2D6C8BEC00E9A508 /* Cairo-ExtraLight.ttf */; };
 		5E9D80A92D6C8BED00E9A508 /* Cairo-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 5E9D80A12D6C8BED00E9A508 /* Cairo-Black.ttf */; };
-		5E9D80AC2D6C9BA800E9A508 /* Token1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 5E9D80AB2D6C9BA700E9A508 /* Token1.txt */; };
 		5E9D80AE2D6C9DCD00E9A508 /* ImageClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9D80AD2D6C9DCD00E9A508 /* ImageClass.swift */; };
 		5E9D80C22D6F0D6400E9A508 /* ReferenceClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9D80C12D6F0D6400E9A508 /* ReferenceClass.swift */; };
 		5E9D80C42D6F0DA800E9A508 /* WebLinkClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9D80C32D6F0DA800E9A508 /* WebLinkClass.swift */; };
@@ -44,17 +42,15 @@
 		5EDC43C62D61E80D007913CD /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EDC43C42D61E80D007913CD /* LaunchScreen.storyboard */; };
 		8303CF8C2DBE25EB00D10233 /* BookmarkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8303CF8B2DBE25EB00D10233 /* BookmarkModel.swift */; };
 		8303CF8E2DBE262300D10233 /* NoteModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8303CF8D2DBE262300D10233 /* NoteModel.swift */; };
-		8303CF962DBE345200D10233 /* Tooken6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF942DBE345200D10233 /* Tooken6.txt */; };
-		8303CF972DBE345200D10233 /* Tooken3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF912DBE345200D10233 /* Tooken3.txt */; };
-		8303CF982DBE345200D10233 /* Tooken7.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF952DBE345200D10233 /* Tooken7.txt */; };
-		8303CF992DBE345200D10233 /* Tooken5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF932DBE345200D10233 /* Tooken5.txt */; };
-		8303CF9A2DBE345200D10233 /* Tooken4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF922DBE345200D10233 /* Tooken4.txt */; };
-		8303CF9B2DBE345200D10233 /* Tooken2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF902DBE345200D10233 /* Tooken2.txt */; };
-		8303CF9C2DBE345200D10233 /* Tooken1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF8F2DBE345200D10233 /* Tooken1.txt */; };
 		8303CFA02DBE4F3F00D10233 /* PageReference.txt in Resources */ = {isa = PBXBuildFile; fileRef = 8303CF9F2DBE4F3F00D10233 /* PageReference.txt */; };
 		8303CFA22DBE506C00D10233 /* PageReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8303CFA12DBE506C00D10233 /* PageReference.swift */; };
-		830A7D932D75D3DA008D574D /* Token2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 830A7D922D75D3DA008D574D /* Token2.txt */; };
-		830A7D952D75D3F7008D574D /* Token4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 830A7D942D75D3F7008D574D /* Token4.txt */; };
+		831EA81E2DF838A2006DB765 /* token1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA8172DF838A2006DB765 /* token1.txt */; };
+		831EA81F2DF838A2006DB765 /* token5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81B2DF838A2006DB765 /* token5.txt */; };
+		831EA8202DF838A2006DB765 /* token3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA8192DF838A2006DB765 /* token3.txt */; };
+		831EA8212DF838A2006DB765 /* Token6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81C2DF838A2006DB765 /* Token6.txt */; };
+		831EA8222DF838A2006DB765 /* token4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81A2DF838A2006DB765 /* token4.txt */; };
+		831EA8232DF838A2006DB765 /* Token7.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81D2DF838A2006DB765 /* Token7.txt */; };
+		831EA8242DF838A2006DB765 /* token2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA8182DF838A2006DB765 /* token2.txt */; };
 		832048E52DC8E2BE00F1B8BF /* BookSearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832048E32DC8E2BE00F1B8BF /* BookSearchResultViewController.swift */; };
 		832048E62DC8E2BE00F1B8BF /* BookSearchResultViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 832048E42DC8E2BE00F1B8BF /* BookSearchResultViewController.xib */; };
 		832048EA2DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832048E82DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift */; };
@@ -69,13 +65,14 @@
 		83EDE1972D770E5900425A46 /* BookState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1962D770E5900425A46 /* BookState.swift */; };
 		83EDE1992D7715FC00425A46 /* BookmarkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1982D7715FC00425A46 /* BookmarkManager.swift */; };
 		83EDE19B2D7728D100425A46 /* NoteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE19A2D7728D100425A46 /* NoteManager.swift */; };
+		83F4323A2DF9731A00C43621 /* ReferenceBottomSheetViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 83F432392DF9731A00C43621 /* ReferenceBottomSheetViewController.xib */; };
+		83F4323B2DF9731A00C43621 /* ReferenceBottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F432382DF9731A00C43621 /* ReferenceBottomSheetViewController.swift */; };
 		D08AEEFD94A9D1854749633C /* Pods_IH_Alex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A0DECBAAA05223C0951067D9 /* Pods_IH_Alex.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		25F454DDF7F636E1B76E6CBD /* Pods-IH_Alex.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IH_Alex.debug.xcconfig"; path = "Target Support Files/Pods-IH_Alex/Pods-IH_Alex.debug.xcconfig"; sourceTree = "<group>"; };
 		5E0FFEDE2D65EB660090DECF /* metadataResponse.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = metadataResponse.txt; sourceTree = "<group>"; };
-		5E0FFEE22D65EB8D0090DECF /* Token3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Token3.txt; sourceTree = "<group>"; };
 		5E575D2B2D63512E00ACFCEB /* ErrorModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorModel.swift; sourceTree = "<group>"; };
 		5E575D2D2D63530500ACFCEB /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 		5E575D2F2D6377B800ACFCEB /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
@@ -95,7 +92,6 @@
 		5E9D809D2D6C8BEC00E9A508 /* Cairo-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cairo-Light.ttf"; sourceTree = "<group>"; };
 		5E9D809E2D6C8BEC00E9A508 /* Cairo-ExtraLight.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cairo-ExtraLight.ttf"; sourceTree = "<group>"; };
 		5E9D80A12D6C8BED00E9A508 /* Cairo-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cairo-Black.ttf"; sourceTree = "<group>"; };
-		5E9D80AB2D6C9BA700E9A508 /* Token1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Token1.txt; sourceTree = "<group>"; };
 		5E9D80AD2D6C9DCD00E9A508 /* ImageClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageClass.swift; sourceTree = "<group>"; };
 		5E9D80B12D6F05EF00E9A508 /* Cairo-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Cairo-Medium.ttf"; sourceTree = "<group>"; };
 		5E9D80C12D6F0D6400E9A508 /* ReferenceClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferenceClass.swift; sourceTree = "<group>"; };
@@ -113,17 +109,15 @@
 		5EDC43C72D61E80D007913CD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8303CF8B2DBE25EB00D10233 /* BookmarkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkModel.swift; sourceTree = "<group>"; };
 		8303CF8D2DBE262300D10233 /* NoteModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteModel.swift; sourceTree = "<group>"; };
-		8303CF8F2DBE345200D10233 /* Tooken1.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken1.txt; sourceTree = "<group>"; };
-		8303CF902DBE345200D10233 /* Tooken2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken2.txt; sourceTree = "<group>"; };
-		8303CF912DBE345200D10233 /* Tooken3.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken3.txt; sourceTree = "<group>"; };
-		8303CF922DBE345200D10233 /* Tooken4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken4.txt; sourceTree = "<group>"; };
-		8303CF932DBE345200D10233 /* Tooken5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken5.txt; sourceTree = "<group>"; };
-		8303CF942DBE345200D10233 /* Tooken6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken6.txt; sourceTree = "<group>"; };
-		8303CF952DBE345200D10233 /* Tooken7.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tooken7.txt; sourceTree = "<group>"; };
 		8303CF9F2DBE4F3F00D10233 /* PageReference.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = PageReference.txt; sourceTree = "<group>"; };
 		8303CFA12DBE506C00D10233 /* PageReference.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageReference.swift; sourceTree = "<group>"; };
-		830A7D922D75D3DA008D574D /* Token2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token2.txt; sourceTree = "<group>"; };
-		830A7D942D75D3F7008D574D /* Token4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token4.txt; sourceTree = "<group>"; };
+		831EA8172DF838A2006DB765 /* token1.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token1.txt; sourceTree = "<group>"; };
+		831EA8182DF838A2006DB765 /* token2.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token2.txt; sourceTree = "<group>"; };
+		831EA8192DF838A2006DB765 /* token3.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token3.txt; sourceTree = "<group>"; };
+		831EA81A2DF838A2006DB765 /* token4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token4.txt; sourceTree = "<group>"; };
+		831EA81B2DF838A2006DB765 /* token5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token5.txt; sourceTree = "<group>"; };
+		831EA81C2DF838A2006DB765 /* Token6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token6.txt; sourceTree = "<group>"; };
+		831EA81D2DF838A2006DB765 /* Token7.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token7.txt; sourceTree = "<group>"; };
 		832048E32DC8E2BE00F1B8BF /* BookSearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSearchResultViewController.swift; sourceTree = "<group>"; };
 		832048E42DC8E2BE00F1B8BF /* BookSearchResultViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BookSearchResultViewController.xib; sourceTree = "<group>"; };
 		832048E82DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSearchResultTableViewCell.swift; sourceTree = "<group>"; };
@@ -138,6 +132,8 @@
 		83EDE1962D770E5900425A46 /* BookState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookState.swift; sourceTree = "<group>"; };
 		83EDE1982D7715FC00425A46 /* BookmarkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkManager.swift; sourceTree = "<group>"; };
 		83EDE19A2D7728D100425A46 /* NoteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoteManager.swift; sourceTree = "<group>"; };
+		83F432382DF9731A00C43621 /* ReferenceBottomSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReferenceBottomSheetViewController.swift; sourceTree = "<group>"; };
+		83F432392DF9731A00C43621 /* ReferenceBottomSheetViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ReferenceBottomSheetViewController.xib; sourceTree = "<group>"; };
 		A0DECBAAA05223C0951067D9 /* Pods_IH_Alex.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_IH_Alex.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C099315606934F6DBAE86FC6 /* Pods-IH_Alex.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-IH_Alex.release.xcconfig"; path = "Target Support Files/Pods-IH_Alex/Pods-IH_Alex.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -201,18 +197,14 @@
 			isa = PBXGroup;
 			children = (
 				8303CF9F2DBE4F3F00D10233 /* PageReference.txt */,
-				5E0FFEE22D65EB8D0090DECF /* Token3.txt */,
-				830A7D922D75D3DA008D574D /* Token2.txt */,
-				830A7D942D75D3F7008D574D /* Token4.txt */,
-				8303CF8F2DBE345200D10233 /* Tooken1.txt */,
-				8303CF902DBE345200D10233 /* Tooken2.txt */,
-				8303CF912DBE345200D10233 /* Tooken3.txt */,
-				8303CF922DBE345200D10233 /* Tooken4.txt */,
-				8303CF932DBE345200D10233 /* Tooken5.txt */,
-				8303CF942DBE345200D10233 /* Tooken6.txt */,
-				8303CF952DBE345200D10233 /* Tooken7.txt */,
-				5E9D80AB2D6C9BA700E9A508 /* Token1.txt */,
 				83EDE1942D77092000425A46 /* Bookinfo.txt */,
+				831EA8172DF838A2006DB765 /* token1.txt */,
+				831EA8182DF838A2006DB765 /* token2.txt */,
+				831EA8192DF838A2006DB765 /* token3.txt */,
+				831EA81A2DF838A2006DB765 /* token4.txt */,
+				831EA81B2DF838A2006DB765 /* token5.txt */,
+				831EA81C2DF838A2006DB765 /* Token6.txt */,
+				831EA81D2DF838A2006DB765 /* Token7.txt */,
 				5E0FFEDE2D65EB660090DECF /* metadataResponse.txt */,
 				5E63E5392D6345AE00F85DAB /* Models */,
 			);
@@ -243,6 +235,8 @@
 				832048E22DC8E29000F1B8BF /* BookSearchResult */,
 				8334849B2D81C2E70075A2C5 /* MenuViewControllers */,
 				833484A72D81C3460075A2C5 /* PagesViewControllers */,
+				83F432382DF9731A00C43621 /* ReferenceBottomSheetViewController.swift */,
+				83F432392DF9731A00C43621 /* ReferenceBottomSheetViewController.xib */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -440,30 +434,27 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				831EA81E2DF838A2006DB765 /* token1.txt in Resources */,
+				831EA81F2DF838A2006DB765 /* token5.txt in Resources */,
+				831EA8202DF838A2006DB765 /* token3.txt in Resources */,
+				831EA8212DF838A2006DB765 /* Token6.txt in Resources */,
+				831EA8222DF838A2006DB765 /* token4.txt in Resources */,
+				831EA8232DF838A2006DB765 /* Token7.txt in Resources */,
+				831EA8242DF838A2006DB765 /* token2.txt in Resources */,
 				5EDC43C62D61E80D007913CD /* LaunchScreen.storyboard in Resources */,
 				5E9D80962D6C8A6600E9A508 /* Cairo-SemiBold.ttf in Resources */,
 				83EDE1952D77092000425A46 /* Bookinfo.txt in Resources */,
 				5E0FFEDF2D65EB660090DECF /* metadataResponse.txt in Resources */,
 				5E9D80982D6C8BCD00E9A508 /* Cairo-ExtraBold.ttf in Resources */,
-				830A7D952D75D3F7008D574D /* Token4.txt in Resources */,
 				8303CFA02DBE4F3F00D10233 /* PageReference.txt in Resources */,
 				5EDC43C32D61E80D007913CD /* Assets.xcassets in Resources */,
 				5E9D80A92D6C8BED00E9A508 /* Cairo-Black.ttf in Resources */,
-				5E9D80AC2D6C9BA800E9A508 /* Token1.txt in Resources */,
-				8303CF962DBE345200D10233 /* Tooken6.txt in Resources */,
-				8303CF972DBE345200D10233 /* Tooken3.txt in Resources */,
-				8303CF982DBE345200D10233 /* Tooken7.txt in Resources */,
-				8303CF992DBE345200D10233 /* Tooken5.txt in Resources */,
 				832048E62DC8E2BE00F1B8BF /* BookSearchResultViewController.xib in Resources */,
-				8303CF9A2DBE345200D10233 /* Tooken4.txt in Resources */,
-				8303CF9B2DBE345200D10233 /* Tooken2.txt in Resources */,
-				8303CF9C2DBE345200D10233 /* Tooken1.txt in Resources */,
 				5E9D80912D6C879500E9A508 /* Cairo-VariableFont_slnt,wght.ttf in Resources */,
 				5E9D80A42D6C8BED00E9A508 /* Cairo-Regular.ttf in Resources */,
 				83289AAE2DC0B68000447D39 /* CustomMainView.xib in Resources */,
-				5E0FFEE62D65EB8E0090DECF /* Token3.txt in Resources */,
+				83F4323A2DF9731A00C43621 /* ReferenceBottomSheetViewController.xib in Resources */,
 				5E9D80932D6C897500E9A508 /* Cairo-Bold.ttf in Resources */,
-				830A7D932D75D3DA008D574D /* Token2.txt in Resources */,
 				5EDC43BE2D61E80B007913CD /* Main.storyboard in Resources */,
 				5E9D80A62D6C8BED00E9A508 /* Cairo-ExtraLight.ttf in Resources */,
 				5E9D80A52D6C8BED00E9A508 /* Cairo-Light.ttf in Resources */,
@@ -539,6 +530,7 @@
 				83EDE1912D76F05200425A46 /* HighlightModel.swift in Sources */,
 				5E9D80C22D6F0D6400E9A508 /* ReferenceClass.swift in Sources */,
 				5EDC43B92D61E80B007913CD /* SceneDelegate.swift in Sources */,
+				83F4323B2DF9731A00C43621 /* ReferenceBottomSheetViewController.swift in Sources */,
 				5E63E5332D63393300F85DAB /* EndPoint.swift in Sources */,
 				5E575D352D65CD0700ACFCEB /* Reading.swift in Sources */,
 				5E63E5352D63395700F85DAB /* API.swift in Sources */,

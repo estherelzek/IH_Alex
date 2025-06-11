@@ -354,7 +354,7 @@ extension PagedTextViewController {
 
             self.bookChapterrs.removeAll()
             self.pagess.removeAll()
-            let tokens = ["Tooken1", "Tooken2", "Tooken3", "Tooken4", "Tooken5", "Tooken6", "Tooken7"]
+            let tokens = ["token1", "token2", "token3", "token4", "token5", "token6", "token7"]
 
             var globalPageOffset = 0
 

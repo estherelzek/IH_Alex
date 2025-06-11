@@ -283,18 +283,10 @@ extension PagedTextViewController {
         let vc = TextPageViewController()
         vc.pageController = self
         vc.pageIndex = pageIndex
-//        vc.bookChapterrs = self.bookChapterrs
-//        vc.pagess = self.pagess
-//        vc.pageContentt = chunkedPages[pageIndex]
-        //
-        // ✅ Set dependencies first
         vc.bookChapterrs = self.bookChapterrs
         vc.pagess = self.pagess
         vc.chunkedPages = self.chunkedPages
-
-        // ✅ Then set content that may depend on above
         let content = chunkedPages[pageIndex]
-  //      print("chunkedPages[index]: \(content)")
         vc.pageContentt = content
 
         return vc
@@ -370,10 +362,6 @@ extension PagedTextViewController {
         
         let direction: UIPageViewController.NavigationDirection = (index >= currentIndex) ? .forward : .reverse
         let newVC = TextPageViewController()
-      //  newVC.pages = pages
-//        newVC.originalPages = originalPages
-//        newVC.bookChapters = self.bookChapters
-//        newVC.pageContent = pages[index]
         newVC.pageIndex = index
         newVC.pageController = self
         newVC.pageNavigationDelegate = self
@@ -415,10 +403,6 @@ extension PagedTextViewController {
         guard index >= 0 && index < pagess.count else { return nil }
         let vc = TextPageViewController()
         vc.pageController = self
-//        vc.originalPages = self.originalPages
-//        vc.bookChapters = self.bookChapters
-//        vc.pages = self.pages
-//        vc.pageContent = pages[index]
         vc.pageIndex = index
         //
         vc.bookChapterrs = self.bookChapterrs

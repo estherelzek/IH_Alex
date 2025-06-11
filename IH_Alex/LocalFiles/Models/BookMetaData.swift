@@ -41,6 +41,26 @@ struct MetaDataResponse: Codable {
         }
     }
 }
+struct Encoding: Codable {
+    let tags: Tags
+    let fonts: [String: FontStyle]
+}
+
+struct Tags: Codable {
+    let tagStart, tagEnd: String
+    let tagLength, formatLength, linkKeyLength: Int
+    let webLink, internalLink, internalLinkTarget, image: String
+    let reference, pageTag, chapterTag, splitTag: String
+    let splitterTag: String? // <-- Add this line
+}
+
+struct FontStyle: Codable {
+    let bold, italic: String
+    let size: String
+    let fontColor, backgroundColor: String
+    let align, underline, name: String?
+    let fontFamilyName: String?
+}
 
 extension MetaDataResponse {
     static let `default` = MetaDataResponse(

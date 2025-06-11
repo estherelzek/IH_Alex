@@ -58,13 +58,12 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
             self.loadNoteIcons()
             self.addBookmarkView()
         }
-        setupMenuButton()
+    //    setupMenuButton()
         setUpBritness()
         restoreBrightness()
         NotificationCenter.default.addObserver(self, selector: #selector(bookmarkUpdated(_:)), name: Notification.Name("BookmarkUpdated"), object: nil)
         reloadPageContent()
     }
-    
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         self.loadNoteIcons()
@@ -212,7 +211,6 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
               self.pageController?.chunkedPages = newChunks
               self.chunkedPages = newChunks
 
-              // Clamp pageIndex to valid range
               pageIndex = min(pageIndex, chunkedPages.count - 1)
 
               DispatchQueue.main.async {
@@ -494,10 +492,7 @@ extension TextPageViewController {
         noteVC.chunkedPages = chunkedPages
         noteVC.pageContentt = pageContentt
         noteVC.bookId = bookChapterrs.first?.bookID
-        print("✅ selectedText: \"\(selectedText)\"")
-        print("✅ nsRange: \(nsRange)")
-        print("✅ globalRange: \(globalRange)")
-        print("✅ noteVC.bookId: \(noteVC.bookId)")
+      
             noteVC.view.frame = CGRect(x: -10, y: -10, width: view.frame.width - 80, height: view.frame.height - 80)
             noteVC.view.center = view.center
             addChild(noteVC)
@@ -576,7 +571,6 @@ extension TextPageViewController {
         guard let tappedIcon = sender.view as? UIImageView else { return }
         let noteIdHash = tappedIcon.tag
 
-        // Find note by matching id hash
         let allNotes = NoteManager.shared.loadNotes()
         if let tappedNote = allNotes.first(where: { $0.id.hashValue == noteIdHash }) {
             showNoteForNoteId(tappedNote.id)
@@ -660,9 +654,6 @@ extension TextPageViewController {
     }
 
     func getCurrentPageContent() -> Chunk? {
-        // Find page content for the current visible page index
-        print("pageIndex: \(pageIndex)")
-        print("chunkedPages.first: \(chunkedPages.first?.pageIndexInBook)")
         return chunkedPages.first { $0.pageIndexInBook == pageIndex }
     }
 
@@ -921,32 +912,100 @@ extension  TextPageViewController {
 extension TextPageViewController {
 
     func textView(_ textView: UITextView,
-                     shouldInteractWith URL: URL,
-                     in characterRange: NSRange,
-                     interaction: UITextItemInteraction) -> Bool {
-           
-           let urlString = URL.absoluteString
-           
-           if urlString.starts(with: "internal:") {
-               let key = urlString.replacingOccurrences(of: "internal:", with: "")
-               print("✅ Internal link tapped: \(key)")
-               handleInternalLinkClick(id: key)
-               return false
-           } else if urlString.starts(with: "note:") {
-               let noteIdString = urlString.replacingOccurrences(of: "note:", with: "")
-               // Use Int64 since note.id is Int64
-               if let noteId = Int64(noteIdString) {
-                   print("📝 Note link tapped with note ID: \(noteId)")
-                   showNoteForNoteId(noteId)
-               } else {
-                   print("⚠️ Invalid note ID in link: \(noteIdString)")
-               }
-               return false
-           }
-           
-           return true // allow normal http/https links
-       }
-       
+                  shouldInteractWith URL: URL,
+                  in characterRange: NSRange,
+                  interaction: UITextItemInteraction) -> Bool {
+        
+        let urlString = URL.absoluteString
+
+        // 🔗 Internal link handler
+        if urlString.starts(with: "internal:") {
+            let key = urlString.replacingOccurrences(of: "internal:", with: "")
+            print("✅ Internal link tapped: \(key)")
+            handleInternalLinkClick(id: key)
+            return false
+        }
+
+        // 📝 Note link handler
+        if urlString.starts(with: "note:") {
+            let noteIdString = urlString.replacingOccurrences(of: "note:", with: "")
+            if let noteId = Int64(noteIdString) {
+                print("📝 Note link tapped with note ID: \(noteId)")
+                showNoteForNoteId(noteId)
+            } else {
+                print("⚠️ Invalid note ID in link: \(noteIdString)")
+            }
+            return false
+        }
+
+        // 📚 Reference link handler
+        if urlString.starts(with: "reference:") {
+            let id = urlString.replacingOccurrences(of: "reference:", with: "")
+            print("📚 Reference link tapped with ID: \(id)")
+            openReference(id) // Call your custom reference handler here
+            return false
+        }
+
+        // 🌐 Let http/https links open normally
+        return true
+    }
+    
+    func openReference(_ id: String) {
+        guard let referenceText = getReferenceContentById(id) else {
+            print("⚠️ Reference not found for id: \(id)")
+            return
+        }
+
+        let referenceVC = ReferenceBottomSheetViewController(nibName: "ReferenceBottomSheetViewController", bundle: nil)
+        referenceVC.referenceID = id
+        referenceVC.referenceText = referenceText
+
+        if let sheet = referenceVC.sheetPresentationController {
+            if #available(iOS 16.0, *) {
+                let customDetent = UISheetPresentationController.Detent.custom(identifier: .init("small")) { context in
+                    return 200 // desired height in points
+                }
+                sheet.detents = [customDetent]
+            } else {
+                sheet.detents = [.medium()] // fallback
+            }
+
+            sheet.prefersGrabberVisible = false
+            sheet.preferredCornerRadius = 16
+        }
+
+
+        referenceVC.modalPresentationStyle = .pageSheet
+
+        // Find topmost presenter
+        if let topController = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .flatMap({ $0.windows })
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController {
+            
+            var presenter = topController
+            while let presented = presenter.presentedViewController {
+                presenter = presented
+            }
+
+            presenter.present(referenceVC, animated: true)
+        }
+    }
+
+
+    func getReferenceContentById(_ id: String) -> String? {
+        if let data = UserDefaults.standard.data(forKey: "referenceList"),
+           let references = try? JSONDecoder().decode([Reference].self, from: data) {
+            print("📥 Loaded reference list from UserDefaults: \(references)")
+            return references.first(where: { $0.id == id })?.text
+        } else {
+            print("⚠️ No reference list found in UserDefaults.")
+            return nil
+        }
+    }
+
+
        func textView(_ textView: UITextView,
                      shouldInteractWith textAttachment: NSTextAttachment,
                      in characterRange: NSRange,
