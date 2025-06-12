@@ -29,8 +29,8 @@ class ParsePage {
         var start = 0
         var isInsideTag = false
         var currentTag: String? = nil
-        let tagStart = "##"
-        let tagEnd = "@@"
+      //  let tagStart = "##"
+      //  let tagEnd = "@@"
         var i = 0
         let chars = Array(pageEncodedString)
         var countpages = 0
@@ -70,7 +70,6 @@ class ParsePage {
                             if i + 1 < chars.count, chars[i] == "@" && chars[i + 1] == "@" {
                                 i += 2
                             }
-
                             print("🟠 Skipped P-tag hidden text: '\(skipBuffer)'")
                         }
 
@@ -182,7 +181,6 @@ class ParsePage {
 
                         isInsideTag = false
                         
-                  
                     default:
                         currentTag = String(tagChar)
                     }
