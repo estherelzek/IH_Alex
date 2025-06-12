@@ -8,8 +8,6 @@
 import Foundation
 import UIKit
 
-import Foundation
-
 class HighlightManager {
     static let shared = HighlightManager()
     private let highlightsKey = "bookHighlights"

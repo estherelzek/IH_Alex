@@ -690,15 +690,19 @@ extension TextPageViewController {
         textView.textStorage.removeAttribute(.backgroundColor, range: fullRange)
 
         for highlight in highlights {
-            let localStart = highlight.start - pageContent.globalStartIndex
-            let length = highlight.end - highlight.start
-            let localRange = NSRange(location: localStart, length: length)
-            if localRange.location >= 0 && NSMaxRange(localRange) <= textView.textStorage.length {
+            let localStart = max(0, highlight.start - pageContent.globalStartIndex)
+            let localEnd = min(textView.textStorage.length, highlight.end - pageContent.globalStartIndex)
+            let length = localEnd - localStart
+
+            if length > 0 {
+                let localRange = NSRange(location: localStart, length: length)
                 textView.textStorage.addAttribute(.backgroundColor, value: UIColor(rgb: highlight.color), range: localRange)
             } else {
-                print("⚠️ Skipped out-of-bounds highlight: \(highlight)")
+                print("⚠️ Skipped clipped or invalid highlight: \(highlight)")
             }
+
         }
+
         for result in searchResults {
             let lowerText = textView.text.lowercased()
             let searchText = result.content.lowercased()
