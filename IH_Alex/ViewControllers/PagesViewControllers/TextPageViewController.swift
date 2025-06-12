@@ -5,6 +5,7 @@
 //  Created by esterelzek on 16/02/2025.
 //
 import UIKit
+
 protocol PageNavigationDelegate: AnyObject {
     func navigateToPage(index: Int)
 }
@@ -36,6 +37,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     var pagess: [Page] = []
     var chunkedPages: [Chunk] = []  // This is rebuilt every time
     var pageContentt: Chunk?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         if let pageContent = pageContentt {
@@ -45,53 +47,23 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         }
         setupTextView()
         setupCustomMenu()
-    
         applySavedAppearance()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.loadNoteIcons()
             self.addBookmarkView()
         }
-    //    setupMenuButton()
         setUpBritness()
         restoreBrightness()
         NotificationCenter.default.addObserver(self, selector: #selector(bookmarkUpdated(_:)), name: Notification.Name("BookmarkUpdated"), object: nil)
         reloadPageContent()
     }
+    
     override func viewWillLayoutSubviews() {
         super.viewWillLayoutSubviews()
         self.loadNoteIcons()
-       self.addBookmarkView()
-      
+        self.addBookmarkView()
     }
     
-    func setupTextView() {
-        textView.isEditable = false
-        textView.isSelectable = true
-        textView.isUserInteractionEnabled = true
-        textView.dataDetectorTypes = .link
-        textView.delegate = self
-        textView.translatesAutoresizingMaskIntoConstraints = false
-        textView.textAlignment = .right
-        textView.backgroundColor = .clear
-        textView.isScrollEnabled = false
-        if let attributedContent = pageContentt?.attributedText {
-            textView.attributedText = applyLanguageBasedAlignment(to: attributedContent)
-        }
-
-        view.addSubview(textView)
-        let isHorizontalPaging = pageController?.scrollMode == .horizontalPaging
-        let topPadding: CGFloat = isHorizontalPaging ? 60 : 60
-        let bottomConstraint = textView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10)
-        bottomConstraint.priority = UILayoutPriority(750) // Lower priority to avoid conflicts
-
-        NSLayoutConstraint.activate([
-            textView.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
-            textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
-            textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
-            bottomConstraint
-        ])
-    }
-
     func applySavedAppearance() {
         let savedFontSize = UserDefaults.standard.value(forKey: "globalFontSize") as? CGFloat ?? 16
         let savedBackground = UserDefaults.standard.color(forKey: "globalBackgroundColor") ?? .white
@@ -161,7 +133,6 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     }
     
     func closeMenu() {
-        let preservedAbsoluteLocation: Int
         print("📍 pageIndex: \(pageIndex)")
         print("📍 pages count: \(chunkedPages.count)")
 
@@ -215,7 +186,6 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
             self.noteVC = nil
         }
     }
-
 }
 
 extension TextPageViewController: MenuViewDelegate {
@@ -225,14 +195,12 @@ extension TextPageViewController: MenuViewDelegate {
         }
     }
 
-    
     func keepDisplayOn() {
             let isScreenAlwaysOn = !UserDefaults.standard.bool(forKey: "keepDisplayOn")
             UserDefaults.standard.set(isScreenAlwaysOn, forKey: "keepDisplayOn")
             UIApplication.shared.isIdleTimerDisabled = isScreenAlwaysOn
             print(isScreenAlwaysOn ? "✅ Screen will remain on" : "⏳ Screen will turn off after inactivity")
         }
-
 
     func rotateScreen() {
         guard let pageController = pageController else {
@@ -263,9 +231,7 @@ extension TextPageViewController: MenuViewDelegate {
         let currentSize = currentFont.pointSize
         let newFontSize = increase ? currentSize + step : currentSize - step
         let finalFontSize = max(min(newFontSize, 30), 12)
-
         print("🔹 Before Zoom | Current Size: \(currentSize), New Size: \(newFontSize), Final Size: \(finalFontSize)")
-
         if finalFontSize == currentSize {
             if finalFontSize == 30 {
                 print("🔹 Font size is already at the maximum limit (30). Skipping update.")
@@ -279,7 +245,6 @@ extension TextPageViewController: MenuViewDelegate {
 
         UserDefaults.standard.set(finalFontSize, forKey: "globalFontSize")
         UserDefaults.standard.synchronize()
-        print("✅ Saved finalFontSize: \(finalFontSize)")
         applyFontSize(finalFontSize)
         pageController?.applyFontSizeToAllPages(finalFontSize)
         loadNoteIcons()
@@ -336,7 +301,6 @@ extension TextPageViewController: MenuViewDelegate {
         UserDefaults.standard.setColor(font, forKey: "globalFontColor")
         UserDefaults.standard.synchronize()
         let savedBackground = UserDefaults.standard.color(forKey: "globalBackgroundColor") ?? .white
-        print("✅ Background Color Saved: \(savedBackground)")
         pageController?.applyBackgroundAndFontColorToAllPages(background: background, font: font)
     }
 
@@ -405,7 +369,7 @@ extension TextPageViewController: NoteViewControllerDelegate {
         self.applySavedAppearance()
         self.addBookmarkView()
     }
-    }
+}
 
     func reloadContent(at index: Int) {
         guard chunkedPages.indices.contains(index) else {
@@ -577,7 +541,6 @@ extension TextPageViewController {
           self.noteVC = noteVC
       }
 
-    
     func applyHighlight(color: UIColor) {
         guard let selectedRange = textView.selectedTextRange,
               let text = textView.text(in: selectedRange),
@@ -607,8 +570,6 @@ extension TextPageViewController {
         HighlightManager.shared.saveHighlight(highlight)
         updateTextViewHighlight(range: nsRange, color: color)
     }
-
-
 
     func calculateGlobalRange(from nsRange: NSRange, pageContent: Chunk) -> NSRange {
         let globalStart = nsRange.location + pageContent.globalStartIndex
@@ -667,7 +628,6 @@ extension TextPageViewController {
                 textView.textStorage.addAttribute(.backgroundColor, value: UIColor(rgb: highlight.color), range: localRange)
             }
         }
-
         textView.textStorage.endEditing()
     }
 
@@ -700,7 +660,6 @@ extension TextPageViewController {
             } else {
                 print("⚠️ Skipped clipped or invalid highlight: \(highlight)")
             }
-
         }
 
         for result in searchResults {
@@ -737,14 +696,12 @@ extension TextPageViewController {
                 attributedString.replaceCharacters(in: range, with: "") // Remove old attachment
             }
         }
-
         guard let pageContent = pageContentt else { return }
         let notes = NoteManager.shared.loadNotes().filter { note in
             let noteRange = note.start..<note.end
             let pageRange = pageContent.globalStartIndex..<pageContent.globalEndIndex
             return noteRange.overlaps(pageRange)
         }
-
         for note in notes {
             let noteAttachment = NSTextAttachment()
             noteAttachment.image = UIImage(systemName: "note.text")
@@ -759,7 +716,6 @@ extension TextPageViewController {
                 attributedString.append(noteIconAttributedString)
             }
         }
-
         DispatchQueue.main.async {
             self.textView.attributedText = attributedString
         }
@@ -876,6 +832,7 @@ extension  TextPageViewController {
             }
         }
 }
+
 extension TextPageViewController {
 
     func textView(_ textView: UITextView,
@@ -891,7 +848,6 @@ extension TextPageViewController {
             return false
         }
 
-        // 📝 Note link handler
         if urlString.starts(with: "note:") {
             let noteIdString = urlString.replacingOccurrences(of: "note:", with: "")
             if let noteId = Int64(noteIdString) {
@@ -930,7 +886,6 @@ extension TextPageViewController {
             } else {
                 sheet.detents = [.medium()] // fallback
             }
-
             sheet.prefersGrabberVisible = false
             sheet.preferredCornerRadius = 16
         }
@@ -941,7 +896,6 @@ extension TextPageViewController {
             .flatMap({ $0.windows })
             .first(where: { $0.isKeyWindow })?
             .rootViewController {
-            
             var presenter = topController
             while let presented = presenter.presentedViewController {
                 presenter = presented
@@ -976,9 +930,7 @@ extension TextPageViewController {
   
     func textView(_ textView: UITextView, didTapIn characterRange: NSRange) {
         guard let attributedText = textView.attributedText else { return }
-        
         let attributes = attributedText.attributes(at: characterRange.location, effectiveRange: nil)
-        
         if let internalLinkID = attributes[NSAttributedString.Key("InternalLinkID")] as? String {
             print("✅ Internal Link tapped with key: \(internalLinkID)")
             self.handleInternalLinkClick(id: internalLinkID)
@@ -1008,7 +960,6 @@ extension TextPageViewController {
 
     private func handleInternalLinkClick(id: String) {
         print("📩 handleInternalLinkClick triggered for key: \(id)")
-        
         guard let savedData = UserDefaults.standard.data(forKey: "PageReferencesKey"),
               let savedPageReferences = try? JSONDecoder().decode([PageReference].self, from: savedData),
               let target = savedPageReferences.first(where: { $0.key == id }) else {
@@ -1093,4 +1044,33 @@ extension TextPageViewController {
         }
         textView.textStorage.endEditing()
     }
+    
+    func setupTextView() {
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.isUserInteractionEnabled = true
+        textView.dataDetectorTypes = .link
+        textView.delegate = self
+        textView.translatesAutoresizingMaskIntoConstraints = false
+        textView.textAlignment = .right
+        textView.backgroundColor = .clear
+        textView.isScrollEnabled = false
+        if let attributedContent = pageContentt?.attributedText {
+            textView.attributedText = applyLanguageBasedAlignment(to: attributedContent)
+        }
+
+        view.addSubview(textView)
+        let isHorizontalPaging = pageController?.scrollMode == .horizontalPaging
+        let topPadding: CGFloat = isHorizontalPaging ? 60 : 60
+        let bottomConstraint = textView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -10)
+        bottomConstraint.priority = UILayoutPriority(750) // Lower priority to avoid conflicts
+
+        NSLayoutConstraint.activate([
+            textView.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
+            textView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            textView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+            bottomConstraint
+        ])
+    }
+
 }

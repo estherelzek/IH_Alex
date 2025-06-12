@@ -223,10 +223,10 @@ extension MainViewController: PagedTextViewControllerDelegate {
         chapterTitleLabel.text = chapterName
         currentPageComparedToChapterPages.text = "\(chapterName): Page \(pageInChapter) / \(totalChapterPages)"
         currentPageComparedToBookPages.text = "Page \(pageInBook) / \(totalBookPages)"
-        print("📌\(currentIndex) Chapter Name: \(chapterName)")
-        print("📌\(currentIndex) Page in Chapter: \(pageInChapter) / \(totalChapterPages)")
-        print("📌\(currentIndex) Page in Book: \(pageInBook) / \(totalBookPages)")
-        print("\(currentIndex)currentPage.globalStartIndex: \(currentPage.globalStartIndex)")
+//        print("📌\(currentIndex) Chapter Name: \(chapterName)")
+//        print("📌\(currentIndex) Page in Chapter: \(pageInChapter) / \(totalChapterPages)")
+//        print("📌\(currentIndex) Page in Book: \(pageInBook) / \(totalBookPages)")
+//        print("\(currentIndex)currentPage.globalStartIndex: \(currentPage.globalStartIndex)")
     }
 
 

@@ -42,7 +42,7 @@ class FontStyler {
         }
         let paragraphStyle = NSMutableParagraphStyle()
         if let alignment = fontStyle.align {
-            print("alignment: \(alignment)")
+           // print("alignment: \(alignment)")
             switch alignment {
             case "c":
                 paragraphStyle.alignment = .center

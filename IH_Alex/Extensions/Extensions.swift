@@ -30,7 +30,7 @@ class Decryptor {
 
     private func decrypt(text: String) -> String {
         var decryptedText = ""
-        print("decrypt is called text size = \(text.count)")
+      //  print("decrypt is called text size = \(text.count)")
         for scalar in text.unicodeScalars {
             let decryptedScalar = UnicodeScalar(scalar.value - 5) ?? scalar
             decryptedText.append(Character(decryptedScalar))

@@ -76,7 +76,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
     func loadContent() {
         loadRawChapters { [weak self] in
             guard let self = self else { return }
-
+         
             self.switchScrollMode()
             self.detectInitialOrientation()
             self.restoreRotationLock()
@@ -85,7 +85,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             UIApplication.shared.isIdleTimerDisabled = isScreenAlwaysOn
 
             if self.pageViewController == nil {
-                let options: [UIPageViewController.OptionsKey: Any] = [.interPageSpacing: 20]
+                let options: [UIPageViewController.OptionsKey: Any] = [.interPageSpacing: 0]
                 let pageVC = UIPageViewController(transitionStyle: .scroll,
                                                   navigationOrientation: .horizontal,
                                                   options: options)
@@ -135,10 +135,10 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
     }
     
     func paginate(attributedText: NSAttributedString, fontSize: CGFloat, maxSize: CGSize) -> [(text: NSAttributedString, range: NSRange)] {
-        print("📐 Starting Pagination with Max Size: \(maxSize) and Font Size: \(fontSize)")
+    //    print("📐 Starting Pagination with Max Size: \(maxSize) and Font Size: \(fontSize)")
         
         let effectiveFontSize = fontSize > 0 ? fontSize : 16.0
-        print("🖋️ Effective Font Size for Pagination: \(effectiveFontSize)")
+    //    print("🖋️ Effective Font Size for Pagination: \(effectiveFontSize)")
        
         let fullText = NSMutableAttributedString(attributedString: attributedText)
         fullText.enumerateAttribute(.font, in: NSRange(location: 0, length: fullText.length)) { value, range, _ in
@@ -190,11 +190,10 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             let pageText = fullText.attributedSubstring(from: actualRange)
             
             results.append((text: pageText, range: actualRange))
-            print("✅ Page \(results.count): Range \(actualRange)")
+        //    print("✅ Page \(results.count): Range \(actualRange)")
             
             currentLocation = actualRange.location + actualRange.length
         }
-        print("✅ Pagination completed with \(results.count) chunks.")
         return results
     }
 }

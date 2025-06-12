@@ -70,7 +70,7 @@ class ParsePage {
                             if i + 1 < chars.count, chars[i] == "@" && chars[i + 1] == "@" {
                                 i += 2
                             }
-                            print("🟠 Skipped P-tag hidden text: '\(skipBuffer)'")
+                         //   print("🟠 Skipped P-tag hidden text: '\(skipBuffer)'")
                         }
 
                     case "I":
@@ -126,7 +126,7 @@ class ParsePage {
                         currentPage = ParseInternalLink().invoke(spannedText: currentPage, parsedTag: internalLinkElement, metadata: metadata, book: book)
                         let range = NSRange(location: start, length: currentPage.length - start)
                         currentPage.addAttribute(.link, value: "internal:\(targetID)", range: range)
-                        print("✅ Inserted internal link '\(referenceTitle)' pointing to '\(targetID)'")
+                 //       print("✅ Inserted internal link '\(referenceTitle)' pointing to '\(targetID)'")
                         isInsideTag = false
 
                     case "R":
@@ -136,7 +136,7 @@ class ParsePage {
                             i += 1
                         }
                         let trimmedRaw = raw.trimmingCharacters(in: .whitespacesAndNewlines.union(.controlCharacters))
-                        print("📦 Cleaned R tag raw: '\(trimmedRaw)'")
+                      //  print("📦 Cleaned R tag raw: '\(trimmedRaw)'")
 
                         let components = trimmedRaw.components(separatedBy: ":::")
                         guard components.count == 2 else {
