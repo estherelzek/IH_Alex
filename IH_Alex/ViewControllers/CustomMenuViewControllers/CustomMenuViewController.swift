@@ -107,11 +107,9 @@ extension CustomMenuViewController {
         let menuWidth = min(requiredWidth, screenWidth - 30)
         var menuX = selectedTextFrame.midX - (menuWidth / 2)
         menuX = max(10, min(menuX, screenWidth - menuWidth - 10))
-        // 3️⃣ **Calculate Y-position to avoid cutting off**
         let menuHeight: CGFloat = 50
         let centeredY = selectedTextFrame.midY
         let adjustedY = max(min(centeredY, safeAreaBottom - menuHeight - 10), safeAreaTop + 10)
-        // 4️⃣ **Apply constraints**
         NSLayoutConstraint.activate([
             menuView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: menuX),
             menuView.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -10),
@@ -119,7 +117,6 @@ extension CustomMenuViewController {
             menuView.widthAnchor.constraint(equalToConstant: menuWidth),
             menuView.heightAnchor.constraint(equalToConstant: menuHeight)
         ])
-        // 5️⃣ **Ensure stackView adapts to menu width**
         NSLayoutConstraint.activate([
             stackView.leadingAnchor.constraint(equalTo: menuView.leadingAnchor, constant: 10),
             stackView.trailingAnchor.constraint(equalTo: menuView.trailingAnchor, constant: -10),

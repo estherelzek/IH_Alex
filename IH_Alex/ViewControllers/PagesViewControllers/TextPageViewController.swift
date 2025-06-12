@@ -19,7 +19,6 @@ protocol InternalLinkNavigationDelegate: AnyObject {
 
 class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewDelegate,CustomMenuDelegate {
     var menuButton: UIButton!
-   // var pageContent: ChapterPages?
     var pageIndex: Int = 0
     let textView = UITextView()
     var bookmarkView: BookmarkView?
@@ -29,20 +28,14 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     var lockedOrientation: UIInterfaceOrientation?
     var noteVC: NoteViewController?
     weak var delegate: MenuViewDelegate?
-    var pages: [ChapterPages] = []
-    var originalPages: [OriginalPage] = []
-    var bookChapters: [Chapter] = []
     weak var pageNavigationDelegate: PageNavigationDelegate?
     weak var internalLinkDelegate: InternalLinkNavigationDelegate?
     var searchKeyword: String?
     var searchResults: [SearchResult] = []
-
-    //
     var bookChapterrs: [Chapterr] = []
     var pagess: [Page] = []
     var chunkedPages: [Chunk] = []  // This is rebuilt every time
     var pageContentt: Chunk?
-    //
     override func viewDidLoad() {
         super.viewDidLoad()
         if let pageContent = pageContentt {
@@ -131,6 +124,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
                 UIScreen.main.brightness = CGFloat(savedBrightness) // Restore brightness
             }
     }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
@@ -175,30 +169,15 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
             print("📍 Invalid pageIndex: \(pageIndex), out of bounds.")
             return
         }
-
-//        let currentPage = chunkedPages[pageIndex]
-//        let previousOriginalPagesLength = originalPages
-//            .prefix(while: { $0.index < currentPage.originalPageIndex })
-//            .map { $0.fullAttributedText.length }
-//            .reduce(0, +)
-//
-//        preservedAbsoluteLocation = previousOriginalPagesLength + currentPage.rangeInOriginal.location
-//        print("📍 Preserved absolute location: \(preservedAbsoluteLocation) for current visible page \(pageIndex)")
-
-        // ✅ Get the current values
         let finalFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
         let screenSize = view.bounds.inset(by: UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)).size
 
-        // ✅ Get previous stored values
         let lastFontSize = UserDefaults.standard.float(forKey: "lastFontSize")
         let lastScreenWidth = UserDefaults.standard.float(forKey: "lastScreenWidth")
         let lastScreenHeight = UserDefaults.standard.float(forKey: "lastScreenHeight")
 
-        // ✅ Check if they are different before rebuilding
         if finalFontSize != lastFontSize || screenSize.width != CGFloat(lastScreenWidth) || screenSize.height != CGFloat(lastScreenHeight) {
             print("🔄 Detected change in font size or screen size, rebuilding pages...")
-
-            // ✅ Update the stored values
             UserDefaults.standard.set(finalFontSize, forKey: "lastFontSize")
             UserDefaults.standard.set(Float(screenSize.width), forKey: "lastScreenWidth")
             UserDefaults.standard.set(Float(screenSize.height), forKey: "lastScreenHeight")
@@ -227,8 +206,7 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
         self.menuVC = nil
         self.pageController?.refreshAllPages()
     }
-
-
+    
     func closeNote() {
         if let menuVC = noteVC {
             menuVC.willMove(toParent: nil)
@@ -302,8 +280,6 @@ extension TextPageViewController: MenuViewDelegate {
         UserDefaults.standard.set(finalFontSize, forKey: "globalFontSize")
         UserDefaults.standard.synchronize()
         print("✅ Saved finalFontSize: \(finalFontSize)")
-
-        // Apply the font size
         applyFontSize(finalFontSize)
         pageController?.applyFontSizeToAllPages(finalFontSize)
         loadNoteIcons()
@@ -366,7 +342,6 @@ extension TextPageViewController: MenuViewDelegate {
 
     func applyAppearanceAttributes(fontColor: UIColor, backgroundColor: UIColor, fontSize: CGFloat? = nil, lineSpacing: CGFloat? = nil) {
         let mutableAttributedText = NSMutableAttributedString(attributedString: textView.attributedText)
-       // print("🔹 Applying Appearance | FontSize: \(fontSize ?? 0), LineSpacing: \(lineSpacing ?? 0)")
         mutableAttributedText.enumerateAttributes(in: NSRange(location: 0, length: mutableAttributedText.length), options: []) { attributes, range, _ in
             let existingFont = attributes[.font] as? UIFont ?? UIFont.systemFont(ofSize: 16)
             let newFontSize = fontSize ?? existingFont.pointSize
@@ -398,7 +373,6 @@ extension TextPageViewController: MenuViewDelegate {
         UserDefaults.standard.synchronize()
 
         if let pageController = pageController {
-            print("mode: \(mode)")
             pageController.scrollMode = mode  // Apply scrolling mode
         }
     }
@@ -424,13 +398,11 @@ extension TextPageViewController: NoteViewControllerDelegate {
             return
         }
 
-        // Re-apply attributed text
         self.textView.attributedText = applyLanguageBasedAlignment(to: pageContent.attributedText)
-
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1){
         self.loadHighlights(for: pageContent)
         self.loadNoteIcons()
-       self.applySavedAppearance()
+        self.applySavedAppearance()
         self.addBookmarkView()
     }
     }
@@ -480,12 +452,12 @@ extension TextPageViewController {
                 length: nsRange.length
             )
 
-               let noteVC = NoteViewController(nibName: "NoteViewController", bundle: nil)
-               noteVC.noteTitleContent = selectedText
-               noteVC.noteTextContent = ""
-               noteVC.noteRange = globalRange
-               noteVC.originalPageIndex = pageIndex
-               noteVC.delegate = self
+        let noteVC = NoteViewController(nibName: "NoteViewController", bundle: nil)
+        noteVC.noteTitleContent = selectedText
+        noteVC.noteTextContent = ""
+        noteVC.noteRange = globalRange
+        noteVC.originalPageIndex = pageIndex
+        noteVC.delegate = self
         noteVC.originalPageBody = pagess[pageIndex].body
         noteVC.bookChapterrs = bookChapterrs
         noteVC.pagess = pagess
@@ -578,7 +550,6 @@ extension TextPageViewController {
     }
 
     func showNoteForNoteId(_ noteId: Int64) {
-          print("noteId: \(noteId)")
           let allNotes = NoteManager.shared.loadNotes()
           guard let note = allNotes.first(where: { $0.id == noteId }) else { return }
 
@@ -598,7 +569,6 @@ extension TextPageViewController {
               let length = max(0, min(note.end, pageContent.globalEndIndex) - note.start)
               noteVC.noteRange = NSRange(location: localStart, length: length)
           }
-
           noteVC.view.frame = CGRect(x: -10 , y: -10, width: view.frame.width - 60, height: view.frame.height - 80)
           noteVC.view.center = view.center
           addChild(noteVC)
@@ -634,8 +604,6 @@ extension TextPageViewController {
             color: color.toHexInt(),
             lastUpdated: Date()
         )
-        
-       print("highlight: \(highlight)")
         HighlightManager.shared.saveHighlight(highlight)
         updateTextViewHighlight(range: nsRange, color: color)
     }
@@ -711,7 +679,6 @@ extension TextPageViewController {
 
         let chapterNumber = pageContent.chapterNumber
         let fullRange = NSRange(location: 0, length: textView.textStorage.length)
-        // Filter highlights that match this book & chapter AND overlap the page range
         let highlights = HighlightManager.shared.loadHighlights().filter { h in
             h.bookId == bookId &&
             h.pageNumberInChapter == pageContent.pageNumberInChapter &&
@@ -719,7 +686,6 @@ extension TextPageViewController {
             h.start < pageContent.globalEndIndex &&
             h.end > pageContent.globalStartIndex
         }
-
         textView.textStorage.beginEditing()
         textView.textStorage.removeAttribute(.backgroundColor, range: fullRange)
 
@@ -733,7 +699,6 @@ extension TextPageViewController {
                 print("⚠️ Skipped out-of-bounds highlight: \(highlight)")
             }
         }
-        // Apply search highlights if any
         for result in searchResults {
             let lowerText = textView.text.lowercased()
             let searchText = result.content.lowercased()
@@ -795,7 +760,6 @@ extension TextPageViewController {
             self.textView.attributedText = attributedString
         }
     }
-
 }
 
 extension TextPageViewController {
@@ -876,7 +840,6 @@ extension TextPageViewController {
                 pageNumberInChapter: content.pageNumberInChapter
             )
         )
-
         refreshBookmarkUI()
     }
 
@@ -917,8 +880,6 @@ extension TextPageViewController {
                   interaction: UITextItemInteraction) -> Bool {
         
         let urlString = URL.absoluteString
-
-        // 🔗 Internal link handler
         if urlString.starts(with: "internal:") {
             let key = urlString.replacingOccurrences(of: "internal:", with: "")
             print("✅ Internal link tapped: \(key)")
@@ -937,16 +898,12 @@ extension TextPageViewController {
             }
             return false
         }
-
-        // 📚 Reference link handler
         if urlString.starts(with: "reference:") {
             let id = urlString.replacingOccurrences(of: "reference:", with: "")
             print("📚 Reference link tapped with ID: \(id)")
             openReference(id) // Call your custom reference handler here
             return false
         }
-
-        // 🌐 Let http/https links open normally
         return true
     }
     
@@ -963,7 +920,7 @@ extension TextPageViewController {
         if let sheet = referenceVC.sheetPresentationController {
             if #available(iOS 16.0, *) {
                 let customDetent = UISheetPresentationController.Detent.custom(identifier: .init("small")) { context in
-                    return 200 // desired height in points
+                    return 220 // desired height in points
                 }
                 sheet.detents = [customDetent]
             } else {
@@ -974,10 +931,7 @@ extension TextPageViewController {
             sheet.preferredCornerRadius = 16
         }
 
-
         referenceVC.modalPresentationStyle = .pageSheet
-
-        // Find topmost presenter
         if let topController = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
             .flatMap({ $0.windows })
@@ -988,11 +942,9 @@ extension TextPageViewController {
             while let presented = presenter.presentedViewController {
                 presenter = presented
             }
-
             presenter.present(referenceVC, animated: true)
         }
     }
-
 
     func getReferenceContentById(_ id: String) -> String? {
         if let data = UserDefaults.standard.data(forKey: "referenceList"),
@@ -1004,7 +956,6 @@ extension TextPageViewController {
             return nil
         }
     }
-
 
        func textView(_ textView: UITextView,
                      shouldInteractWith textAttachment: NSTextAttachment,
@@ -1018,7 +969,7 @@ extension TextPageViewController {
                      in characterRange: NSRange) -> Bool {
            return false
        }
-    // 👉 Handle Tap Based on InternalLinkID
+  
     func textView(_ textView: UITextView, didTapIn characterRange: NSRange) {
         guard let attributedText = textView.attributedText else { return }
         
@@ -1064,15 +1015,12 @@ extension TextPageViewController {
         let targetChapterNumber = target.chapterNumber
         let targetPageNumber = target.pageNumber
         let targetIndex = target.index
-
         print("🔵 Target → Chapter: \(targetChapterNumber), Page: \(targetPageNumber), Index: \(targetIndex)")
-
         guard let pageController = self.pageController else {
             print("❌ pageController is nil")
             return
         }
 
-        // ✅ 1. Try exact match first (index match is most accurate)
         if let exactMatch = chunkedPages.firstIndex(where: {
             $0.chapterNumber == targetChapterNumber &&
             $0.pageNumberInChapter   == targetPageNumber - 1 &&
@@ -1088,7 +1036,6 @@ extension TextPageViewController {
             return
         }
 
-        // 🔄 2. Fallback: Try matching by page number in chapter only (less accurate)
         if let fallbackIndex = chunkedPages.firstIndex(where: {
             $0.chapterNumber == targetChapterNumber &&
             $0.pageNumberInChapter == targetPageNumber
@@ -1099,22 +1046,17 @@ extension TextPageViewController {
             navigateToPage(index: fallbackIndex)
             return
         }
-
         print("❌ No matching chunk found for internal link id: \(id)")
     }
 
-
     private func navigateToPage(index: Int) {
-        print("index : \(index)")
         guard let pageController = self.pageController,
               let targetVC = pageController.getViewController(at: index ) else {
             print("❌ Could not get view controller at index \(index)")
             return
         }
-
         pageController.currentIndex = index
         self.pageIndex = index
-
         pageController.pageViewController?.setViewControllers(
             [targetVC],
             direction: .forward,
@@ -1123,14 +1065,12 @@ extension TextPageViewController {
                 print("✅ Navigated to internal link target page.")
             }
         )
-
         if let delegate = internalLinkDelegate {
             delegate.didNavigateToInternalLink(pageIndex: index)
         } else {
             print("❌ Delegate is nil")
         }
     }
-
 }
 
 extension TextPageViewController {

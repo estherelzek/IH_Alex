@@ -86,10 +86,6 @@ struct BookState {
     }
 }
 
-
-
-
-
 struct ChapterData: Codable {
     let chapterNumber: Int
     let title: String
@@ -100,17 +96,4 @@ struct BookMetadata: Codable {
     let lastUpdated: Int
     let isDeleted: Bool?
 }
-class NoteSpan {
-    let id: UUID
-    var bounds: CGRect
-    
-    init(bounds: CGRect) {
-        self.id = UUID()
-        self.bounds = bounds
-    }
 
-    func isIconClicked() {
-        print("Note icon tapped for NoteSpan: \(id)")
-        // Handle note selection, display popup, etc.
-    }
-}

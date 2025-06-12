@@ -184,7 +184,6 @@ class NetworkManager {
 //    }
 //    
     func getResultsStrings(APICase: API, decodingModel: Decodable.Type, completion: @escaping (Result<String, Error>) -> Void) {
-        // Construct URL based on API case
         guard let url = URL(string: APICase.baseURL + "/" + APICase.path) else {
             completion(.failure(NetworkError.invalidURL))
             return
@@ -208,9 +207,7 @@ class NetworkManager {
         task.resume()
     }
   
-//
     func sendDeleteRequest(queryParams: [String: String], completion: @escaping (Result<String, Error>) -> Void) {
-        // Construct the URL with baseURL and queryParams
         guard let url = createURL(with: "", queryParams: queryParams) else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid URL"])))
             return
@@ -248,7 +245,6 @@ class NetworkManager {
 
     
     func sendCancel(queryParams: [String: String], completion: @escaping (Result<String, Error>) -> Void) {
-        // Assuming you are using URLSession or similar
         var urlComponents = URLComponents(string: "https://agenda-new.ark-technology.com/api.php")!
         urlComponents.queryItems = queryParams.map { URLQueryItem(name: $0.key, value: $0.value) }
 
@@ -283,7 +279,6 @@ class NetworkManager {
             return
         }
 
-        // Print the API URL for debugging
         print("API URL: \(url.absoluteString)")
 
         let request = createRequest(with: url)
@@ -310,7 +305,6 @@ class NetworkManager {
     }
 
 }
-
 
 enum NetworkError: Error {
     case invalidURL

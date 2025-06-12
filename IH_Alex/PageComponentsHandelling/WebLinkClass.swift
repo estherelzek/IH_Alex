@@ -25,18 +25,3 @@ class ParseWebLink {
         return spannedText
     }
 }
-
-class ReferenceClickableSpan: NSObject {
-    
-    let parsedTag: String
-   // let uiStateViewModel: UiStateViewModel
-    
-    init(parsedTag: String) {
-        self.parsedTag = parsedTag
-      //  self.uiStateViewModel = uiStateViewModel
-    }
-//    func onClick() {
-//        uiStateViewModel.setReferenceContent(parsedTag)
-//        uiStateViewModel.setIsReferenceClicked(true)
-//    }
-}

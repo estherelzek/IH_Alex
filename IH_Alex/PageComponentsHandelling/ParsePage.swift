@@ -158,7 +158,6 @@ class ParsePage {
                         }
                      //   print("🔹 Reference Text: '\(referenceText)'")
                      //   print("🔹 Reference ID: '\(referenceID)'")
-
                         var references: [Reference] = []
                         if let data = UserDefaults.standard.data(forKey: "referenceList"),
                            let savedReferences = try? JSONDecoder().decode([Reference].self, from: data) {

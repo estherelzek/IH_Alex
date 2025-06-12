@@ -70,10 +70,7 @@ class ParseImage {
 
     func isRTL() -> Bool {
         var isRTL = false
-        // ✅ Ensure UI direction is checked on the main thread
-       
             isRTL = UIApplication.shared.userInterfaceLayoutDirection == .rightToLeft
-        
         return isRTL
     }
 

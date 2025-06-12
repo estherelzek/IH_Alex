@@ -1,10 +1,9 @@
 //
-//  testclass.swift
+//  BookContentModel.swift
 //  IH_Alex
 //
-//  Created by Esther Elzek on 25/05/2025.
+//  Created by esterelzek on 17/02/2025.
 //
-
 import Foundation
 import UIKit
 

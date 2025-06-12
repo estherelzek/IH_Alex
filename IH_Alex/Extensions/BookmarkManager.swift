@@ -48,7 +48,6 @@ class BookmarkManager {
             saveAllBookmarks(bookmarks)
             print("❌ Bookmark removed for Book ID \(bookId), Chapter \(chapterNumber), Page \(pageNumberInChapter)")
         }
-
         printAllBookmarks()
     }
 

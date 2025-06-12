@@ -39,16 +39,7 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(contentViewTapped))
         contentView.addGestureRecognizer(tapGesture)
         setUpInformation()
-//        if let pageCount = pagedVC?.pages.count {
-//               slider.maximumValue = Float(pageCount - 1)
-//           }
-    //   updateCurrentLabels()
         registerForKeyboardNotifications()
-       
-        for chapter in pagedVC!.bookChapters {
-            print("chapter \(chapter.count) has \(chapter.numberOfPages) pages")
-            //print("pagedVC!.bookChapters.count) has \(pagedVC!.bookChapters.count) element")
-        }
         slider.minimumValue = 0
         slider.maximumValue = Float(pagedVC?.pagess.count ?? 1)
         slider.addTarget(self, action: #selector(sliderValueChanged(_:)), for: .valueChanged)
@@ -56,14 +47,15 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         slider.addGestureRecognizer(tapGestureslider)
 
     }
+    
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
+    
     // MARK: - Button Actions
     @IBAction func menuButton(_ sender: Any) {}
     @IBAction func editingButton(_ sender: Any) {
         guard let textPageVC = pagedVC?.currentTextPageViewController() else {
-            
             print("❌ Could not retrieve current TextPageViewController")
             return
         }
@@ -195,45 +187,6 @@ extension MainViewController: PagedTextViewControllerDelegate {
         }
     }
 
-//    func updateCurrentPageLabels() {
-//           guard let pagedVC = pagedVC else { return }
-//           let currentIndex = pagedVC.currentIndex
-//           let currentPage = pagedVC.pages[currentIndex]
-//           let globalPageIndex = currentPage.pageNumberInBook - 1 // 0-based
-//           var displayChapterNumber = currentPage.chapterNumber
-//           var pageInChapter = 1
-//           var totalChapterPages = 1
-//           var chapterName = "Chapter \(displayChapterNumber)"
-//           if let indexList = pagedVC.metadataa?.decodedIndex() {
-//               var cumulative = 0
-//               for chapter in indexList {
-//                   let chapterCount = chapter.chapterPagesCount ?? 0
-//                   if globalPageIndex < cumulative + chapterCount {
-//                       displayChapterNumber = chapter.number
-//                       totalChapterPages = chapterCount
-//                       pageInChapter = globalPageIndex - cumulative + 1
-//                       chapterName = chapter.name
-//                       break
-//                   }
-//                   cumulative += chapterCount
-//               }
-//           } else {
-//               let chapterPages = pagedVC.pages.filter { $0.chapterNumber == currentPage.chapterNumber }
-//               pageInChapter = (chapterPages.firstIndex(of: currentPage) ?? 0) + 1
-//               totalChapterPages = chapterPages.count
-//               chapterName = "Chapter \(displayChapterNumber)"
-//           }
-//
-//           let totalBookPages = pagedVC.pages.count
-//           let pageInBook = currentPage.pageNumberInBook
-//           chapterTitleLabel.text = chapterName
-//           currentPageComparedToChapterPages.text = "chapter:\(displayChapterNumber): Page \(pageInChapter) / \(totalChapterPages)"
-//           currentPageComparedToBookPages.text = "Page \(pageInBook) / \(totalBookPages)"
-//       
-//        print("currentPageComparedToChapterPages.text: \(String(describing: currentPageComparedToChapterPages.text))")
-//        print("currentPageComparedToBookPages.text: \(String(describing: currentPageComparedToBookPages.text))")
-//    }
-    
     func updateCurrentLabels() {
         guard let pagedVC = pagedVC else { return }
         print("pagedVC pagedVC.chunkedPages.count : \(pagedVC.chunkedPages.count)")
@@ -279,7 +232,6 @@ extension MainViewController: PagedTextViewControllerDelegate {
 
 
   func setUpInformation() {
-  //    print("pagedVC?.bookInfo?.name : \(String(describing: pagedVC?.bookResponse?.book))")
        bookTitleLabel.text = pagedVC?.bookResponse?.book.name
       func setUpInformation() {
           guard let totalPages = pagedVC?.chunkedPages.count else { return }
@@ -323,18 +275,14 @@ extension MainViewController: PagedTextViewControllerDelegate {
             pagedVC.view.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
         pagedVC.didMove(toParent: self)
-        // 🔹 When pages are loaded, configure UI
         pagedVC.onLoadCompletion = { [weak self] in
             guard let self = self else { return }
-            // ✅ Set up information
             self.setUpInformation()
-            // ✅ Update the slider and labels
             if let pageCount = self.pagedVC?.pagess.count {
                 slider.maximumValue = Float((pagedVC.pagess.count ?? 1) - 1)
 
             }
             self.updateCurrentLabels()
-            // ✅ 🔄 Set the delegate for the currently loaded `TextPageViewController`
             DispatchQueue.main.async {
                 if let currentTextPageVC = self.pagedVC?.currentTextPageViewController() {
                     print("✅ Delegate set successfully")

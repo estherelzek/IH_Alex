@@ -27,18 +27,13 @@ class NoteViewController: UIViewController {
     var noteTitleContent: String?
     var noteRange: NSRange?
     var pageIndex: Int?
-   
-       /// The original page index from your data model (static page info)
-       var originalPageIndex: Int?
-       
-       /// The full text body of the original page (static content of the page)
-       var originalPageBody: String?
+    var originalPageIndex: Int?
+    var originalPageBody: String?
     var bookId: Int?
     var bookChapterrs: [Chapterr] = []
     var pagess: [Page] = []
-    var chunkedPages: [Chunk] = []  // This is rebuilt every time
+    var chunkedPages: [Chunk] = []
     var pageContentt: Chunk?
-    //
     var noteId: Int64?
     weak var delegate: NoteViewControllerDelegate?
     var isEdit: Bool = false
@@ -82,7 +77,6 @@ class NoteViewController: UIViewController {
         dismissSelf()
     }
 
-
     @IBAction func saveNoteTapped(_ sender: Any) {
         guard let bookId = bookId else {
             print("❌ Missing bookId")
@@ -105,17 +99,9 @@ class NoteViewController: UIViewController {
 
         let start = noteRange.location
         let end = start + noteRange.length
-
         let noteContent = noteText.text ?? ""
-
         noteTextContent = noteContent ?? ""
-        print("✅ noteTextContent.count = \(noteTextContent.count)")
-        print("✅ noteRange = \(noteRange)")
-        print("✅ noteRange.location + noteRange.length = \(end)")
-       
-
         var notes = NoteManager.shared.loadNotes()
-
         if let noteId = noteId, let existingIndex = notes.firstIndex(where: { $0.id == noteId }) {
             notes[existingIndex].noteText = noteContent
             notes[existingIndex].selectedNoteText = noteTextContent
@@ -134,11 +120,9 @@ class NoteViewController: UIViewController {
                 selectedNoteText: noteTitleContent ?? "",
                 lastUpdated: Date()
             )
-            print("newNote: \(newNote)")
             notes.append(newNote)
             self.noteId = newNote.id
         }
-
         NoteManager.shared.saveAllNotes(notes)
         delegate?.didSaveNote()
         dismissSelf()
@@ -150,7 +134,7 @@ class NoteViewController: UIViewController {
         }
         self.view.removeFromSuperview()
         self.removeFromParent()
-        delegate?.reloadPageContent() // Reload content after dismissing
+        delegate?.reloadPageContent()
     }
     
     @objc private func handleOutsideTap(_ gesture: UITapGestureRecognizer) {

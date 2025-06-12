@@ -8,8 +8,6 @@ import Foundation
 import UIKit
 import CloudKit
 
-// hello esther
-// hello esther
 struct ChapterPages: Equatable {
     let attributedText: NSAttributedString
     let image: UIImage?
@@ -35,13 +33,6 @@ struct TargetLink: Codable {
     let index: Int
 }
 
-struct OriginalPage {
-    let index: Int
-    let fullAttributedText: NSAttributedString
-    var chunks: [ChapterPages]
-}
-
-
 enum ScrollMode: String {
     case horizontalPaging = "horizontal"
     case verticalScrolling = "vertical"
@@ -52,17 +43,13 @@ protocol PagedTextViewControllerDelegate: AnyObject {
 
 class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSource, UIPageViewControllerDelegate, PageNavigationDelegate{
     let pageControl = UIPageControl()
-   // var pages: [ChapterPages] = []
     var currentIndex = 0
     var currentBookID: Int?
     var metadataa: MetaDataResponse?
-    var chapterContent: Chapter?
     var bookResponse: BookResponse?
-    var bookChapters: [Chapter] = []
     var bookInfo: Book?
     var bookState: BookState?
     var pageReference: [PageReference]?
-    var originalPages: [OriginalPage] = []
     var viewControllerCache: [Int: TextPageViewController] = [:]
     var isMenu: Bool = false
     var isRotationLocked = false
@@ -71,13 +58,9 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
     weak var pageChangeDelegate: PagedTextViewControllerDelegate?
     var searchKeyword: String?
     var onLoadCompletion: (() -> Void)?
-    
-    //
     var bookChapterrs: [Chapterr] = []
     var pagess: [Page] = []
     var chunkedPages: [Chunk] = []  // This is rebuilt every time
-
-    //
     var scrollMode: ScrollMode = .verticalScrolling {
         didSet {
             UserDefaults.standard.set(scrollMode == .verticalScrolling ? "vertical" : "horizontal", forKey: "scrollMode")
@@ -101,7 +84,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             let isScreenAlwaysOn = UserDefaults.standard.bool(forKey: "keepDisplayOn")
             UIApplication.shared.isIdleTimerDisabled = isScreenAlwaysOn
 
-            // ✅ Initialize the inner UIPageViewController if needed
             if self.pageViewController == nil {
                 let options: [UIPageViewController.OptionsKey: Any] = [.interPageSpacing: 20]
                 let pageVC = UIPageViewController(transitionStyle: .scroll,
@@ -112,7 +94,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                 self.pageViewController = pageVC
             }
 
-            // ✅ Add the pageViewController to the view hierarchy if it's not already there
             if !self.children.contains(self.pageViewController!) {
                 self.addChild(self.pageViewController!)
                 self.view.addSubview(self.pageViewController!.view)
@@ -121,7 +102,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                 self.pageViewController!.didMove(toParent: self)
             }
 
-            // ✅ Set the first page if pages are ready
             if !self.pagess.isEmpty, let firstVC = self.viewControllerForPage(0) {
                 self.pageViewController!.setViewControllers([firstVC], direction: .forward, animated: false, completion: nil)
                 print("✅ First page loaded successfully.")
@@ -139,8 +119,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
                 self.onLoadCompletion?()
             }
         }
-    
-
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -161,8 +139,7 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
         
         let effectiveFontSize = fontSize > 0 ? fontSize : 16.0
         print("🖋️ Effective Font Size for Pagination: \(effectiveFontSize)")
-        
-        // 🔧 Override font size
+       
         let fullText = NSMutableAttributedString(attributedString: attributedText)
         fullText.enumerateAttribute(.font, in: NSRange(location: 0, length: fullText.length)) { value, range, _ in
             if let existingFont = value as? UIFont {
@@ -217,7 +194,6 @@ class PagedTextViewController: UIPageViewController, UIPageViewControllerDataSou
             
             currentLocation = actualRange.location + actualRange.length
         }
-        
         print("✅ Pagination completed with \(results.count) chunks.")
         return results
     }
@@ -257,23 +233,15 @@ extension PagedTextViewController {
         vc.searchKeyword = self.searchKeyword
         vc.isRotationLocked = isRotationLocked
         vc.lockedOrientation = lockedOrientation
-
-        // ✅ Set dependencies first
         vc.bookChapterrs = self.bookChapterrs
         vc.pagess = self.pagess
         vc.chunkedPages = self.chunkedPages
-
-        // ✅ Then set content that may depend on above
         let content = chunkedPages[index]
-     //   print("chunkedPages[index]: \(content)")
         vc.pageContentt = content
-
-        // ✅ Font size after content
         let savedFontSize = UserDefaults.standard.float(forKey: "globalFontSize")
         if savedFontSize > 0 {
             vc.applyFontSize(CGFloat(savedFontSize))
         }
-
         viewControllerCache[index] = vc  // ✅ cache the fresh one
         return vc
     }
@@ -292,8 +260,6 @@ extension PagedTextViewController {
         return vc
     }
 
-
-    // MARK: - PageViewController DataSource Methods
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         guard let vc = viewController as? TextPageViewController else { return nil }
         vc.pageController = self
@@ -303,7 +269,6 @@ extension PagedTextViewController {
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         guard let vc = viewController as? TextPageViewController else { return nil }
         vc.pageController = self
-       // print("  vc.chunkedPages = self.chunkedPages:\(  vc.chunkedPages)")
         return getViewController(at: vc.pageIndex + 1)
     }
 
@@ -324,7 +289,6 @@ extension PagedTextViewController {
         for vc in pendingViewControllers {
             if let textVC = vc as? TextPageViewController {
                 textVC.pageContentt = self.chunkedPages.first!
-            //    print(" textVC.chunkedPage:\( textVC.chunkedPages)")
                 textVC.pageController = self
                 textVC.refreshContent()
                 textVC.reloadPageContent()
@@ -365,11 +329,9 @@ extension PagedTextViewController {
         newVC.pageIndex = index
         newVC.pageController = self
         newVC.pageNavigationDelegate = self
-        //
         newVC.bookChapterrs = self.bookChapterrs
         newVC.pagess = self.pagess
         newVC.pageContentt = chunkedPages[index]
-        //
         setViewControllers([newVC], direction: direction, animated: true) { completed in
             if completed {
                 self.currentIndex = index
@@ -404,11 +366,9 @@ extension PagedTextViewController {
         let vc = TextPageViewController()
         vc.pageController = self
         vc.pageIndex = index
-        //
         vc.bookChapterrs = self.bookChapterrs
         vc.pagess = self.pagess
         vc.pageContentt = chunkedPages[index]
-        //
         vc.applySavedAppearance()
         vc.refreshContent()
         vc.reloadPageContent()
@@ -465,10 +425,10 @@ extension PagedTextViewController {
         }
     }
 
-    func fetchFirstToken(bookID: Int, tokenID: Int, completion: @escaping (Result<Chapter, ErorrMessage>) -> Void) {
+    func fetchFirstToken(bookID: Int, tokenID: Int, completion: @escaping (Result<Chapterr, ErorrMessage>) -> Void) {
         NetworkService.shared.getResults(
             APICase: .fetchFirstToken(bookID: bookID, tokenID: tokenID),
-            decodingModel: Chapter.self
+            decodingModel: Chapterr.self
         ) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
@@ -482,7 +442,8 @@ extension PagedTextViewController {
             }
         }
     }
-    private func mapToBookState(bookResponse: BookResponse, metadata: MetaDataResponse, bookContent: Chapter) -> BookState {
+    
+    private func mapToBookState(bookResponse: BookResponse, metadata: MetaDataResponse, bookContent: Chapterr) -> BookState {
            let book = bookResponse.book
            let coverData = "loadCoverImage(named: book.cover)" // Convert cover image if needed
            
@@ -516,7 +477,8 @@ extension PagedTextViewController {
                bookNotes: [] // Load notes from local storage if needed
            )
        }
-       private func extractChapters(from bookContent: Chapter) -> [ChapterData] {
+    
+       private func extractChapters(from bookContent: Chapterr) -> [ChapterData] {
            return [
                ChapterData(
                    chapterNumber: bookContent.firstChapterNumber,
@@ -526,6 +488,7 @@ extension PagedTextViewController {
            ]
        }
 }
+
 extension PagedTextViewController {
     func applyFontSizeToAllPages(_ fontSize: CGFloat) {
            self.viewControllers?.forEach { vc in
@@ -560,6 +523,7 @@ extension PagedTextViewController {
             toggleRotationLock()
         }
 }
+
 extension PagedTextViewController {
     private func switchScrollMode() {
             self.view.subviews.forEach { $0.removeFromSuperview() }
@@ -589,7 +553,6 @@ extension PagedTextViewController {
             newPageViewController.didMove(toParent: self)
         }
 
-
        func detectInitialOrientation() {
            guard let windowScene = view.window?.windowScene else { return }
            let currentOrientation = windowScene.interfaceOrientation
@@ -609,7 +572,6 @@ extension PagedTextViewController {
         if isRotationLocked {
             isRotationLocked = false
             lockedOrientation = nil
-       //     print("🔄 Rotation Unlocked: Now follows device movement")
             UserDefaults.standard.set(false, forKey: "rotationLocked")
             UserDefaults.standard.removeObject(forKey: "lockedOrientation")
             let geometryPreferences = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .all)
@@ -671,6 +633,7 @@ extension PagedTextViewController {
            }
            return .all
        }
+    
        override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
            super.viewWillTransition(to: size, with: coordinator)
 
@@ -679,13 +642,13 @@ extension PagedTextViewController {
                return
            }
            let newOrientation = windowScene.interfaceOrientation
-       //    print("🔄 Detected Rotation: New Orientation = \(newOrientation.rawValue)")
            if isRotationLocked, let lockedOrientation = lockedOrientation {
                print("🔒 Rotation is LOCKED to: \(lockedOrientation.rawValue)")
            } else {
              //  print("🔄 Rotation is UNLOCKED: Device can rotate freely.")
            }
        }
+    
     func loadJSON<T: Decodable>(from filename: String, as type: T.Type) -> T? {
         guard let url = Bundle.main.url(forResource: filename, withExtension: "txt") else {
             print("❌ File \(filename).json not found in bundle.")
@@ -708,14 +671,9 @@ extension PagedTextViewController {
     }
     
     func refreshAllPages() {
-      //  print("🔄 Refreshing all pages")
         for (index, viewController) in viewControllerCache {
-         //   print("🔄 Refreshing page at index: \(index)")
-          //  viewController.applySavedAppearance()
             viewController.reloadPageContent()
         }
     }
-    
-    
 }
 

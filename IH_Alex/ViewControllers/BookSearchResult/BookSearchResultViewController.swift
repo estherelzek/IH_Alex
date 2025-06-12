@@ -63,8 +63,6 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
         tableView.delegate = self
         tableView.dataSource = self
         tableView.register(UINib(nibName: "BookSearchResultTableViewCell", bundle: nil), forCellReuseIdentifier: "BookSearchResultCell")
-
-        // 👉 Load previously saved search results and keyword
         let (savedResults, savedKeyword) = SearchResultManager.shared.loadSearchResults()
         
         if !savedResults.isEmpty, let keyword = savedKeyword {
@@ -76,7 +74,6 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
             tableView.reloadData()
         }
     }
-
     
     @IBAction func backButton(_ sender: Any) {
         dismissSelf()
@@ -121,9 +118,7 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
             }
         }
 
-        // 👉 Save the search results and keyword
         SearchResultManager.shared.saveSearchResults(results, keyword: keyword)
-        
         groupResultsByChapter()
         emptySearchimage.isHidden = !results.isEmpty
         tableView.isHidden = results.isEmpty
@@ -144,7 +139,6 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
         tableView.isHidden = true
         SearchResultManager.shared.clearAllSearchResults()
     }
-
 }
 
 // MARK: - UITableView Data Source & Delegate
@@ -174,7 +168,6 @@ extension BookSearchResultViewController: UITableViewDataSource, UITableViewDele
 
         let chapter = sortedChapters[indexPath.section]
         if let result = resultsByChapter[chapter]?[indexPath.row] {
-        //    cell.chapterNumberLabel.text = "Chapter \(result.chapterNumber)"
             cell.pageNumberLabel.text = "Page \(result.pageNumber)"
             cell.contentSearchLabel.text = result.content
         }
@@ -214,7 +207,6 @@ extension BookSearchResultViewController: UITableViewDataSource, UITableViewDele
         } else {
             print("❌ Could not find matching page in current list.")
         }
-
 
         tableView.deselectRow(at: indexPath, animated: true)
         self.dismissSelf()

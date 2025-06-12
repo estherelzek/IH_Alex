@@ -21,8 +21,6 @@ class ParseReference {
         guard case let .reference(_, id) = parsedTag else {
             return spannedText
         }
-
-        // 🔢 Append just [id]
         let displayText = "[\(id)]"
         let attrText = NSMutableAttributedString(string: displayText)
 
@@ -30,10 +28,7 @@ class ParseReference {
         attrText.addAttribute(.foregroundColor, value: refColor, range: range)
         attrText.addAttribute(.font, value: smallFont, range: range)
         attrText.addAttribute(.init("ReferenceID"), value: id, range: range)
-
-        // Optional: add .link attribute if you plan to intercept taps like internal links
         attrText.addAttribute(.link, value: "reference:\(id)", range: range)
-
         spannedText.append(attrText)
 
         return spannedText

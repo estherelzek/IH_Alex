@@ -22,7 +22,6 @@ struct Highlight: Identifiable, Codable {
     let color: Int
     let lastUpdated: Date
 
-    // Conform to Identifiable protocol
     var identifier: String {
         return serverId ?? "\(id ?? -1)"
     }

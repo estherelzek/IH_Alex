@@ -20,7 +20,6 @@ class ParseInternalLink {
         case let .internalLinkSource(content, key):
             spannedText.append(NSAttributedString(string: content))
             let end = spannedText.length
-            // Instead of normal link, attach custom attribute for internal link
             spannedText.addAttribute(.init("InternalLinkID"), value: key, range: NSRange(location: start, length: end - start))
         default:
             break

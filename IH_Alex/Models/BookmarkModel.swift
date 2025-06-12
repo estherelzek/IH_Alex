@@ -7,12 +7,6 @@
 
 import Foundation
 
-//struct Bookmark: Codable {
-//    let originalPageIndex: Int
-//    var isHalfFilled: Bool
-//}
-
-
 struct Bookmark: Codable {
     let serverId: String?
     let id: Int64

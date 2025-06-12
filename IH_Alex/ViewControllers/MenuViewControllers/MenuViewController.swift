@@ -15,7 +15,7 @@ protocol MenuViewDelegate: AnyObject {
     func changeBackgroundAndFontColor(background: UIColor, font: UIColor)
     func adjustBrightness(value: Float)
     func changeScrollMode(to mode: ScrollMode)
-    func menuDidClose() // 👈 add this
+    func menuDidClose()
 }
 
 class MenuViewController: UIViewController {
@@ -174,26 +174,17 @@ class MenuViewController: UIViewController {
 
    
     func setupSavedAppearanceButtons() {
-        // Handle line spacing
         let spacing = UserDefaults.standard.value(forKey: "globalLineSpacing") as? CGFloat ?? 1
         if spacing > 1 {
             setActiveBorder(for: wideSpacingButton, among: [wideSpacingButton, tightSpacingButton])
         } else {
             setActiveBorder(for: tightSpacingButton, among: [wideSpacingButton, tightSpacingButton])
         }
-
-        // Handle saved background color and button selection
         let savedBackground = UserDefaults.standard.color(forKey: "globalBackgroundColor") ?? .white
         let backgroundButtons: [UIButton] = [whiteBackgroundButton, lightBackgroundButton, grayBackgroundButton, darkBackgroundButton]
-        
-        // Debug: Print saved color to see if it's correct
-        print("Saved background color: \(savedBackground)")
+     
         for button in backgroundButtons {
                 if let bgColor = button.backgroundColor {
-                    print("Button color: \(bgColor)")
-                    print("Saved background color: \(savedBackground)")
-
-                    // Compare saved color directly for specific cases
                     if savedBackground.isEqual(UIColor.white) {
                         setActiveBorder(for: whiteBackgroundButton, among: backgroundButtons)
                         break
@@ -207,14 +198,11 @@ class MenuViewController: UIViewController {
                         setActiveBorder(for: darkBackgroundButton, among: backgroundButtons)
                         break
                     } else {
-                        // For other cases, apply default or handle separately
                         setActiveBorder(for: lightBackgroundButton, among: backgroundButtons)
                         break
                     }
                 }
             }
-        
-        // Handle saved scroll mode
         let savedScrollModeRaw = UserDefaults.standard.string(forKey: "savedScrollMode") ?? ScrollMode.verticalScrolling.rawValue
         print("savedScrollModeRaw: \(savedScrollModeRaw)")
         if let savedScrollMode = ScrollMode(rawValue: savedScrollModeRaw) {

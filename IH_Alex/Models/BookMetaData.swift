@@ -20,7 +20,6 @@ struct MetaDataResponse: Codable {
         case targetLinks = "target_links"
     }
 
-    // Decode encoding JSON string into Encoding struct
     func decodedEncoding() -> Encoding? {
         guard let data = encoding.data(using: .utf8) else { return nil }
         do {

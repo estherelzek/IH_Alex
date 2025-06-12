@@ -50,12 +50,10 @@ class HighlightManager {
         UserDefaults.standard.removeObject(forKey: highlightsKey)
     }
 
-    /// Optionally filter highlights for a chapter or pages
     func loadHighlights(for chapterNumber: Int) -> [Highlight] {
         return loadHighlights().filter { $0.chapterNumber == chapterNumber }
     }
 
-    /// Load highlights for a list of page numbers in a chapter
     func loadHighlights(for chapterNumber: Int, pages: [Int]) -> [Highlight] {
         return loadHighlights().filter {
             $0.chapterNumber == chapterNumber && pages.contains($0.pageNumberInChapter)

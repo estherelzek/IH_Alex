@@ -44,19 +44,6 @@ class Decryptor {
    }
 }
 
-// MARK: - Convert UIColor to Hex
-extension UIColor {
-    func toHexString() -> String {
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        self.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
-        let rgb = (Int(red * 255) << 16) | (Int(green * 255) << 8) | Int(blue * 255)
-        return String(format: "#%06x", rgb)
-    }
-}
-
 extension UIColor {
     convenience init(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
@@ -99,28 +86,6 @@ extension UserDefaults {
         return color
     }
 }
-extension UIColor {
-    func toRGB() -> (r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)? {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        if self.getRed(&r, green: &g, blue: &b, alpha: &a) {
-            return (r, g, b, a)
-        }
-        return nil
-    }
-
-    func isSimilar(to color: UIColor, tolerance: CGFloat = 0.1) -> Bool {
-        guard let color1 = self.toRGB(), let color2 = color.toRGB() else {
-            return false
-        }
-
-        // Compare the RGB components with tolerance
-        let redDiff = abs(color1.r - color2.r)
-        let greenDiff = abs(color1.g - color2.g)
-        let blueDiff = abs(color1.b - color2.b)
-
-        return redDiff < tolerance && greenDiff < tolerance && blueDiff < tolerance
-    }
-}
 
 extension TextPageViewController {
     func setupCustomMenu() {
@@ -148,6 +113,7 @@ extension TextPageViewController {
     }
 
 }
+
 extension Notification.Name {
     static let didCloseMenuAndRequestRefresh = Notification.Name("didCloseMenuAndRequestRefresh")
 }
@@ -169,25 +135,6 @@ extension TextPageViewController {
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return image
-    }
-    
-    
-    
-     func setupMenuButton() {
-        menuButton = UIButton(type: .system)
-        menuButton.setTitle("⋮", for: .normal)
-        menuButton.titleLabel?.font = UIFont.systemFont(ofSize: 24, weight: .bold)
-        menuButton.tintColor = .red
-        menuButton.translatesAutoresizingMaskIntoConstraints = false // ✅ Use Auto Layout
-        menuButton.addTarget(self, action: #selector(toggleMenu), for: .touchUpInside)
-        
-        view.addSubview(menuButton)
-        NSLayoutConstraint.activate([
-            menuButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 40),
-            menuButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
-            menuButton.widthAnchor.constraint(equalToConstant: 40),
-            menuButton.heightAnchor.constraint(equalToConstant: 40)
-        ])
     }
           func calculateHeight() -> CGFloat {
               let width = UIScreen.main.bounds.width - 40
@@ -260,11 +207,8 @@ extension String {
 extension PagedTextViewController {
     func loadRawChapters(completion: @escaping () -> Void) {
         let dispatchGroup = DispatchGroup()
-
         var bookLoaded = false
         var metadataLoaded = false
-
-        // ✅ Load Book Info
         dispatchGroup.enter()
         DispatchQueue.global(qos: .userInitiated).async {
             if let bookInfo: BookResponse = self.loadJSON(from: "Bookinfo", as: BookResponse.self) {
@@ -287,10 +231,7 @@ extension PagedTextViewController {
 
                 if let targetLinksData = metadata.targetLinks.data(using: .utf8) {
                     do {
-                        // Decode TargetLink JSON
                         let targetLinks = try JSONDecoder().decode([TargetLink].self, from: targetLinksData)
-
-                        // Map to PageReference
                         let pageReferences = targetLinks.map {
                             PageReference(
                                 key: $0.key,
@@ -299,11 +240,7 @@ extension PagedTextViewController {
                                 index: $0.index
                             )
                         }
-
-                        // Assign to local property
                         self.pageReference = pageReferences
-
-                        // ✅ Save to UserDefaults
                         if let encoded = try? JSONEncoder().encode(pageReferences) {
                             UserDefaults.standard.set(encoded, forKey: "PageReferencesKey")
                             print("✅ PageReferences saved to UserDefaults.")
@@ -320,8 +257,6 @@ extension PagedTextViewController {
             dispatchGroup.leave()
         }
 
-
-        // ✅ Wait until Book + Metadata are ready
         dispatchGroup.notify(queue: .global(qos: .userInitiated)) {
             guard bookLoaded, metadataLoaded,
                   let book = self.bookResponse?.book,
@@ -331,7 +266,6 @@ extension PagedTextViewController {
                 return
             }
 
-            // ✅ Load fallback values from UserDefaults
             let finalFontSize: CGFloat = {
                 let value = UserDefaults.standard.float(forKey: "globalFontSize")
                 return value > 0 ? CGFloat(value) : 16.0
@@ -346,8 +280,7 @@ extension PagedTextViewController {
                     return UIScreen.main.bounds.inset(by: UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)).size
                 }
             }()
-
-            // ✅ Save values back to UserDefaults
+            
             UserDefaults.standard.set(finalFontSize, forKey: "lastFontSize")
             UserDefaults.standard.set(Float(finalScreenSize.width), forKey: "lastScreenWidth")
             UserDefaults.standard.set(Float(finalScreenSize.height), forKey: "lastScreenHeight")
@@ -377,10 +310,8 @@ extension PagedTextViewController {
                 }
             }
 
-            // ✅ Create chunks after pages are fully ready
             self.chunkedPages = self.createChunks(fontSize: finalFontSize, screenSize: finalScreenSize)
             print("✅ Created \(self.chunkedPages.count) chunks")
-
             DispatchQueue.main.async {
                 print("✅ All files loaded, chapters paginated, and chunks created!")
                 completion()
@@ -396,24 +327,17 @@ extension PagedTextViewController {
         screenSize: CGSize,
         globalPageOffset: Int
     ) -> [Page] {
-        
-        // 1. Decrypt the content
         let decryptor = Decryptor()
         let decryptedText = decryptor.decryption(txt: chapter.content, id: book.id)
-        
-        // 2. Parse into attributed pages (logical pages)
         let attributedPages = ParsePage().invoke(
             pageEncodedString: decryptedText,
             metadata: metadata,
             book: book
         )
-        
-        // 3. Optional: fetch chapter name from metadata
         if let indexList = metadata.decodedIndex(),
            let matching = indexList.first(where: { $0.number == chapter.firstChapterNumber }) {
             chapter.chapterName = matching.name
         }
-
         var generatedPages: [Page] = []
         var currentPageNumberInBook = chapter.firstPageNumber
         var currentPageIndexInBook = globalPageOffset
@@ -442,15 +366,12 @@ extension PagedTextViewController {
                 pageNumberInChapter += 1
             }
         }
-
-        // Update the chapter with page data
         chapter.pages = generatedPages
         chapter.numberOfPages = generatedPages.count
         
         return generatedPages
     }
-
-//
+    
     func createChunks(fontSize: CGFloat, screenSize: CGSize) -> [Chunk] {
         var chunks: [Chunk] = []
         var globalPageIndex = 0
@@ -482,9 +403,6 @@ extension PagedTextViewController {
                 mutable.addAttribute(.font, value: UIFont.systemFont(ofSize: fontSize), range: NSRange(location: 0, length: mutable.length))
 
                 let pageChunks = paginate(attributedText: mutable, fontSize: fontSize, maxSize: screenSize)
-
-                var pageLocalStartIndex = 0  // 🔧 Reset for each page
-
                 for chunk in pageChunks {
                     let localStartIndex = chunk.range.location
                     let localEndIndex = localStartIndex + chunk.range.length
@@ -512,7 +430,6 @@ extension PagedTextViewController {
                 localPageIndex += 1
             }
         }
-
         print("chunks.count: \(chunks.count)")
         print("self.pagesss.count: \(self.pagess.count)")
         return chunks

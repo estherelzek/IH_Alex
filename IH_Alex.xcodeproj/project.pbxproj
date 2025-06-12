@@ -58,7 +58,6 @@
 		83289AAE2DC0B68000447D39 /* CustomMainView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 83289AAD2DC0B68000447D39 /* CustomMainView.xib */; };
 		836025D52DD2206F007A937C /* SearchInBook.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836025D42DD2206F007A937C /* SearchInBook.swift */; };
 		83695C542D799A7D00FA0566 /* BookMarkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83695C532D799A7D00FA0566 /* BookMarkView.swift */; };
-		838D6D0B2DE337050047153B /* testclass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 838D6D0A2DE337050047153B /* testclass.swift */; };
 		83EDE1912D76F05200425A46 /* HighlightModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1902D76F05200425A46 /* HighlightModel.swift */; };
 		83EDE1932D76F0A900425A46 /* HighlightManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83EDE1922D76F0A900425A46 /* HighlightManager.swift */; };
 		83EDE1952D77092000425A46 /* Bookinfo.txt in Resources */ = {isa = PBXBuildFile; fileRef = 83EDE1942D77092000425A46 /* Bookinfo.txt */; };
@@ -125,7 +124,6 @@
 		83289AAD2DC0B68000447D39 /* CustomMainView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CustomMainView.xib; sourceTree = "<group>"; };
 		836025D42DD2206F007A937C /* SearchInBook.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchInBook.swift; sourceTree = "<group>"; };
 		83695C532D799A7D00FA0566 /* BookMarkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMarkView.swift; sourceTree = "<group>"; };
-		838D6D0A2DE337050047153B /* testclass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = testclass.swift; sourceTree = "<group>"; };
 		83EDE1902D76F05200425A46 /* HighlightModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightModel.swift; sourceTree = "<group>"; };
 		83EDE1922D76F0A900425A46 /* HighlightManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HighlightManager.swift; sourceTree = "<group>"; };
 		83EDE1942D77092000425A46 /* Bookinfo.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Bookinfo.txt; sourceTree = "<group>"; };
@@ -206,7 +204,6 @@
 				831EA81C2DF838A2006DB765 /* Token6.txt */,
 				831EA81D2DF838A2006DB765 /* Token7.txt */,
 				5E0FFEDE2D65EB660090DECF /* metadataResponse.txt */,
-				5E63E5392D6345AE00F85DAB /* Models */,
 			);
 			path = LocalFiles;
 			sourceTree = "<group>";
@@ -235,8 +232,7 @@
 				832048E22DC8E29000F1B8BF /* BookSearchResult */,
 				8334849B2D81C2E70075A2C5 /* MenuViewControllers */,
 				833484A72D81C3460075A2C5 /* PagesViewControllers */,
-				83F432382DF9731A00C43621 /* ReferenceBottomSheetViewController.swift */,
-				83F432392DF9731A00C43621 /* ReferenceBottomSheetViewController.xib */,
+				83AA27EF2DFAB75100DC685A /* ReferenceSheetViewControllers */,
 			);
 			path = ViewControllers;
 			sourceTree = "<group>";
@@ -282,7 +278,6 @@
 				5EDC43C42D61E80D007913CD /* LaunchScreen.storyboard */,
 				5EDC43BC2D61E80B007913CD /* Main.storyboard */,
 				83289AAD2DC0B68000447D39 /* CustomMainView.xib */,
-				838D6D0A2DE337050047153B /* testclass.swift */,
 			);
 			path = UIViews;
 			sourceTree = "<group>";
@@ -318,6 +313,7 @@
 				5E9D80BF2D6F0C8B00E9A508 /* Delegates */,
 				5E9D80C02D6F0CC600E9A508 /* Extensions */,
 				5E9D80CA2D6F236300E9A508 /* UIViews */,
+				5E63E5392D6345AE00F85DAB /* Models */,
 				5E63E5312D63382B00F85DAB /* NetworkLayer */,
 				5EDC43C22D61E80D007913CD /* Assets.xcassets */,
 				5EDC43C72D61E80D007913CD /* Info.plist */,
@@ -342,6 +338,15 @@
 				832048E92DC8E3E900F1B8BF /* BookSearchResultTableViewCell.xib */,
 			);
 			path = " BookSearchResultCell";
+			sourceTree = "<group>";
+		};
+		83AA27EF2DFAB75100DC685A /* ReferenceSheetViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				83F432382DF9731A00C43621 /* ReferenceBottomSheetViewController.swift */,
+				83F432392DF9731A00C43621 /* ReferenceBottomSheetViewController.xib */,
+			);
+			path = ReferenceSheetViewControllers;
 			sourceTree = "<group>";
 		};
 		98999BA01AB827816EFB6C28 /* Frameworks */ = {
@@ -544,7 +549,6 @@
 				5E575D2E2D63530500ACFCEB /* NetworkManager.swift in Sources */,
 				5E63E5372D63398700F85DAB /* NetworkServer.swift in Sources */,
 				5E63E53D2D634C1300F85DAB /* BookContentModel.swift in Sources */,
-				838D6D0B2DE337050047153B /* testclass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
