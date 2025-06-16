@@ -133,9 +133,8 @@ class TextPageViewController: UIViewController, UITextViewDelegate,BookmarkViewD
     }
     
     func closeMenu() {
-        print("📍 pageIndex: \(pageIndex)")
-        print("📍 pages count: \(chunkedPages.count)")
-
+//        print("📍 pageIndex: \(pageIndex)")
+//        print("📍 pages count: \(chunkedPages.count)")
         guard chunkedPages.indices.contains(pageIndex) else {
             print("📍 Invalid pageIndex: \(pageIndex), out of bounds.")
             return
@@ -379,9 +378,8 @@ extension TextPageViewController: NoteViewControllerDelegate {
         pageIndex = index
         guard let pageController = self.pageController else { return }
         let latestContent = pageController.chunkedPages[pageIndex]
-        print("pageIndex: \(pageIndex)")
-        print("pageIndex content: \(chunkedPages[pageIndex].attributedText)")
-
+//        print("pageIndex: \(pageIndex)")
+//        print("pageIndex content: \(chunkedPages[pageIndex].attributedText)")
         pageContentt = latestContent
         textView.attributedText = applyLanguageBasedAlignment(to: latestContent.attributedText)
         textView.setContentOffset(.zero, animated: false)
@@ -686,7 +684,6 @@ extension TextPageViewController {
             self.loadNoteIcons()
         }
     }
-
 
     func refreshTextViewNotes() {
         let attributedString = NSMutableAttributedString(attributedString: textView.attributedText)

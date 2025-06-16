@@ -46,8 +46,8 @@
             filePath = "IH_Alex/ViewControllers/PagesViewControllers/TextPageViewController.swift"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "973"
-            endingLineNumber = "973"
+            startingLineNumber = "970"
+            endingLineNumber = "970"
             landmarkName = "handleInternalLinkClick(id:)"
             landmarkType = "7">
          </BreakpointContent>

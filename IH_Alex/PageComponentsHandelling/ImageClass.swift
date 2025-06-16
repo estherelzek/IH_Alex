@@ -54,8 +54,6 @@ class ParseImage {
     func parseAlignment(_ alignmentString: String) -> NSTextAlignment {
         let cleanedAlignment = alignmentString
             .trimmingCharacters(in: .whitespacesAndNewlines) // ✅ Remove spaces & newlines
-        print("alignmentString cleaned: '\(cleanedAlignment)'")
-        
         switch cleanedAlignment {
         case "L": return .left
         case "C": return .center

@@ -211,8 +211,8 @@ class ParsePage {
         if currentPage.length > 0 {
             pages.append(currentPage)
         }
-        print("count: \(pages.count)")
-        print("countpages: \(countpages)")
+//        print("count: \(pages.count)")
+//        print("countpages: \(countpages)")
         return pages
     }
 

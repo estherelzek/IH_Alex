@@ -15,10 +15,10 @@ class Decryptor {
     let IMAGE_NAME_SPLITTER = "!@D%#^$#BFSA#$"
 
     func decryption(txt: String, id: Int) -> String {
-        print("decryption is called")
+     //   print("decryption is called")
         let contents = txt.split(separator: IMAGE_NAME_SPLITTER)
         var decryptionTxt = ""
-        print("contents[i] = \(contents.count)")
+       // print("contents[i] = \(contents.count)")
         for i in stride(from: 0, to: contents.count, by: 2) {
             decryptionTxt += decrypt(text: String(contents[i]))
             if i < contents.count - 1 {
@@ -42,6 +42,20 @@ class Decryptor {
        let arabicRange = text.range(of: "\\p{Arabic}", options: .regularExpression)
        return arabicRange != nil
    }
+}
+
+extension String {
+    func sentenceSnippet(containing range: Range<String.Index>, maxWords: Int = 12) -> String {
+        let words = self.components(separatedBy: .whitespacesAndNewlines)
+        let matchedWord = self[range]
+        guard let matchIndex = words.firstIndex(where: { $0.contains(matchedWord) }) else {
+            return String(matchedWord) // fallback
+        }
+        let lower = max(0, matchIndex - maxWords/2)
+        let upper = min(words.count - 1, matchIndex + maxWords/2)
+        let snippet = words[lower...upper].joined(separator: " ")
+        return snippet.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 extension UIColor {
@@ -124,8 +138,6 @@ extension Collection {
 }
 
 extension TextPageViewController {
-  
-    
     func createColorImage(color: UIColor) -> UIImage? {
         let size = CGSize(width: 20, height: 20)
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
@@ -196,12 +208,6 @@ extension String {
             start = range.upperBound
         }
         return ranges
-    }
-
-    func snippet(around range: Range<String.Index>, radius: Int) -> String {
-        let lower = index(range.lowerBound, offsetBy: -radius, limitedBy: startIndex) ?? startIndex
-        let upper = index(range.upperBound, offsetBy: radius, limitedBy: endIndex) ?? endIndex
-        return String(self[lower..<upper])
     }
 }
 extension PagedTextViewController {

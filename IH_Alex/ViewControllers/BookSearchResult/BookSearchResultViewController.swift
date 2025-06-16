@@ -54,6 +54,7 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
     var resultsByChapter: [Int: [SearchResult]] = [:]
     var sortedChapters: [Int] = []
     weak var internalLinkDelegate: InternalLinkNavigationDelegate?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         searchBar.delegate = self
@@ -102,7 +103,7 @@ class BookSearchResultViewController: UIViewController, UISearchBarDelegate {
             if text.contains(keyword ?? "") {
                 let matches = text.ranges(of: keyword ?? "")
                 for range in matches {
-                    let snippet = text.snippet(around: range, radius: 10)
+                    let snippet = text.sentenceSnippet(containing: range)
                     let chapterNumber = page.chapterNumber
                     let chapterName = chapterNameMap[chapterNumber] ?? "Chapter \(chapterNumber)"
                     
@@ -213,7 +214,7 @@ extension BookSearchResultViewController: UITableViewDataSource, UITableViewDele
     }
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 80 // or any fixed height you prefer
+        return 100 // or any fixed height you prefer
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {

@@ -141,7 +141,6 @@ class MenuViewController: UIViewController {
         
     }
 
-
     @IBAction func brightnessSliderTapped(_ sender: UISlider) {
         let newBrightness = sender.value
         delegate?.adjustBrightness(value: newBrightness) // ✅ Correctly notify delegate
@@ -172,7 +171,6 @@ class MenuViewController: UIViewController {
         }
     }
 
-   
     func setupSavedAppearanceButtons() {
         let spacing = UserDefaults.standard.value(forKey: "globalLineSpacing") as? CGFloat ?? 1
         if spacing > 1 {
@@ -204,7 +202,7 @@ class MenuViewController: UIViewController {
                 }
             }
         let savedScrollModeRaw = UserDefaults.standard.string(forKey: "savedScrollMode") ?? ScrollMode.verticalScrolling.rawValue
-        print("savedScrollModeRaw: \(savedScrollModeRaw)")
+     //   print("savedScrollModeRaw: \(savedScrollModeRaw)")
         if let savedScrollMode = ScrollMode(rawValue: savedScrollModeRaw) {
             switch savedScrollMode {
             case .verticalScrolling:
