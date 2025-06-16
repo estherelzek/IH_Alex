@@ -289,10 +289,12 @@ extension PagedTextViewController {
             if let textVC = vc as? TextPageViewController {
                 textVC.pageContentt = self.chunkedPages.first!
                 textVC.pageController = self
-                textVC.refreshContent()
-                textVC.reloadPageContent()
-                textVC.closeMenu()
-                textVC.closeNote()// Prepare content before it appears
+                DispatchQueue.main.asyncAfter(deadline: .now()) {
+                    textVC.refreshContent()//
+                     textVC.reloadPageContent()
+                     textVC.closeMenu()
+                     textVC.closeNote()
+                }
                
             }
         }
@@ -349,7 +351,7 @@ extension PagedTextViewController {
             return nil
         }
         firstVC.pageController = self
-        print("✅ Found active TextPageViewController.")
+       // print("✅ Found active TextPageViewController.")
         return firstVC
     }
 

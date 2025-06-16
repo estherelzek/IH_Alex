@@ -21,8 +21,8 @@ class NoteViewController: UIViewController {
     @IBOutlet weak var buttonsStack: UIStackView!
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var noteTitle: UILabel!
-    
     @IBOutlet weak var contentView: UIView!
+    
     var noteTextContent: String = ""
     var noteTitleContent: String?
     var noteRange: NSRange?

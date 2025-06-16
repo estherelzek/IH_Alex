@@ -37,6 +37,8 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
         preparePager()
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(contentViewTapped))
         contentView.addGestureRecognizer(tapGesture)
+//        let savedBackground = UserDefaults.standard.color(forKey: "globalBackgroundColor") ?? .white
+//        contentView.backgroundColor = savedBackground
         setUpInformation()
         registerForKeyboardNotifications()
         slider.minimumValue = 0
@@ -74,7 +76,7 @@ class MainViewController: UIViewController, UIPageViewControllerDataSource, UIPa
                 direction: .forward,
                 animated: false,
                 completion: { finished in
-                    print("✅ Navigated to page \(pageIndex) by sliding the slider.")
+                   // print("✅ Navigated to page \(pageIndex) by sliding the slider.")
                 }
             )
         }
@@ -187,9 +189,9 @@ extension MainViewController: PagedTextViewControllerDelegate {
 
     func updateCurrentLabels() {
         guard let pagedVC = pagedVC else { return }
-        print("pagedVC pagedVC.chunkedPages.count : \(pagedVC.chunkedPages.count)")
-        print("pagedVC pages count: \(pagedVC.pagess.count)")
-        print("pagedVC.bookChapterrs count: \(pagedVC.bookChapterrs.count)")
+//        print("pagedVC pagedVC.chunkedPages.count : \(pagedVC.chunkedPages.count)")
+//        print("pagedVC pages count: \(pagedVC.pagess.count)")
+//        print("pagedVC.bookChapterrs count: \(pagedVC.bookChapterrs.count)")
         let currentIndex = pagedVC.currentIndex
         if currentIndex < 0 || currentIndex >= pagedVC.pagess.count {
             
@@ -376,7 +378,7 @@ extension MainViewController {
 
 extension MainViewController: InternalLinkNavigationDelegate {
     func didNavigateToInternalLink(pageIndex: Int) {
-        print("🌟 Navigated to page: \(pageIndex) from internal link")
+      //  print("🌟 Navigated to page: \(pageIndex) from internal link")
         slider.setValue(Float(pageIndex), animated: true)
         pagedVC?.currentIndex = pageIndex
         updateCurrentLabels()

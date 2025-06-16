@@ -47,9 +47,9 @@
 		831EA81E2DF838A2006DB765 /* token1.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA8172DF838A2006DB765 /* token1.txt */; };
 		831EA81F2DF838A2006DB765 /* token5.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81B2DF838A2006DB765 /* token5.txt */; };
 		831EA8202DF838A2006DB765 /* token3.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA8192DF838A2006DB765 /* token3.txt */; };
-		831EA8212DF838A2006DB765 /* Token6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81C2DF838A2006DB765 /* Token6.txt */; };
+		831EA8212DF838A2006DB765 /* token6.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81C2DF838A2006DB765 /* token6.txt */; };
 		831EA8222DF838A2006DB765 /* token4.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81A2DF838A2006DB765 /* token4.txt */; };
-		831EA8232DF838A2006DB765 /* Token7.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81D2DF838A2006DB765 /* Token7.txt */; };
+		831EA8232DF838A2006DB765 /* token7.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA81D2DF838A2006DB765 /* token7.txt */; };
 		831EA8242DF838A2006DB765 /* token2.txt in Resources */ = {isa = PBXBuildFile; fileRef = 831EA8182DF838A2006DB765 /* token2.txt */; };
 		832048E52DC8E2BE00F1B8BF /* BookSearchResultViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832048E32DC8E2BE00F1B8BF /* BookSearchResultViewController.swift */; };
 		832048E62DC8E2BE00F1B8BF /* BookSearchResultViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 832048E42DC8E2BE00F1B8BF /* BookSearchResultViewController.xib */; };
@@ -115,8 +115,8 @@
 		831EA8192DF838A2006DB765 /* token3.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token3.txt; sourceTree = "<group>"; };
 		831EA81A2DF838A2006DB765 /* token4.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token4.txt; sourceTree = "<group>"; };
 		831EA81B2DF838A2006DB765 /* token5.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token5.txt; sourceTree = "<group>"; };
-		831EA81C2DF838A2006DB765 /* Token6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token6.txt; sourceTree = "<group>"; };
-		831EA81D2DF838A2006DB765 /* Token7.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = Token7.txt; sourceTree = "<group>"; };
+		831EA81C2DF838A2006DB765 /* token6.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token6.txt; sourceTree = "<group>"; };
+		831EA81D2DF838A2006DB765 /* token7.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = token7.txt; sourceTree = "<group>"; };
 		832048E32DC8E2BE00F1B8BF /* BookSearchResultViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSearchResultViewController.swift; sourceTree = "<group>"; };
 		832048E42DC8E2BE00F1B8BF /* BookSearchResultViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BookSearchResultViewController.xib; sourceTree = "<group>"; };
 		832048E82DC8E3E900F1B8BF /* BookSearchResultTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookSearchResultTableViewCell.swift; sourceTree = "<group>"; };
@@ -201,8 +201,8 @@
 				831EA8192DF838A2006DB765 /* token3.txt */,
 				831EA81A2DF838A2006DB765 /* token4.txt */,
 				831EA81B2DF838A2006DB765 /* token5.txt */,
-				831EA81C2DF838A2006DB765 /* Token6.txt */,
-				831EA81D2DF838A2006DB765 /* Token7.txt */,
+				831EA81C2DF838A2006DB765 /* token6.txt */,
+				831EA81D2DF838A2006DB765 /* token7.txt */,
 				5E0FFEDE2D65EB660090DECF /* metadataResponse.txt */,
 			);
 			path = LocalFiles;
@@ -442,9 +442,9 @@
 				831EA81E2DF838A2006DB765 /* token1.txt in Resources */,
 				831EA81F2DF838A2006DB765 /* token5.txt in Resources */,
 				831EA8202DF838A2006DB765 /* token3.txt in Resources */,
-				831EA8212DF838A2006DB765 /* Token6.txt in Resources */,
+				831EA8212DF838A2006DB765 /* token6.txt in Resources */,
 				831EA8222DF838A2006DB765 /* token4.txt in Resources */,
-				831EA8232DF838A2006DB765 /* Token7.txt in Resources */,
+				831EA8232DF838A2006DB765 /* token7.txt in Resources */,
 				831EA8242DF838A2006DB765 /* token2.txt in Resources */,
 				5EDC43C62D61E80D007913CD /* LaunchScreen.storyboard in Resources */,
 				5E9D80962D6C8A6600E9A508 /* Cairo-SemiBold.ttf in Resources */,
